@@ -39,6 +39,8 @@ void MainWindow::init()
     // TODO: For what its worth??
     mwEngine->setIncubationController(incubationController());
 
+    qmlRegisterType<HomeScreenController>("de.nisble.qtouch", 1, 0, "HomeScreenController");
+
     // Create root component
     component = new QQmlComponent(mwEngine.data(), QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")), this);
 

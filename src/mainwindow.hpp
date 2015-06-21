@@ -28,6 +28,7 @@ private:
     QPointer<QQuickItem> rootItem;
 
     void init();
+    bool componentError(QQmlComponent*);
 
     Q_DISABLE_COPY(MainWindow)
 };
