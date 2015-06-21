@@ -39,4 +39,52 @@ void MainWindow::init()
     // TODO: For what its worth??
     mwEngine->setIncubationController(incubationController());
 
+    // Create root component
+    component = new QQmlComponent(mwEngine.data(), QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")), this);
+
+    if (componentError(component))
+        return;
+
+    // Instantiate component in root context
+    QObject* object = component->create();
+
+    if (componentError(component))
+    {
+        delete object;
+        return;
+    }
+
+    rootItem = qobject_cast<QQuickItem*>(object);
+    if (rootItem)
+    {
+        // Set the visual parent of the component to the invisible root item of the QQuickWindow
+        rootItem->setParentItem(contentItem());
+    }
+    else
+    {
+        qWarning() << "The root item of MainWindow.qml must be derived from QQuickItem";
+        delete rootItem;
+        return;
+    }
+
+    // Set the window to the size defined in QML root item
+    QSize size(rootItem->width(), rootItem->height());
+    if (size.isValid())
+        resize(size);
+    else
+        qWarning() << "Invalid size of root item";
+}
+
+bool MainWindow::componentError(QQmlComponent* c)
+{
+    if (component->isError())
+    {
+        QList<QQmlError> errorList = component->errors();
+        foreach(const QQmlError & error, errorList)
+        {
+            QMessageLogger(error.url().toString().toLatin1().constData(), error.line(), 0).warning() << error;
+        }
+        return true;
+    }
+    return false;
 }

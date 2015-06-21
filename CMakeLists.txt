@@ -37,7 +37,13 @@ endif()
 add_definitions(-DQT_USE_QSTRINGBUILDER)
 
 add_subdirectory(src)
+add_subdirectory(src/gui)
 print_list("Source files:" SRCS)
 
-add_executable(QTouch ${SRCS})
+qt5_add_resources(QRCS
+    src/gui/qml.qrc
+)
+print_list("Resource files:" QRCS)
+
+add_executable(QTouch ${SRCS} ${QRCS})
 target_link_libraries(QTouch Qt5::Widgets Qt5::Qml Qt5::Quick)
