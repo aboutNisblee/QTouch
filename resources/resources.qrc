@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/32x32/configure.png</file>
+        <file>icons/32x32/user-identity.png</file>
+        <file>icons/64x64/configure.png</file>
+        <file>icons/64x64/user-identity.png</file>
+        <file>icons/32x32/dialog-information.png</file>
+        <file>icons/64x64/dialog-information.png</file>
+        <file>icons/32x32/arrow-left.png</file>
+        <file>icons/32x32/arrow-right.png</file>
+        <file>icons/32x32/object-locked.png</file>
+    </qresource>
+</RCC>

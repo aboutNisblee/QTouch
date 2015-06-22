@@ -42,6 +42,7 @@ print_list("Source files:" SRCS)
 
 qt5_add_resources(QRCS
     src/gui/qml.qrc
+    resources/resources.qrc
 )
 print_list("Resource files:" QRCS)
 
