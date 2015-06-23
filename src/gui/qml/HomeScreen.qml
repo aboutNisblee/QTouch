@@ -4,6 +4,8 @@ import QtQuick.Layouts 1.0
 import QtQuick.Controls.Styles 1.2
 
 import de.nisble.qtouch 1.0
+//import "qrc:/qml/items" as Items
+import "items" as Items
 
 ColumnLayout {
     id: homeScreen
@@ -107,6 +109,7 @@ ColumnLayout {
         }
     }
 
+    //    }
     RowLayout {
         Layout.fillWidth: true
         spacing: 6
@@ -117,6 +120,13 @@ ColumnLayout {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
+//            style: ScrollViewStyle {
+//                scrollBarBackground: Rectangle {
+//                    color: "white"
+//                }
+
+//            }
+
             ListView {
                 id: lessonSelectorView
 
@@ -124,6 +134,32 @@ ColumnLayout {
                 Layout.fillWidth: true
 
                 clip: true
+
+                model: lessonModel
+                delegate: Items.ListItem {
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                    }
+
+                    // For QML representations of role names see documentation of
+                    // QAbstractItemModel::roleNames()
+                    labelText: display
+
+                    // labelOpacity: 1
+                    iconSource: index % 2 ? "qrc:/icons/32x32/object-locked.png" : ""
+
+                    onClicked: {
+                        // Selecttion
+                        lessonSelectorView.currentIndex = index
+
+                        // lessonPreview.text = ListView.model.lessonModel
+                        lessonPreview.text = display
+                    }
+                    onDoubleClicked: {
+
+                    }
+                }
             }
         }
         TextArea {
