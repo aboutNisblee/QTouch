@@ -7,6 +7,12 @@
 #include <QDebug>
 #include <QQmlError>
 
+#include "homescreencontroller.hpp"
+#include "lessonmodel.hpp"
+
+// TODO: Private! Remove me!
+//#include <private/qqmlinspectorservice_p.h>
+
 MainWindow::MainWindow(QQmlEngine* engine) : mwEngine(engine)
 {
     init();
@@ -14,6 +20,9 @@ MainWindow::MainWindow(QQmlEngine* engine) : mwEngine(engine)
 
 MainWindow::~MainWindow()
 {
+    // TODO: Private! Remove me!
+//    if (QQmlDebugService::isDebuggingEnabled())
+//        QQmlInspectorService::instance()->removeView(this);
 }
 
 /* Overwriting resizeEvent of QQuickWindow.
@@ -38,6 +47,17 @@ void MainWindow::init()
 
     // TODO: For what its worth??
     mwEngine->setIncubationController(incubationController());
+
+    // TODO: Private! Remove me!
+//    if (QQmlDebugService::isDebuggingEnabled())
+//        QQmlInspectorService::instance()->addView(this);
+
+    //    // Embed controller objects
+    //    hsController = new HomeScreenController(this);
+    //    mwEngine->rootContext()->setContextObject(hsController);
+
+    lessonModel = new LessonModel(this);
+    mwEngine->rootContext()->setContextProperty("lessonModel", lessonModel);
 
     qmlRegisterType<HomeScreenController>("de.nisble.qtouch", 1, 0, "HomeScreenController");
 

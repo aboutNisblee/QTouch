@@ -8,6 +8,9 @@
 class QQmlEngine;
 class QQmlComponent;
 
+class HomeScreenController;
+class LessonModel;
+
 class MainWindow : public QQuickWindow
 {
     Q_OBJECT
@@ -26,6 +29,10 @@ private:
     QPointer<QQmlEngine> mwEngine;
     QQmlComponent* component;
     QPointer<QQuickItem> rootItem;
+
+//    HomeScreenController* hsController;
+
+    LessonModel* lessonModel;
 
     void init();
     bool componentError(QQmlComponent*);

@@ -30,6 +30,9 @@ else()
     # to enable QML-Debugging.
     # You may also consider to export QML_DISABLE_OPTIMIZER=1 in your execution environment.
     add_definitions(-DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG)
+
+    # TODO: Remove me! (Private headers)
+#    include_directories(/usr/include/x86_64-linux-gnu/qt5/QtQml/5.3.2/QtQml)
 endif()
 
 # QT_USE_FAST_CONCATENATION and QT_USE_FAST_OPERATOR_PLUS seems to be deprecated
