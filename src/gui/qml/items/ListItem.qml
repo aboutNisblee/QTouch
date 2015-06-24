@@ -73,7 +73,6 @@ Item {
                 verticalCenter: parent.verticalCenter
             }
 
-            //            height: contentHeight * 1.6
             text: labelText
             opacity: labelOpacity
         }
@@ -91,8 +90,8 @@ Item {
         }
 
         color: "lightgrey"
-        border.color: "white"
-        border.width: 1
+//        border.color: "white"
+//        border.width: 1
         radius: 3
         opacity: 1
     }
@@ -127,7 +126,7 @@ Item {
             PropertyChanges {
                 target: background
                 visible: true
-                opacity: 0.6
+                opacity: 0.8
             }
         }
     ]

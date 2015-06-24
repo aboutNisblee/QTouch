@@ -109,10 +109,9 @@ ColumnLayout {
         }
     }
 
-    //    }
     RowLayout {
         Layout.fillWidth: true
-        spacing: 6
+        spacing: 0
 
         ScrollView {
             id: lessonSelector
@@ -120,18 +119,37 @@ ColumnLayout {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-//            style: ScrollViewStyle {
-//                scrollBarBackground: Rectangle {
-//                    color: "white"
-//                }
+            style: ScrollViewStyle {
+                // Transient and inc/dec controls or not transient and no controls
+//                transientScrollBars: true
+                incrementControl: Item {}
+                decrementControl: Item {}
 
-//            }
+                handle: Item {
+                    implicitWidth: 14
+                    implicitHeight: 26
+                    Rectangle {
+                        anchors {
+                            fill: parent
+                            topMargin: 2
+                            leftMargin: 2
+                            rightMargin: 2
+                            bottomMargin: 2
+                        }
+                        color: "lightgray"
+                        radius: 3
+                    }
+                }
+                scrollBarBackground: Item {
+                    implicitWidth: 14
+                    implicitHeight: 26
+                }
+            }
 
             ListView {
                 id: lessonSelectorView
 
-                Layout.fillHeight: true
-                Layout.fillWidth: true
+                anchors.fill: parent
 
                 clip: true
 
@@ -147,7 +165,7 @@ ColumnLayout {
                     labelText: display
 
                     // labelOpacity: 1
-                    iconSource: index % 2 ? "qrc:/icons/32x32/object-locked.png" : ""
+                    iconSource: index > 10 ? "qrc:/icons/32x32/object-locked.png" : ""
 
                     onClicked: {
                         // Selecttion
@@ -167,6 +185,8 @@ ColumnLayout {
 
             Layout.fillHeight: true
             Layout.fillWidth: true
+
+            frameVisible: false
 
             enabled: false
             text: "Right one"
