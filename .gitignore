@@ -1,2 +1,14 @@
+# IDE
+/.settings
+/*.user
+/*.kdev4
+
+# build
 build/
-*.user
+
+# Backup
+*.org
+*.bak
+
+# Testfiles
+*.sqlite
