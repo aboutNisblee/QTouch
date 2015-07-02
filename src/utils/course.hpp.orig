@@ -1,0 +1,169 @@
+/**
+ * \file course.hpp
+ *
+ * \date 03.07.2015
+ * \author Moritz Nisblé moritz.nisble@gmx.de
+ */
+
+#ifndef COURSE_HPP_
+#define COURSE_HPP_
+
+#include <QString>
+#include <QUuid>
+#include <QDataStream>
+#include <QByteArray>
+#include <QFile>
+
+#include <QList>
+
+#include <QtGlobal>
+
+#include <QSharedPointer>
+#include <QWeakPointer>
+
+#include <algorithm>
+
+/*
+ * TODO: Use const& for all shared_ptr arguments
+ */
+
+namespace qtouch
+{
+
+class Resource;
+
+typedef QSharedPointer<Resource> resource_ptr;
+typedef QSharedPointer<const Resource> const_resource_ptr;
+
+class Resource
+{
+public:
+	Resource();
+	virtual ~Resource();
+
+	virtual const QUuid& getId() const;
+	virtual void setId(const QUuid& id);
+
+	virtual QString getTitle() const;
+	virtual void setTitle(const QString& title);
+
+	virtual bool isBuiltin() const;
+	virtual void setBuiltin(bool builtin);
+
+	virtual QByteArray serialize() const = 0;
+	virtual QByteArray hash() const = 0;
+
+protected:
+	/* XXX: Since 5.4 there is a base class for this purpose
+	 * called QEnableSharedFromThis. */
+	QWeakPointer<Resource> mWeakThis;
+
+	QWeakPointer<Resource> mParent;
+
+	QUuid mId;
+	QString mTitle;
+	bool mBuiltin;
+
+	void initWeakThis(const resource_ptr& thiz);
+	resource_ptr sharedFromWeakThis();
+
+	void setParent(const resource_ptr& parent);
+};
+
+class Lesson;
+
+typedef QSharedPointer<Lesson> lesson_ptr;
+typedef QSharedPointer<const Lesson> const_lesson_ptr;
+
+class Course;
+
+typedef QSharedPointer<Course> course_ptr;
+typedef QSharedPointer<const Course> const_course_ptr;
+
+class Lesson: public Resource
+{
+	/* For Course to be able to access protected setParent() in Resource. */
+	friend class Course;
+
+public:
+	virtual ~Lesson();
+
+	virtual void setId(const QUuid& id);
+
+	const QString& getNewChars() const;
+	void setNewChars(const QString& newChars);
+
+	const QString& getText() const;
+	void setText(const QString& text);
+
+	course_ptr getCourse() const;
+
+	virtual QByteArray serialize() const;
+	virtual QByteArray hash() const;
+
+#if 0
+	static QByteArray hash(QList<Lesson> lessons);
+#endif
+
+private:
+	QString mNewChars;
+	QString mText;
+};
+
+/**
+ * Container class that holds a Course and its Lessons.
+ */
+class Course: public Resource
+{
+public:
+	typedef QList<lesson_ptr> lessons_container;
+	typedef lessons_container::Iterator iterator;
+	typedef lessons_container::ConstIterator const_iterator;
+
+	static course_ptr create();
+	static course_ptr clone(const course_ptr& org);
+
+	virtual ~Course();
+
+	virtual void setId(const QUuid& id);
+
+	const QString& getDescription() const;
+	void setDescription(const QString& description);
+
+	void replace(const lessons_container& lessons);
+
+	void append(const lesson_ptr& lesson);
+
+	int lessonCount() const;
+
+	iterator begin();
+	iterator end();
+	const_iterator begin() const;
+	const_iterator end() const;
+
+	virtual QByteArray serialize() const;
+	virtual QByteArray hash() const;
+
+//	static QByteArray hash(const QList<Course> courses);
+
+protected:
+	Course();
+	Course(const course_ptr& org);
+
+private:
+	QString mDescription;
+
+	lessons_container mLessons;
+
+	Q_DISABLE_COPY(Course)
+};
+
+QByteArray& operator+=(QByteArray& out, const resource_ptr& resource);
+
+QDataStream& operator<<(QDataStream& out, const resource_ptr& resource);
+QDataStream& operator<<(QDataStream& out, const lesson_ptr& lesson);
+QDataStream& operator<<(QDataStream& out, const course_ptr& course);
+
+} /* namespace qtouch */
+
+#endif /* COURSE_HPP_ */
