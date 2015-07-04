@@ -9,5 +9,50 @@
         <file>icons/32x32/arrow-left.png</file>
         <file>icons/32x32/arrow-right.png</file>
         <file>icons/32x32/object-locked.png</file>
+        <file>courses/ara.xml</file>
+        <file>courses/bg1.xml</file>
+        <file>courses/bg2.xml</file>
+        <file>courses/br.xml</file>
+        <file>courses/cat.xml</file>
+        <file>courses/cz.xml</file>
+        <file>courses/de.dvorak.xml</file>
+        <file>courses/de.neo.xml</file>
+        <file>courses/de1.xml</file>
+        <file>courses/de2.xml</file>
+        <file>courses/dk1.xml</file>
+        <file>courses/es.dvorak.xml</file>
+        <file>courses/es1.xml</file>
+        <file>courses/es2.xml</file>
+        <file>courses/es3.xml</file>
+        <file>courses/es4.xml</file>
+        <file>courses/fi.xml</file>
+        <file>courses/fr.bepo.xml</file>
+        <file>courses/fr.dvarok.xml</file>
+        <file>courses/fr.xml</file>
+        <file>courses/gb.xml</file>
+        <file>courses/gr.xml</file>
+        <file>courses/ir.xml</file>
+        <file>courses/it.xml</file>
+        <file>courses/lt.std.xml</file>
+        <file>courses/nl1.xml</file>
+        <file>courses/nl2.xml</file>
+        <file>courses/no.xml</file>
+        <file>courses/pl.xml</file>
+        <file>courses/ru.legacy.xml</file>
+        <file>courses/ru1.xml</file>
+        <file>courses/ru2.xml</file>
+        <file>courses/si.xml</file>
+        <file>courses/sk.xml</file>
+        <file>courses/tr.xml</file>
+        <file>courses/ua.xml</file>
+        <file>courses/us.colemak.xml</file>
+        <file>courses/us.dvorak1.xml</file>
+        <file>courses/us.dvorak2.xml</file>
+        <file>courses/us.workman.xml</file>
+        <file>courses/us.xml</file>
+        <file>courses/course.xsd</file>
     </qresource>
+    <qresource prefix="/testing">
+        <file>courses/testcourse.xml</file>
+    </qresource>    
 </RCC>
