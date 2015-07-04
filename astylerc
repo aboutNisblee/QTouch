@@ -1,0 +1,12 @@
+--style=allman
+--indent-preprocessor
+--indent-col1-comments
+--indent=tab=4
+--max-code-length=120
+--pad-oper
+--pad-header
+--unpad-paren
+--align-pointer=type
+--align-reference=type
+--mode=c
+--keep-one-line-blocks
