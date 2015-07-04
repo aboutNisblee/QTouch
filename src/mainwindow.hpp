@@ -8,36 +8,44 @@
 class QQmlEngine;
 class QQmlComponent;
 
+/**
+ * Namespace of QTouch
+ */
+namespace qtouch
+{
+
 class HomeScreenController;
 class LessonModel;
 
-class MainWindow : public QQuickWindow
+class MainWindow: public QQuickWindow
 {
-    Q_OBJECT
+Q_OBJECT
 public:
-    explicit MainWindow(QQmlEngine* engine = 0);
-    ~MainWindow();
+	explicit MainWindow(QQmlEngine* engine = 0);
+	~MainWindow();
 
 signals:
 
 public slots:
 
 protected:
-    void resizeEvent(QResizeEvent* e);
+	void resizeEvent(QResizeEvent* e);
 
 private:
-    QPointer<QQmlEngine> mwEngine;
-    QQmlComponent* component;
-    QPointer<QQuickItem> rootItem;
+	QPointer<QQmlEngine> mwEngine;
+	QQmlComponent* component;
+	QPointer<QQuickItem> rootItem;
 
 //    HomeScreenController* hsController;
 
-    LessonModel* lessonModel;
+	LessonModel* lessonModel;
 
-    void init();
-    bool componentError(QQmlComponent*);
+	void init();
+	bool componentError(QQmlComponent*);
 
-    Q_DISABLE_COPY(MainWindow)
+	Q_DISABLE_COPY(MainWindow)
 };
+
+} /* namespace qtouch */
 
 #endif // MAINWINDOW_HPP

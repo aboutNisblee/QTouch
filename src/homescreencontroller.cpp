@@ -3,9 +3,13 @@
 #include <QDebug>
 #include <QtQml>
 
-HomeScreenController::HomeScreenController(QObject* parent): QObject(parent)
+namespace qtouch
 {
-    mVisible = false;
+
+HomeScreenController::HomeScreenController(QObject* parent) :
+		QObject(parent)
+{
+	mVisible = false;
 }
 
 HomeScreenController::~HomeScreenController()
@@ -14,6 +18,8 @@ HomeScreenController::~HomeScreenController()
 
 void HomeScreenController::onLoaded()
 {
-    mVisible = true;
-    emit visibilityChanged();
+	mVisible = true;
+	emit visibilityChanged();
 }
+
+} /* namespace qtouch */

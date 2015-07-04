@@ -10,103 +10,99 @@
 #include "homescreencontroller.hpp"
 #include "lessonmodel.hpp"
 
-// TODO: Private! Remove me!
-//#include <private/qqmlinspectorservice_p.h>
-
-MainWindow::MainWindow(QQmlEngine* engine) : mwEngine(engine)
+namespace qtouch
 {
-    init();
+
+MainWindow::MainWindow(QQmlEngine* engine) :
+	mwEngine(engine)
+{
+	init();
 }
 
 MainWindow::~MainWindow()
 {
-    // TODO: Private! Remove me!
-//    if (QQmlDebugService::isDebuggingEnabled())
-//        QQmlInspectorService::instance()->removeView(this);
 }
 
 /* Overwriting resizeEvent of QQuickWindow.
  * Forcing the rootItem to fill the window. */
 void MainWindow::resizeEvent(QResizeEvent* e)
 {
-    Q_UNUSED(e)
-    if (rootItem)
-    {
-        if (!qFuzzyCompare(width(), rootItem->width()))
-            rootItem->setWidth(width());
-        if (!qFuzzyCompare(height(), rootItem->height()))
-            rootItem->setHeight(height());
-    }
+	Q_UNUSED(e)
+	if (rootItem)
+	{
+		if (!qFuzzyCompare(width(), rootItem->width()))
+			rootItem->setWidth(width());
+		if (!qFuzzyCompare(height(), rootItem->height()))
+			rootItem->setHeight(height());
+	}
 }
 
 void MainWindow::init()
 {
-    // If engine not passed via constructor, create a new one
-    if (!mwEngine)
-        mwEngine = new QQmlEngine(this);
+	// If engine not passed via constructor, create a new one
+	if (!mwEngine)
+		mwEngine = new QQmlEngine(this);
 
-    // TODO: For what its worth??
-    mwEngine->setIncubationController(incubationController());
+	// TODO: For what its worth??
+	mwEngine->setIncubationController(incubationController());
 
-    // TODO: Private! Remove me!
-//    if (QQmlDebugService::isDebuggingEnabled())
-//        QQmlInspectorService::instance()->addView(this);
+	//	// Embed controller objects
+	//	hsController = new HomeScreenController(this);
+	//	mwEngine->rootContext()->setContextObject(hsController);
 
-    //    // Embed controller objects
-    //    hsController = new HomeScreenController(this);
-    //    mwEngine->rootContext()->setContextObject(hsController);
+	lessonModel = new LessonModel(this);
+	mwEngine->rootContext()->setContextProperty("lessonModel", lessonModel);
 
-    lessonModel = new LessonModel(this);
-    mwEngine->rootContext()->setContextProperty("lessonModel", lessonModel);
+	qmlRegisterType<HomeScreenController>("de.nisble.qtouch", 1, 0, "HomeScreenController");
 
-    qmlRegisterType<HomeScreenController>("de.nisble.qtouch", 1, 0, "HomeScreenController");
+	// Create root component
+	component = new QQmlComponent(mwEngine.data(), QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")), this);
 
-    // Create root component
-    component = new QQmlComponent(mwEngine.data(), QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")), this);
+	if (componentError(component))
+		return;
 
-    if (componentError(component))
-        return;
+	// Instantiate component in root context
+	QObject* object = component->create();
 
-    // Instantiate component in root context
-    QObject* object = component->create();
+	if (componentError(component))
+	{
+		delete object;
+		return;
+	}
 
-    if (componentError(component))
-    {
-        delete object;
-        return;
-    }
+	rootItem = qobject_cast<QQuickItem*>(object);
+	if (rootItem)
+	{
+		// Set the visual parent of the component to the invisible root item of the QQuickWindow
+		rootItem->setParentItem(contentItem());
+	}
+	else
+	{
+		qWarning() << "The root item of MainWindow.qml must be derived from QQuickItem";
+		delete rootItem;
+		return;
+	}
 
-    rootItem = qobject_cast<QQuickItem*>(object);
-    if (rootItem)
-    {
-        // Set the visual parent of the component to the invisible root item of the QQuickWindow
-        rootItem->setParentItem(contentItem());
-    }
-    else
-    {
-        qWarning() << "The root item of MainWindow.qml must be derived from QQuickItem";
-        delete rootItem;
-        return;
-    }
-
-    // Set the window to the size defined in QML root item
-    QSize size(rootItem->width(), rootItem->height());
-    if (size.isValid())
-        resize(size);
-    else
-        qWarning() << "Invalid size of root item";
+	// Set the window to the size defined in QML root item
+	QSize size(rootItem->width(), rootItem->height());
+	if (size.isValid())
+		resize(size);
+	else
+		qWarning() << "Invalid size of root item";
 }
 
 bool MainWindow::componentError(QQmlComponent* c)
 {
-    if (component->isError())
-    {
-        QList<QQmlError> errorList = component->errors();
-        foreach(const QQmlError & error, errorList)
-        {
-            QMessageLogger(error.url().toString().toLatin1().constData(), error.line(), 0).warning() << error;
-        }
-        return true;
-    }
-    return false;
+	if (component->isError())
+	{
+		QList<QQmlError> errorList = component->errors();
+		foreach(const QQmlError & error, errorList)
+		{
+			QMessageLogger(error.url().toString().toLatin1().constData(), error.line(), 0).warning() << error;
+		}
+		return true;
+	}
+	return false;
 }
+
+} /* namespace qtouch */

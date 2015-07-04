@@ -1,6 +1,6 @@
-add_sources(SRCS
+melp_add_sources(SRCS
 	main.cpp
 	mainwindow.cpp
-        homescreencontroller.cpp
-        lessonmodel.cpp
+	homescreencontroller.cpp
+	lessonmodel.cpp
 )
