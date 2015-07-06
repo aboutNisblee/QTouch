@@ -34,9 +34,9 @@ inline void Resource::setId(const QUuid& id, bool correction)
 	if (correction && id.isNull())
 	{
 		mId = QUuid::createUuid();
-		qWarning() << "Invalid resource UUID";
-		qWarning() << "    Title:" << (getTitle().isEmpty() ? "Unknown" : getTitle());
-		qWarning() << "    Generated:" << mId.toString();
+		qWarning() << "Invalid Resource UUID";
+		qWarning() << "    Title: " << (getTitle().isEmpty() ? "\"Unknown\"" : getTitle());
+		qWarning() << "    Generated: " << mId.toString();
 	}
 	else
 	{
@@ -91,9 +91,9 @@ void Lesson::setId(const QUuid& id, bool correction)
 	{
 		mId = QUuid::createUuid();
 		qWarning() << "Invalid Lesson UUID";
-		qWarning() << "    Course:" << (getCourse() ? getCourse()->getTitle() : "Unknown");
-		qWarning() << "    Lesson:" << getTitle();
-		qWarning() << "    Generated:" << mId.toString();
+		qWarning() << "    Course: " << (getCourse() ? getCourse()->getTitle() : "Unknown");
+		qWarning() << "    Lesson: " << getTitle();
+		qWarning() << "    Generated: " << mId.toString();
 	}
 	else
 	{
@@ -224,8 +224,9 @@ void Course::setId(const QUuid& id, bool correction)
 	if (correction && id.isNull())
 	{
 		mId = QUuid::createUuid();
-		qWarning() << "Invalid UUID in course" << getTitle();
-		qWarning() << "    Generated:" << mId.toString();
+		qWarning() << "Invalid Course UUID";
+		qWarning() << "    Course: " << getTitle();
+		qWarning() << "    Generated: " << mId.toString();
 	}
 	else
 	{

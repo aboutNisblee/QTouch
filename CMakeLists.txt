@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 project(QTouch)
 
-find_package(Qt5 REQUIRED COMPONENTS Widgets Qml Quick Test)
+find_package(Qt5 REQUIRED COMPONENTS Widgets Qml Quick Test Sql Xml XmlPatterns)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -35,7 +35,7 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
 	# Enable creation of tests
 	# TODO: Add macro for test creation and let creation depend on this variable!
 	set(MELP_TEST_CREATION ON)
-	
+
 else()
 	# Change output directory for release builds
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
@@ -59,6 +59,7 @@ add_definitions(-DQT_USE_QSTRINGBUILDER)
 include_directories(src)
 
 add_subdirectory(src)
+add_subdirectory(src/xml)
 add_subdirectory(src/utils)
 add_subdirectory(src/gui)
 melp_print_list(SRCS "Source files" SEPERATOR HALFINDENT)
@@ -70,4 +71,4 @@ qt5_add_resources(QRCS
 melp_print_list(QRCS "Resource files" SEPERATOR HALFINDENT)
 
 add_executable(QTouch ${SRCS} ${QRCS})
-target_link_libraries(QTouch Qt5::Widgets Qt5::Qml Qt5::Quick)
+target_link_libraries(QTouch Qt5::Widgets Qt5::Qml Qt5::Quick Qt5::Sql Qt5::Xml Qt5::XmlPatterns)
