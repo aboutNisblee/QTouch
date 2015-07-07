@@ -11,7 +11,7 @@ namespace qtouch
 {
 
 Profile::Profile() :
-		mSkillLevel(0)
+	mSkillLevel(0)
 {
 	// TODO Auto-generated constructor stub
 

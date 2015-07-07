@@ -15,14 +15,13 @@
 
 #include <QtGlobal>
 
-#include <QSharedPointer>
-#include <QWeakPointer>
+#include "sharedthis.hpp"
 
 namespace qtouch
 {
 
-class Resource;
-typedef QSharedPointer<Resource> ResourcePtr;
+class CourseLessonBase;
+typedef QSharedPointer<CourseLessonBase> CourseLessonBasePtr;
 
 class Lesson;
 typedef QSharedPointer<Lesson> LessonPtr;
@@ -32,13 +31,13 @@ class Course;
 typedef QSharedPointer<Course> CoursePtr;
 typedef QList<CoursePtr> CourseList;
 
-class Resource
+class CourseLessonBase
 {
 public:
-	virtual ~Resource();
+	virtual ~CourseLessonBase();
 
 	virtual const QUuid& getId() const;
-	virtual void setId(const QUuid& id, bool correction = true);
+	virtual bool setId(const QUuid& id);
 
 	virtual QString getTitle() const;
 	virtual void setTitle(const QString& title);
@@ -46,34 +45,21 @@ public:
 	virtual bool isBuiltin() const;
 	virtual void setBuiltin(bool builtin);
 
+	virtual QDataStream& serialize(QDataStream& out) const = 0;
+
 protected:
-	Resource();
-
-	/* XXX: Since 5.4 there is a base class for this purpose
-	 * called QEnableSharedFromThis. */
-	QWeakPointer<Resource> mWeakThis;
-
-	QWeakPointer<Resource> mParent;
+	CourseLessonBase();
 
 	QUuid mId;
 	QString mTitle;
 	bool mBuiltin;
-
-	void initWeakThis(const ResourcePtr& thiz);
-	ResourcePtr sharedFromWeakThis();
-
-	void setParent(const ResourcePtr& parent);
 };
 
-class Lesson: public Resource
+class Lesson: public CourseLessonBase
 {
-	/* For Course to be able to access protected setParent() in Resource. */
 	friend class Course;
-
 public:
 	virtual ~Lesson();
-
-	virtual void setId(const QUuid& id, bool correction = true);
 
 	const QString& getNewChars() const;
 	void setNewChars(const QString& newChars);
@@ -83,17 +69,21 @@ public:
 
 	CoursePtr getCourse() const;
 
+	virtual QDataStream& serialize(QDataStream& out) const;
+
 private:
+	void setCourse(const CoursePtr& parent);
+
+	QWeakPointer<Course> mCourse;
+
 	QString mNewChars;
 	QString mText;
 };
 
-QDataStream& operator<<(QDataStream& out, const LessonPtr& lesson);
-
 /**
  * Class that is able to manage a Course and its Lessons.
  */
-class Course: public Resource
+class Course: public SharedThis, public CourseLessonBase
 {
 public:
 	typedef LessonList::Iterator iterator;
@@ -103,8 +93,6 @@ public:
 	static CoursePtr clone(const CoursePtr& org);
 
 	virtual ~Course();
-
-	virtual void setId(const QUuid& id, bool correction = true);
 
 	const QString& getDescription() const;
 	void setDescription(const QString& description);
@@ -121,13 +109,13 @@ public:
 	static QByteArray hash(const CoursePtr& course);
 	static QByteArray hash(const CourseList& courses);
 
-protected:
+	virtual QDataStream& serialize(QDataStream& out) const;
+
+private:
 	Course();
 	Course(const CoursePtr& org);
 
-private:
 	QString mDescription;
-
 	LessonList mLessons;
 
 	Q_DISABLE_COPY(Course)

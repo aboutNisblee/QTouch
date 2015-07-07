@@ -15,90 +15,56 @@
 namespace qtouch
 {
 
-Resource::Resource() :
+CourseLessonBase::CourseLessonBase() :
 	mBuiltin(false)
 {
 }
 
-Resource::~Resource()
+CourseLessonBase::~CourseLessonBase()
 {
 }
 
-inline const QUuid& Resource::getId() const
+inline const QUuid& CourseLessonBase::getId() const
 {
 	return mId;
 }
 
-inline void Resource::setId(const QUuid& id, bool correction)
+inline bool CourseLessonBase::setId(const QUuid& id)
 {
-	if (correction && id.isNull())
+	if (id.isNull())
 	{
 		mId = QUuid::createUuid();
-		qWarning() << "Invalid Resource UUID";
-		qWarning() << "    Title: " << (getTitle().isEmpty() ? "\"Unknown\"" : getTitle());
-		qWarning() << "    Generated: " << mId.toString();
+		return false;
 	}
 	else
 	{
 		mId = id;
+		return true;
 	}
 }
 
-inline QString Resource::getTitle() const
+inline QString CourseLessonBase::getTitle() const
 {
 	return mTitle;
 }
 
-inline void Resource::setTitle(const QString& title)
+inline void CourseLessonBase::setTitle(const QString& title)
 {
 	mTitle = title;
 }
 
-inline bool Resource::isBuiltin() const
+inline bool CourseLessonBase::isBuiltin() const
 {
 	return mBuiltin;
 }
 
-inline void Resource::setBuiltin(bool builtin)
+inline void CourseLessonBase::setBuiltin(bool builtin)
 {
 	mBuiltin = builtin;
 }
 
-void Resource::initWeakThis(const ResourcePtr& thiz)
-{
-	mWeakThis = thiz;
-}
-
-ResourcePtr Resource::sharedFromWeakThis()
-{
-	ResourcePtr strong = mWeakThis.lock();
-	return strong;
-}
-
-/* Store the back pointer to the owning object. */
-inline void Resource::setParent(const ResourcePtr& parent)
-{
-	mParent = parent;
-}
-
 Lesson::~Lesson()
 {
-}
-
-void Lesson::setId(const QUuid& id, bool correction)
-{
-	if (correction && id.isNull())
-	{
-		mId = QUuid::createUuid();
-		qWarning() << "Invalid Lesson UUID";
-		qWarning() << "    Course: " << (getCourse() ? getCourse()->getTitle() : "Unknown");
-		qWarning() << "    Lesson: " << getTitle();
-		qWarning() << "    Generated: " << mId.toString();
-	}
-	else
-	{
-		mId = id;
-	}
 }
 
 const QString& Lesson::getNewChars() const
@@ -131,14 +97,20 @@ CoursePtr Lesson::getCourse() const
 {
 	/* Get a strong reference to the parent.
 	 * This may fail, when Lessons was never added to a Course. */
-	ResourcePtr p = mParent.lock();
-	CoursePtr c;
-
-	// But when we have a parent the cast cannot fail
-	if (p)
-		c = p.staticCast<CoursePtr::Type>();
-
+	CoursePtr c = mCourse.lock();
 	return c;
+}
+
+/* Store the back pointer to the owning object. */
+inline void Lesson::setCourse(const CoursePtr& parent)
+{
+	mCourse = parent;
+}
+
+QDataStream& Lesson::serialize(QDataStream& out) const
+{
+	out << getId() << getTitle() << getNewChars() << isBuiltin() << getText();
+	return out;
 }
 
 /**
@@ -219,21 +191,6 @@ Course::~Course()
 {
 }
 
-void Course::setId(const QUuid& id, bool correction)
-{
-	if (correction && id.isNull())
-	{
-		mId = QUuid::createUuid();
-		qWarning() << "Invalid Course UUID";
-		qWarning() << "    Course: " << getTitle();
-		qWarning() << "    Generated: " << mId.toString();
-	}
-	else
-	{
-		mId = id;
-	}
-}
-
 inline const QString& Course::getDescription() const
 {
 	return mDescription;
@@ -258,8 +215,8 @@ void Course::replace(const LessonList& lessons)
 		 * Its not really deep because its members are implicitly shared. */
 		LessonPtr l(new Lesson(**it));
 
-		ResourcePtr thiz(sharedFromWeakThis());
-		l->setParent(thiz);
+		CoursePtr thiz(sharedFromWeakThis().staticCast<Course>());
+		l->setCourse(thiz);
 
 		mLessons.append(l);
 	}
@@ -273,8 +230,8 @@ void Course::replace(const LessonList& lessons)
  */
 void Course::append(const LessonPtr& lesson)
 {
-	ResourcePtr thiz(sharedFromWeakThis());
-	lesson->setParent(thiz);
+	CoursePtr thiz(sharedFromWeakThis().staticCast<Course>());
+	lesson->setCourse(thiz);
 
 	mLessons.append(lesson);
 }
@@ -302,6 +259,16 @@ Course::const_iterator Course::begin() const
 Course::const_iterator Course::end() const
 {
 	return mLessons.end();
+}
+
+QDataStream& Course::serialize(QDataStream& out) const
+{
+	out << getId() << getTitle() << getDescription() << isBuiltin();
+	for (Course::const_iterator it = begin(); it != end(); ++it)
+	{
+		out << (*it);
+	}
+	return out;
 }
 
 /**

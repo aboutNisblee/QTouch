@@ -11,17 +11,17 @@ namespace qtouch
 {
 
 Typo::Typo() :
-		mChar('\0'), mCount(0)
+	mChar('\0'), mCount(0)
 {
 }
 
 Typo::Typo(QChar const& c) :
-		mChar(c), mCount(0)
+	mChar(c), mCount(0)
 {
 }
 
 Typo::Typo(QChar const& c, quint16 n) :
-		mChar(c), mCount(n)
+	mChar(c), mCount(n)
 {
 
 }

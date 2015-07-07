@@ -14,80 +14,107 @@
 namespace qtouch
 {
 
-/*
- * NOTE: QException subclasses must be thrown by value and caught by reference!
+/**
+ * Base class for all exceptions in QTouch.
+ * Each subclass initializes a standard message. This basic message can be
+ * retrieved by the what() function. Some subclasses add some additional
+ * details. Those details should be always accessible via additional getters.
+ * For convenience each subclass should overwrite the message method and return
+ * a formatted QString that adds its details to the standard message.
+ *
+ * @note To be able to throw exceptions over thread boundaries they must
+ * be thrown by value and caught by reference!
  */
-
-struct Exception: public QException
+class Exception: public QException
 {
-	explicit Exception(QString msg): message(msg) {}
+public:
+	explicit Exception(QString msg): msg(msg) {}
 	virtual ~Exception() throw () {}
 
-	virtual void raise() const { throw *this; }
-	virtual Exception *clone() const { return new Exception(*this); }
+	virtual void raise() const { throw* this; }
+	virtual Exception* clone() const { return new Exception(*this); }
 
-	virtual const char* what() const throw () { return message.toLatin1().data(); }
+	virtual const char* what() const throw () { return msg.toLatin1().data(); }
+	virtual QString message() const throw () { return msg; }
 
-	QString message;
+protected:
+	QString msg;
 };
 
 struct FileException: public Exception
 {
-	FileException(QString msg, QString file): Exception(msg), filename(file) {}
+public:
+	FileException(QString msg, QString file): Exception(msg), file(file) {}
 	virtual ~FileException() throw () {}
 
-	virtual void raise() const { throw *this; }
-	virtual FileException *clone() const { return new FileException(*this); }
+	virtual void raise() const { throw* this; }
+	virtual FileException* clone() const { return new FileException(*this); }
 
-	QString filename;
+	virtual QString message() const throw () { return msg % " in " % file; }
+	virtual const QString& filename() const throw() { return file; }
+
+protected:
+	QString file;
 };
 
 struct XmlException: public Exception
 {
-	XmlException(QString msg, QString file): Exception(msg), filename(file) {}
+public:
+	XmlException(QString msg, QString file): Exception(msg), file(file) {}
 	virtual ~XmlException() throw () {}
 
-	virtual void raise() const { throw *this; }
-	virtual XmlException *clone() const { return new XmlException(*this); }
+	virtual void raise() const { throw* this; }
+	virtual XmlException* clone() const { return new XmlException(*this); }
 
-	QString filename;
+	virtual QString message() const throw () { return msg % " in " % file; }
+	virtual const QString& filename() const throw() { return file; }
+
+protected:
+	QString file;
 };
 
 struct DatabaseException: public Exception
 {
+public:
 	DatabaseException(QString msg): Exception(msg) {}
 	virtual ~DatabaseException() throw () {}
 
-	virtual void raise() const { throw *this; }
-	virtual DatabaseException *clone() const { return new DatabaseException(*this); }
+	virtual void raise() const { throw* this; }
+	virtual DatabaseException* clone() const { return new DatabaseException(*this); }
 
-	virtual QString const& dbErrMessage() const { return QStringLiteral(""); }
+	virtual QString message() const throw() { return QStringLiteral(""); }
 };
 
 struct SqlDriverException: public DatabaseException
 {
-	SqlDriverException(QString msg, QString drvMsg): DatabaseException(msg), driverMessage(drvMsg) {}
+public:
+	SqlDriverException(QString msg, QString drvMsg): DatabaseException(msg), drvMsg(drvMsg) {}
 	virtual ~SqlDriverException() throw () {}
 
-	virtual void raise() const { throw *this; }
-	virtual SqlDriverException *clone() const { return new SqlDriverException(*this); }
+	virtual void raise() const { throw* this; }
+	virtual SqlDriverException* clone() const { return new SqlDriverException(*this); }
 
-	virtual QString const& dbErrMessage() const { return driverMessage; }
+	virtual QString message() const throw() { return msg % " -- Driver message: " % drvMsg; }
+	virtual const QString& driverMessage() const throw() { return drvMsg; }
 
-	QString driverMessage;
+protected:
+	QString drvMsg;
 };
 
 struct SqlException: public DatabaseException
 {
-	SqlException(QString msg, QString dbMsg): DatabaseException(msg), databaseMessage(dbMsg) {}
+public:
+	SqlException(QString msg, QString dbMsg): DatabaseException(msg), dbMsg(dbMsg) {}
 	virtual ~SqlException() throw () {}
 
-	virtual void raise() const { throw *this; }
-	virtual SqlException *clone() const { return new SqlException(*this); }
+	virtual void raise() const { throw* this; }
+	virtual SqlException* clone() const { return new SqlException(*this); }
 
-	virtual QString const& dbErrMessage() const { return databaseMessage; }
+	virtual QString message() const throw() { return msg % " -- Database message: " % dbMsg; }
+	virtual const QString& databaseMessage() const throw() { return dbMsg; }
 
-	QString databaseMessage;
+protected:
+	QString dbMsg;
 };
 
 

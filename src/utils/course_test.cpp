@@ -50,7 +50,7 @@ private slots:
 	void parentPointer();
 
 	void hash();
-//	void serialization();
+	void serialization();
 
 private:
 	quint16 lessoncount;
@@ -187,19 +187,20 @@ void CourseTest::hash()
 	QVERIFY(hash == buffer);
 }
 
-//void CourseTest::serialization()
-//{
-//	QByteArray buffer;
-//	QDataStream stream(&buffer, QIODevice::WriteOnly);
-//
-//	stream << uutCourse;
-//
-//	qDebug() << "Size of serialized test course: " << buffer.size();
-//		for (int i = 0; i < buffer.length(); ++i)
-//		{
-//			qDebug() << "Byte" << i << "=" << buffer[i];
-//		}
-//}
+void CourseTest::serialization()
+{
+	QByteArray buffer;
+	QDataStream stream(&buffer, QIODevice::WriteOnly);
+
+	qDebug() << uutCourse.isNull();
+	stream << uutCourse;
+
+	qDebug() << "Size of serialized test course: " << buffer.size();
+//	for (int i = 0; i < buffer.length(); ++i)
+//	{
+//		qDebug() << "Byte" << i << "=" << buffer[i];
+//	}
+}
 
 } /* namespace qtouch */
 

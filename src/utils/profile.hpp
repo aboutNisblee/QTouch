@@ -9,9 +9,13 @@
 #define PROFILE_HPP_
 
 #include <QString>
+#include <QSharedPointer>
 
 namespace qtouch
 {
+
+class Profile;
+typedef QSharedPointer<Profile> ProfilePtr;
 
 class Profile
 {
