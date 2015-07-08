@@ -43,7 +43,7 @@ QXmlSchema schema(const QString& xsd_path)
 
 } /* anonymous namespace */
 
-ValidatorPtr validator(const QString& xsd_path) throw (FileException, XmlException)
+ValidatorPtr createValidator(const QString& xsd_path) throw (FileException, XmlException)
 {
 	ValidatorPtr v(new QXmlSchemaValidator(schema(xsd_path)));
 	return v;
@@ -115,6 +115,12 @@ CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator,
 
 	QString text;
 
+	// Reset error variables
+	if (result)
+		*result = Ok;
+	if (warningMessage)
+		*warningMessage = QString();
+
 	/* Set the title first, to get a meaningful warning on UUID errors. */
 
 	// Set title
@@ -123,12 +129,11 @@ CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator,
 
 	// Set ID
 	text = root.firstChildElement("id").text();
-	course->setId(QUuid(text));
-	if(course->getId() != QUuid(text))
+	if (!course->setId(QUuid(text)))
 	{
-		if(result)
+		if (result)
 			*result = InvalidId;
-		if(warningMessage)
+		if (warningMessage)
 		{
 			*warningMessage += QLatin1String("Invalid Course UUID\n");
 			*warningMessage += QLatin1String("    Course:") % course->getTitle() % "\n";
@@ -165,12 +170,11 @@ CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator,
 
 		// Set ID
 		text = lessonsElem.firstChildElement("id").text();
-		lesson->setId(text);
-		if(lesson->getId() != QUuid(text))
+		if (!lesson->setId(text))
 		{
-			if(result)
+			if (result)
 				*result = InvalidId;
-			if(warningMessage)
+			if (warningMessage)
 			{
 				*warningMessage += QLatin1String("Invalid Lesson UUID\n");
 				*warningMessage += QLatin1String("    Course:") % lesson->getCourse()->getTitle() % "\n";

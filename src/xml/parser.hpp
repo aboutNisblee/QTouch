@@ -30,7 +30,7 @@ enum ParseResult { Ok, InvalidId };
 
 typedef QSharedPointer<QXmlSchemaValidator> ValidatorPtr;
 
-ValidatorPtr validator(const QString& xsd_path) throw (FileException, XmlException);
+ValidatorPtr createValidator(const QString& xsd_path) throw (FileException, XmlException);
 
 bool validate(const QString& xml_path, const ValidatorPtr& validator) throw (FileException, XmlException);
 

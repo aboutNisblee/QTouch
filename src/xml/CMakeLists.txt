@@ -8,7 +8,17 @@ set(PARSER_TEST_SRCS
 	../utils/course.cpp
 )
 
-qt5_add_resources(PARSER_TEST_QRCS ${CMAKE_SOURCE_DIR}/resources/resources.qrc)
+set(WRITER_TEST_SRCS
+	writer_test.cpp
+	writer.cpp
+	parser.cpp
+	../utils/course.cpp
+)
 
-melp_add_test_executable(parser_test ${PARSER_TEST_SRCS} ${PARSER_TEST_QRCS}
+qt5_add_resources(XML_TEST_QRCS ${CMAKE_SOURCE_DIR}/resources/resources.qrc)
+
+melp_add_test_executable(parser_test ${PARSER_TEST_SRCS} ${XML_TEST_QRCS}
+LIBS Qt5::Test Qt5::Xml Qt5::XmlPatterns)
+
+melp_add_test_executable(writer_test ${WRITER_TEST_SRCS} ${XML_TEST_QRCS}
 LIBS Qt5::Test Qt5::Xml Qt5::XmlPatterns)

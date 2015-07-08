@@ -11,12 +11,12 @@
 
 #include "parser.hpp"
 
-#include "utils/course.hpp"
-
-#define TESTCOURSE_LESSONCOUNT 2
-
 namespace qtouch
 {
+namespace xml
+{
+
+const int TestcourseLessonCount = 2;
 
 class XmlParserTest: public QObject
 {
@@ -37,14 +37,14 @@ private slots:
 
 	void invalidSchemaFile();
 
-	void validate();
+	void validation();
 	void parseTestCourse();
 	void parseCourses();
 
 private:
 	void verifyTestCourse(const CoursePtr& c);
 
-	xml::ValidatorPtr validator;
+	ValidatorPtr validator;
 };
 
 void XmlParserTest::verifyTestCourse(const CoursePtr& c)
@@ -57,7 +57,7 @@ void XmlParserTest::verifyTestCourse(const CoursePtr& c)
 
 	// TODO: Add keyboard layout
 
-	QVERIFY2(c->lessonCount() == TESTCOURSE_LESSONCOUNT, "Wrong lesson count");
+	QVERIFY2(c->lessonCount() == TestcourseLessonCount, "Wrong lesson count");
 
 	Course::const_iterator it = c->begin();
 
@@ -81,50 +81,50 @@ void XmlParserTest::initTestCase()
 	try
 	{
 		// Create a validator
-		validator = xml::validator(QStringLiteral(":/courses/course.xsd"));
+		validator = createValidator(QStringLiteral(":/courses/course.xsd"));
 	}
 	catch (Exception& e)
 	{
-		QFAIL(e.what());
+		QFAIL(qUtf8Printable(e.message()));
 	}
 }
 
 void XmlParserTest::invalidSchemaFilePath()
 {
-	QVERIFY_EXCEPTION_THROWN(xml::validator(QStringLiteral(":/testing/courses/FOOBAR.xsd")), FileException);
+	QVERIFY_EXCEPTION_THROWN(createValidator(QStringLiteral(":/testing/courses/FOOBAR.xsd")), FileException);
 }
 
 void XmlParserTest::invalidXmlFilePath()
 {
-	QVERIFY_EXCEPTION_THROWN(xml::validate(QStringLiteral(":/testing/courses/FOOBAR.xml"), validator),
+	QVERIFY_EXCEPTION_THROWN(validate(QStringLiteral(":/testing/courses/FOOBAR.xml"), validator),
 	                         FileException);
 }
 
 void XmlParserTest::invalidSchemaFile()
 {
-	QVERIFY_EXCEPTION_THROWN(xml::validator(QStringLiteral(":/testing/courses/testcourse.xml")), XmlException);
+	QVERIFY_EXCEPTION_THROWN(createValidator(QStringLiteral(":/testing/courses/testcourse.xml")), XmlException);
 }
 
-void XmlParserTest::validate()
+void XmlParserTest::validation()
 {
-	QCOMPARE(xml::validate(QStringLiteral(":/testing/courses/testcourse.xml"), validator), true);
+	QCOMPARE(validate(QStringLiteral(":/testing/courses/testcourse.xml"), validator), true);
 }
 
 void XmlParserTest::parseTestCourse()
 {
-	xml::ParseResult result;
+	ParseResult result;
 	QString message;
 
 	CoursePtr course;
 
 	try
 	{
-		course = xml::parseCourse(QStringLiteral(":/testing/courses/testcourse.xml"), validator, &result,
-		                   &message);
+		course = parseCourse(QStringLiteral(":/testing/courses/testcourse.xml"), validator, &result,
+		                     &message);
 	}
 	catch (Exception& e)
 	{
-		QFAIL(e.what());
+		QFAIL(qUtf8Printable(e.message()));
 	}
 
 	verifyTestCourse(course);
@@ -143,35 +143,37 @@ void XmlParserTest::parseCourses()
 	qDebug() << coursefiles;
 
 	CourseList courseList;
-	xml::ParseResult result;
-	QString message;
 
 	QStringListIterator it(coursefiles);
-	while(it.hasNext())
+	while (it.hasNext())
 	{
 		CoursePtr course;
 
+		ParseResult result;
+		QString message;
+
 		try
 		{
-			course = xml::parseCourse(it.next(), validator, &result, &message);
+			course = parseCourse(it.next(), validator, &result, &message);
 
-			if(result != xml::Ok)
+			if (result != Ok)
 			{
-				qWarning() << "Result:" << result << " " << message.toLatin1().data();
+				qWarning() << "Result:" << result << " " << message;
 			}
 
 			courseList.append(course);
 		}
-		catch (Exception const& e)
+		catch (Exception& e)
 		{
-			QFAIL(e.what());
+			QFAIL(qUtf8Printable(e.message()));
 		}
 	}
 
 	QCOMPARE(coursepath.entryList().size(), courseList.length());
 }
 
+} /* namespace xml */
 } /* namespace qtouch */
 
-QTEST_GUILESS_MAIN(qtouch::XmlParserTest)
+QTEST_GUILESS_MAIN(qtouch::xml::XmlParserTest)
 #include "parser_test.moc"
