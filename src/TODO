@@ -1,0 +1,10 @@
+[X] Add a little program that is able to correct corrupted UUIDs from ktouchs course definitions.
+	Use the parser code of QTouch and add a little writer function.
+	Let the Course/Lesson setter automatically correct the UUIDs while parsing.
+	Make a backup of the original course file and write the corrected back under the original filename.
+
+[ ] Let the build system check update the course files from the ktouch repository.
+	Use the corrector to automatically correct the files.
+	Remember to raise any data version number for the database to know that the data must be updated.
+		(Because we get other UUIDs when we correct the updated files) 
+

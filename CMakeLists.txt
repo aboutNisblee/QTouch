@@ -36,6 +36,8 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
 	# TODO: Add macro for test creation and let creation depend on this variable!
 	set(MELP_TEST_CREATION ON)
 
+	# Enable tools creation
+	set(QTOUCH_TOOLS_CREATION ON)
 else()
 	# Change output directory for release builds
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
@@ -59,8 +61,8 @@ add_definitions(-DQT_USE_QSTRINGBUILDER)
 include_directories(src)
 
 add_subdirectory(src)
-add_subdirectory(src/xml)
 add_subdirectory(src/utils)
+add_subdirectory(src/xml)
 add_subdirectory(src/gui)
 melp_print_list(SRCS "Source files" SEPERATOR HALFINDENT)
 
@@ -72,3 +74,15 @@ melp_print_list(QRCS "Resource files" SEPERATOR HALFINDENT)
 
 add_executable(QTouch ${SRCS} ${QRCS})
 target_link_libraries(QTouch Qt5::Widgets Qt5::Qml Qt5::Quick Qt5::Sql Qt5::Xml Qt5::XmlPatterns)
+
+# Tools creation
+if(QTOUCH_TOOLS_CREATION)
+	# Set output directory 
+	set(QTOUCH_TOOLS_RUNTIME_DIRECTORY "${CMAKE_SOURCE_DIR}/tools")
+	# Ensure directory is present
+	file(MAKE_DIRECTORY "${QTOUCH_TOOLS_RUNTIME_DIRECTORY}")
+	
+	add_subdirectory(src/tools)
+
+	set_target_properties(uuidcorrector PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${QTOUCH_TOOLS_RUNTIME_DIRECTORY}")
+endif()

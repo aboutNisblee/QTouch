@@ -13,3 +13,8 @@ build/
 
 # Testfiles
 *.sqlite
+
+# Output
+/bin
+/lib
+/tools

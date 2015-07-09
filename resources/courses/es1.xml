@@ -1,10 +1,10 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <course>
  <id>{1413c3cc-cf33-4bb9-95c1-63a99762f120}</id>
  <title>Español 1 (generado automáticamente)</title>
  <description>KTouch training file generated Mon Mar 31 17:09:15 2003
 Perl Script written by Steinar Theigmann &amp; Håvard Frøiland.</description>
- <keyboardLayout>es</keyboardLayout>
+ <keyboardLayout/>
  <lessons>
   <lesson>
    <id>{602a30ed-f237-40d7-b0b0-6f8f9b89f121}</id>
@@ -230,7 +230,7 @@ reduplicara rebumbio jugadores disminuirme
 utreranos morciguillo sopunto imbursadas</text>
   </lesson>
   <lesson>
-   <id>725</id>
+   <id>{05767079-1fd2-48c5-a630-3d114d457227}</id>
    <title>Lesson 12</title>
    <newCharacters>wnñ</newCharacters>
    <text>amaitinaran endulcéis naviera opinareis cantillos

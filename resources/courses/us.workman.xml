@@ -1,14 +1,14 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <course>
  <id>{a9688e24-25db-4d99-aaf1-b79d7cd274e6}</id>
  <title>English Workman (auto-generated)</title>
  <description>Auto-Generated for ordered letters: t h s a n e o i g y c l d r u p q w b j f z x m v k
 
-By Peter Feigl &lt;craven@gmx.net></description>
- <keyboardLayout>us(workman)</keyboardLayout>
+By Peter Feigl &lt;craven@gmx.net&gt;</description>
+ <keyboardLayout/>
  <lessons>
   <lesson>
-   <id>415</id>
+   <id>{08e5a040-ff7b-4d98-b4ad-4acf0e91148c}</id>
    <title>Lesson 1 - t, h, s and a</title>
    <newCharacters>tThHsSaA</newCharacters>
    <text>tats Sat Sasha at hats stat stash Sta ah that ash stats sash
@@ -16,7 +16,7 @@ hast shah aha Shasta Tasha ta a Ha sat Ta hath Haas as aah
 ha has shahs asst tat hat hash sass Tass</text>
   </lesson>
   <lesson>
-   <id>416</id>
+   <id>{69e87959-f7ce-46f4-a0c7-41bfa111ae94}</id>
    <title>Lesson 2 - n</title>
    <newCharacters>nN</newCharacters>
    <text>Nathan Attn assn Shana tn tan Hannah Santana Nathans Astana
@@ -25,7 +25,7 @@ sans San n nth Shanna tans Nan ans an Stan Hans nah than
 Anna ant Sn naan Ana Satan Hanna</text>
   </lesson>
   <lesson>
-   <id>417</id>
+   <id>{4182c1ec-2b96-42e6-8cab-2181b77606e8}</id>
    <title>Lesson 3 - e</title>
    <newCharacters>eE</newCharacters>
    <text>tenet Sennett antenna neatens tannest Tennesseans set settee
@@ -36,7 +36,7 @@ hashes sea nest ashes sheets heat tenant tenths see these
 tenets stashes neatness tee setts hen theses hastens</text>
   </lesson>
   <lesson>
-   <id>418</id>
+   <id>{e80acf6a-a196-4d3e-9793-5ed55dc2fce9}</id>
    <title>Lesson 4 - o</title>
    <newCharacters>oO</newCharacters>
    <text>notate tenons Seton soothe noses atones ethos hoses tosses
@@ -47,7 +47,7 @@ stetsons atone notates Aston Hosts hosanna snoots Tonto
 tonnes Shoshone Noah soothes to anons tho shone Sassoon</text>
   </lesson>
   <lesson>
-   <id>419</id>
+   <id>{106895c9-5455-48d7-ac22-251153735180}</id>
    <title>Lesson 5 - i</title>
    <newCharacters>iI</newCharacters>
    <text>assists ionise hesitations insentient sensitise anoint
@@ -59,7 +59,7 @@ satanists sienna tattooist sits tattooists Anastasia
 hastiness i inanest</text>
   </lesson>
   <lesson>
-   <id>420</id>
+   <id>{1b3e49b1-16c3-415b-ad93-df6aad6a0952}</id>
    <title>Lesson 6 - g</title>
    <newCharacters>gG</newCharacters>
    <text>anaesthetising highness tangs geese Genghis stinting
@@ -70,7 +70,7 @@ snag sheathings gin gang shinning engine against tighten
 shenanigan egos stagnation sightseeing eighteens agitations</text>
   </lesson>
   <lesson>
-   <id>421</id>
+   <id>{c8756562-0906-436c-88f6-5eb0f40db559}</id>
    <title>Lesson 7 - y</title>
    <newCharacters>yY</newCharacters>
    <text>annoys hyenas Synge Anthony yessing yeas Ginny ahoy antsy
@@ -82,7 +82,7 @@ gaiety sashaying titty Getty annoying Sonya easygoing Taney
 says</text>
   </lesson>
   <lesson>
-   <id>422</id>
+   <id>{9477fe04-12ac-4c95-9ede-556255fc2c30}</id>
    <title>Lesson 8 - c</title>
    <newCharacters>cC</newCharacters>
    <text>canon connotation chinos cosh yogic Sec canoe citing
@@ -94,7 +94,7 @@ Attica Tycho etch statisticians statics enacts chanteys chat
 scans</text>
   </lesson>
   <lesson>
-   <id>423</id>
+   <id>{a5559ded-11db-4456-98e5-2e54c1d7bf6f}</id>
    <title>Lesson 9 - l</title>
    <newCharacters>lL</newCharacters>
    <text>gal neocolonialist slangy Helena innately gloat
@@ -106,7 +106,7 @@ illegality Cecilia sleigh yelling Alsatian enlighten sails
 thinly</text>
   </lesson>
   <lesson>
-   <id>424</id>
+   <id>{e7493e59-88d3-49ce-b82e-656059a74be6}</id>
    <title>Lesson 10 - d</title>
    <newCharacters>dD</newCharacters>
    <text>disco needed scandals dilate italicised dale childish hatted
@@ -117,7 +117,7 @@ standstills tagged hogsheads aids dynastic desensitised
 gliding dying hadst stolidly Tide colloid cooed dean</text>
   </lesson>
   <lesson>
-   <id>425</id>
+   <id>{8db17795-6c98-477f-b413-ccee570447bd}</id>
    <title>Lesson 11 - rR</title>
    <newCharacters>rR</newCharacters>
    <text>credentialing res oriels Aaron torrider renting groynes
@@ -129,7 +129,7 @@ galleries Ingres shrilly Tanner rattled Eritrea shorthorns
 decorate</text>
   </lesson>
   <lesson>
-   <id>426</id>
+   <id>{20c8b065-43ca-4663-8d61-ce70cda9c6d6}</id>
    <title>Lesson 12 - u</title>
    <newCharacters>uU</newCharacters>
    <text>nuttiest sounders surrender scrounge saturates colourises
@@ -140,7 +140,7 @@ lurching unharness undercarriages Eurydice shotgun
 sententious naturalised Constitution aurally casualness</text>
   </lesson>
   <lesson>
-   <id>427</id>
+   <id>{2644bf3d-4eba-40fd-9c78-0b0c82bb3d48}</id>
    <title>Lesson 13 - p</title>
    <newCharacters>pP</newCharacters>
    <text>palette depressurisation proponents helicopter stupendously
@@ -151,7 +151,7 @@ loops canopy photosynthetic splashed adopting particulates
 dispersing snooped pentathlete parser pended</text>
   </lesson>
   <lesson>
-   <id>428</id>
+   <id>{6df09d0d-fc68-4f8e-a63d-27642e368242}</id>
    <title>Lesson 14 - q</title>
    <newCharacters>qQ</newCharacters>
    <text>squarely quitters picturesquely torquing lacquering iniquity
@@ -162,7 +162,7 @@ antiquarian reacquaints Inquisition squishier queasily
 acquitted picturesque turquoises queenly qt aquanaut</text>
   </lesson>
   <lesson>
-   <id>429</id>
+   <id>{2c4bf320-4517-4aa6-9f40-db66443b3b77}</id>
    <title>Lesson 15 - w</title>
    <newCharacters>wW</newCharacters>
    <text>lowers wiggly hogwash wallets outlaw watchwords awaited
@@ -174,7 +174,7 @@ scarecrow dhow unrewarding scrawny sweetness Shawna
 waterside</text>
   </lesson>
   <lesson>
-   <id>430</id>
+   <id>{ba8186ac-8264-4d23-ace6-15c63626f1b5}</id>
    <title>Lesson 16 - b</title>
    <newCharacters>bB</newCharacters>
    <text>interurban obsequiously orbiter bee outbalances unbarred
@@ -186,7 +186,7 @@ substances urbanologists tablas bough gabbling pubertal
 buddy</text>
   </lesson>
   <lesson>
-   <id>431</id>
+   <id>{2e8517d4-5004-4b80-b8d9-11c712b9489a}</id>
    <title>Lesson 17 - j</title>
    <newCharacters>jJ</newCharacters>
    <text>jousters jellybeans Alejandra enjoining josher
@@ -198,7 +198,7 @@ Gujarat japanned objurgate jibs adjudicated journeyer
 jalousies</text>
   </lesson>
   <lesson>
-   <id>432</id>
+   <id>{3a9af67d-ce3f-4d62-a17d-456d57ddeb6c}</id>
    <title>Lesson 18 - f</title>
    <newCharacters>fF</newCharacters>
    <text>coffeehouses puffball Afros defogger sendoff duffs affronted
@@ -209,7 +209,7 @@ functioned farsighted firefight puffy flashgun firing
 further farrago grapefruits infrared outfights</text>
   </lesson>
   <lesson>
-   <id>433</id>
+   <id>{fb2ae4fd-bee7-4ca6-b449-06cd3d4cb5e9}</id>
    <title>Lesson 19 - z</title>
    <newCharacters>zZ</newCharacters>
    <text>brazier horizons dazzlers frizzier futzes brazens lazy zeal
@@ -221,7 +221,7 @@ refrozen frizzly daze blazers trailblazer Belize Cuzco
 refreeze</text>
   </lesson>
   <lesson>
-   <id>434</id>
+   <id>{d86e5bf1-67b4-4936-a1b8-83f01cb1b09f}</id>
    <title>Lesson 20 - x</title>
    <newCharacters>xX</newCharacters>
    <text>exigencies foxhunts Pentax unexcited Giraudoux Excellencies
@@ -232,7 +232,7 @@ exacerbate unexplored elixirs expositor reflexes expunging
 sixtieth explained sixteenths expounder box</text>
   </lesson>
   <lesson>
-   <id>435</id>
+   <id>{0c83c901-9b1d-4ded-af13-cf241c099f96}</id>
    <title>Lesson 21 - m</title>
    <newCharacters>mM</newCharacters>
    <text>midwiferies mammograms misdeals Herman compered hormone
@@ -243,7 +243,7 @@ immanency manliest manifested complaint economical flimsiest
 abstemious nomadic disagreement rhyme grimmest reforms</text>
   </lesson>
   <lesson>
-   <id>436</id>
+   <id>{5b928503-080d-4967-a812-11ac50c04e0a}</id>
    <title>Lesson 22 - v</title>
    <newCharacters>vV</newCharacters>
    <text>defensively divisively shriving diminutives driving waverer
@@ -255,7 +255,7 @@ reinvigorates overweening bravado deceivers reevaluating
 venues</text>
   </lesson>
   <lesson>
-   <id>437</id>
+   <id>{b9af2f13-f7e5-4bd8-b186-4971a4832f78}</id>
    <title>Lesson 23 - k</title>
    <newCharacters>kK</newCharacters>
    <text>overcooked sketchy kookaburra tomahawking stocktaking sucks
@@ -266,7 +266,7 @@ Tucker Bernanke Rockefeller nicknaming Jacklyn Tsiolkovsky
 stroking Mick twinks outbreaks firecracker</text>
   </lesson>
   <lesson>
-   <id>438</id>
+   <id>{93694217-df70-4ad4-8138-12e39b9f2784}</id>
    <title>Lesson 24 - Repetition</title>
    <newCharacters></newCharacters>
    <text>Beck tearooms BLT Goering relaxing Forbes antiperspirants
