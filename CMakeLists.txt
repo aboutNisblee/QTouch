@@ -63,6 +63,7 @@ include_directories(src)
 add_subdirectory(src)
 add_subdirectory(src/utils)
 add_subdirectory(src/xml)
+add_subdirectory(src/db)
 add_subdirectory(src/gui)
 melp_print_list(SRCS "Source files" SEPERATOR HALFINDENT)
 

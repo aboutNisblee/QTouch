@@ -195,11 +195,8 @@ void CourseTest::serialization()
 	qDebug() << uutCourse.isNull();
 	stream << uutCourse;
 
-	qDebug() << "Size of serialized test course: " << buffer.size();
-//	for (int i = 0; i < buffer.length(); ++i)
-//	{
-//		qDebug() << "Byte" << i << "=" << buffer[i];
-//	}
+	qDebug() << "Size of serialized test course:" << buffer.size();
+	qDebug() << "Value:" << buffer.toHex();
 }
 
 } /* namespace qtouch */

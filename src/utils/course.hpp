@@ -123,6 +123,11 @@ private:
 
 QDataStream& operator<<(QDataStream& out, const CoursePtr& course);
 
+struct CourseListAscTitle
+{
+	bool operator()(const CoursePtr& lhs, const CoursePtr& rhs) { return (lhs->getTitle() < rhs->getTitle()); }
+};
+
 } /* namespace qtouch */
 
 #endif /* COURSE_HPP_ */
