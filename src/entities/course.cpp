@@ -7,7 +7,6 @@
 
 #include "course.hpp"
 
-#include <QDataStream>
 #include <QByteArray>
 #include <QCryptographicHash>
 #include <QDebug>
@@ -114,18 +113,6 @@ QDataStream& Lesson::serialize(QDataStream& out) const
 }
 
 /**
- * Serialize all members.
- * @param out An output stream.
- * @param lesson A Lesson.
- * @return The output stream.
- */
-QDataStream& operator<<(QDataStream& out, const LessonPtr& lesson)
-{
-	out << lesson->getId() << lesson->getTitle() << lesson->getNewChars() << lesson->isBuiltin() << lesson->getText();
-	return out;
-}
-
-/**
  * Create a Course instance managed by a shared pointer.
  * @return A share pointer to the Course instance.
  */
@@ -166,7 +153,7 @@ CoursePtr Course::create()
 	return p;
 }
 
-CoursePtr Course::clone(const CoursePtr& org)
+CoursePtr Course::clone(const ConstCoursePtr& org)
 {
 	/* Create a new course by coping the original one.
 	 * After the protected constructor made a shallow copy of
@@ -182,7 +169,7 @@ Course::Course()
 {
 }
 
-Course::Course(const CoursePtr& org) :
+Course::Course(const ConstCoursePtr& org) :
 	mDescription(org->mDescription)
 {
 }
@@ -208,6 +195,7 @@ void Course::setDescription(const QString& description)
 void Course::replace(const LessonList& lessons)
 {
 	mLessons.clear();
+	mLessonMap.clear();
 	for (const_iterator it = lessons.begin(); it != lessons.end(); ++it)
 	{
 		/* Make a "deep" copy of the given lesson
@@ -219,6 +207,7 @@ void Course::replace(const LessonList& lessons)
 		l->setCourse(thiz);
 
 		mLessons.append(l);
+		mLessonMap.insert(l->getId(), l);
 	}
 }
 
@@ -234,21 +223,41 @@ void Course::append(const LessonPtr& lesson)
 	lesson->setCourse(thiz);
 
 	mLessons.append(lesson);
+	if(lesson->getId().isNull())
+		qCritical() << "Do not append Lessons without IDs!";
+
+	mLessonMap.insert(lesson->getId(), lesson);
 }
 
-int Course::lessonCount() const
+int Course::size() const
 {
 	return mLessons.size();
 }
 
-Course::iterator Course::begin()
+ConstLessonPtr Course::at(int i) const
 {
-	return mLessons.begin();
+	return mLessons.at(i);
 }
 
-Course::iterator Course::end()
+bool Course::contains(const QUuid& id) const
 {
-	return mLessons.end();
+	if(mLessonMap.contains(id))
+		return true;
+	else
+		return false;
+}
+
+ConstLessonPtr Course::get(const QUuid& id) const
+{
+	if(mLessonMap.contains(id))
+		return mLessonMap.value(id);
+	else
+		return ConstLessonPtr();
+}
+
+int Course::indexOf(const LessonPtr& lesson) const
+{
+	return mLessons.indexOf(lesson);
 }
 
 Course::const_iterator Course::begin() const
@@ -276,11 +285,27 @@ QDataStream& Course::serialize(QDataStream& out) const
  * @param course A Course.
  * @return The MD5 hash.
  */
-QByteArray Course::hash(const CoursePtr& course)
+QByteArray Course::hash(const ConstCoursePtr& course)
 {
 	QByteArray buffer;
 	QDataStream stream(&buffer, QIODevice::WriteOnly);
 	stream << course;
+	return QCryptographicHash::hash(buffer, QCryptographicHash::Md5);
+}
+
+/**
+ * Calculate the MD5 hash of a given list of Courses.
+ * @param courses A list of constant Courses.
+ * @return The MD5 hash.
+ */
+QByteArray Course::hash(const ConstCourseList& courses)
+{
+	QByteArray buffer;
+	for (ConstCourseList::const_iterator it = courses.begin(); it != courses.end(); ++it)
+	{
+		QDataStream stream(&buffer, QIODevice::WriteOnly);
+		stream << (*it);
+	}
 	return QCryptographicHash::hash(buffer, QCryptographicHash::Md5);
 }
 
@@ -298,22 +323,6 @@ QByteArray Course::hash(const CourseList& courses)
 		stream << (*it);
 	}
 	return QCryptographicHash::hash(buffer, QCryptographicHash::Md5);
-}
-
-/**
- * Serialize all members.
- * @param out An output stream.
- * @param lesson A Course.
- * @return The output stream.
- */
-QDataStream& operator<<(QDataStream& out, const CoursePtr& course)
-{
-	out << course->getId() << course->getTitle() << course->getDescription() << course->isBuiltin();
-	for (Course::const_iterator it = course->begin(); it != course->end(); ++it)
-	{
-		out << (*it);
-	}
-	return out;
 }
 
 }/* namespace qtouch */

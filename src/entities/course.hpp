@@ -12,24 +12,28 @@
 #include <QUuid>
 
 #include <QList>
+#include <QMap>
+#include <QDataStream>
 
-#include <QtGlobal>
-
-#include "sharedthis.hpp"
+#include "utils/sharedthis.hpp"
 
 namespace qtouch
 {
 
-class CourseLessonBase;
-typedef QSharedPointer<CourseLessonBase> CourseLessonBasePtr;
-
 class Lesson;
 typedef QSharedPointer<Lesson> LessonPtr;
-typedef QList<LessonPtr> LessonList;
+typedef QSharedPointer<const Lesson> ConstLessonPtr;
+
+typedef QList<ConstLessonPtr> LessonList;
+typedef QMap<QUuid, ConstLessonPtr> LessonMap;
 
 class Course;
 typedef QSharedPointer<Course> CoursePtr;
+typedef QSharedPointer<const Course> ConstCoursePtr;
+
+typedef QList<ConstCoursePtr> ConstCourseList;
 typedef QList<CoursePtr> CourseList;
+typedef QMap<QUuid, ConstCoursePtr> ConstCourseMap;
 
 class CourseLessonBase
 {
@@ -82,15 +86,17 @@ private:
 
 /**
  * Class that is able to manage a Course and its Lessons.
+ * @note Since Lessons are managed in a list of pointers it is possible
+ * to manipulate internal data by using the the iterators. Use the clone()
+ * method before manipulating lessons.
  */
 class Course: public SharedThis, public CourseLessonBase
 {
 public:
-	typedef LessonList::Iterator iterator;
 	typedef LessonList::ConstIterator const_iterator;
 
 	static CoursePtr create();
-	static CoursePtr clone(const CoursePtr& org);
+	static CoursePtr clone(const ConstCoursePtr& org);
 
 	virtual ~Course();
 
@@ -99,35 +105,54 @@ public:
 
 	void replace(const LessonList& lessons);
 	void append(const LessonPtr& lesson);
-	int lessonCount() const;
 
-	iterator begin();
-	iterator end();
+	int size() const;
+
+	ConstLessonPtr at(int i) const;
+
+	bool contains(const QUuid& id) const;
+	ConstLessonPtr get(const QUuid& id) const;
+
+	int indexOf(const LessonPtr& lesson) const;
+
 	const_iterator begin() const;
 	const_iterator end() const;
 
-	static QByteArray hash(const CoursePtr& course);
+	static QByteArray hash(const ConstCoursePtr& course);
 	static QByteArray hash(const CourseList& courses);
+	static QByteArray hash(const ConstCourseList& courses);
 
 	virtual QDataStream& serialize(QDataStream& out) const;
 
 private:
 	Course();
-	Course(const CoursePtr& org);
+	Course(const ConstCoursePtr& org);
 
 	QString mDescription;
 	LessonList mLessons;
+	LessonMap mLessonMap;
 
 	Q_DISABLE_COPY(Course)
 };
 
-QDataStream& operator<<(QDataStream& out, const CoursePtr& course);
+/**
+ * Serialize all members.
+ * @param out An output stream.
+ * @param object A Course or Lesson.
+ * @return The output stream.
+ */
+template<class T>
+QDataStream& operator<<(QDataStream& out, const T& object)
+{
+	return object->serialize(out);
+}
 
 struct CourseListAscTitle
 {
-	bool operator()(const CoursePtr& lhs, const CoursePtr& rhs) { return (lhs->getTitle() < rhs->getTitle()); }
+	bool operator()(const ConstCoursePtr& lhs, const ConstCoursePtr& rhs) { return (lhs->getTitle() < rhs->getTitle()); }
 };
 
 } /* namespace qtouch */
+
 
 #endif /* COURSE_HPP_ */

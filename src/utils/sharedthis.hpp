@@ -21,7 +21,8 @@ protected:
 
 	/* Prevent coping the weak pointer when children are copied. */
 	SharedThis(const SharedThis&) {}
-	SharedThis& operator=(const SharedThis&) { return *this; }
+	virtual SharedThis& operator=(const SharedThis&) { return *this; }
+	virtual ~SharedThis() {}
 
 	void initWeakThis(const QSharedPointer<SharedThis>& thiz) { mWeakThis = thiz; }
 

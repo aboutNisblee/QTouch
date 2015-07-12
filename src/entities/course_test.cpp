@@ -73,7 +73,7 @@ private:
 void CourseTest::checkCourse(const CoursePtr& c)
 {
 	// Verify that we have enough reference data
-	QVERIFY(((quint16) c->lessonCount()) <= lessoncount);
+	QVERIFY(((quint16) c->size()) <= lessoncount);
 
 	QStringListIterator itTitle(lessonTitles);
 	QListIterator<QUuid> itId(lessonIds);
@@ -141,7 +141,11 @@ void CourseTest::cloning()
 	checkCourse(copy);
 
 	// Manipulate the copy
-	(*copy->begin())->setTitle("XXX");
+	LessonPtr lesson(new Lesson);
+	lesson->setTitle("XXX");
+	LessonList list;
+	list.append(lesson);
+	copy->replace(list);
 
 	// And check original is untouched
 	checkCourse(uutCourse);
@@ -149,7 +153,7 @@ void CourseTest::cloning()
 
 void CourseTest::parentPointer()
 {
-	LessonPtr lesson;
+	ConstLessonPtr lesson;
 	{
 		// Make a copy of the Course
 		CoursePtr copy = Course::clone(uutCourse);
@@ -193,6 +197,7 @@ void CourseTest::serialization()
 	QDataStream stream(&buffer, QIODevice::WriteOnly);
 
 	qDebug() << uutCourse.isNull();
+	using qtouch::operator<<;
 	stream << uutCourse;
 
 	qDebug() << "Size of serialized test course:" << buffer.size();
