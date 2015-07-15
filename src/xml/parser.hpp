@@ -11,7 +11,7 @@
 #include <QtContainerFwd>
 #include <QXmlSchemaValidator>
 
-#include "utils/course.hpp"
+#include "entities/course.hpp"
 #include "utils/exceptions.hpp"
 
 class QString;

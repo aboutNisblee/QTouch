@@ -10,7 +10,7 @@
 
 #include <QtContainerFwd>
 
-#include "utils/course.hpp"
+#include "entities/course.hpp"
 #include "utils/exceptions.hpp"
 
 namespace qtouch

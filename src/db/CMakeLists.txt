@@ -5,7 +5,7 @@ melp_add_sources(SRCS
 set(DB_TEST_SRCS
 	db_test.cpp
 	db.cpp
-	../utils/course.cpp
+	../entities/course.cpp
 	../xml/parser.cpp
 )
 

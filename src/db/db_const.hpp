@@ -8,6 +8,8 @@
 #ifndef DB_CONST_HPP_
 #define DB_CONST_HPP_
 
+#include <QString>
+
 namespace qtouch
 {
 namespace db

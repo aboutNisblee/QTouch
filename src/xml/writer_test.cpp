@@ -53,7 +53,7 @@ void XmlWriterTest::verifyTestCourse(const CoursePtr& c)
 
 	// TODO: Add keyboard layout
 
-	QVERIFY2(c->lessonCount() == TestcourseLessonCount, "Wrong lesson count");
+	QVERIFY2(c->size() == TestcourseLessonCount, "Wrong lesson count");
 
 	Course::const_iterator it = c->begin();
 

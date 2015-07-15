@@ -1,6 +1,6 @@
 melp_add_sources(SRCS
 	main.cpp
 	mainwindow.cpp
-	homescreencontroller.cpp
-	lessonmodel.cpp
+	datamodel.cpp
+	coursemodel.cpp
 )

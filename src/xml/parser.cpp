@@ -162,7 +162,8 @@ CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator,
 		/* Append the lesson before adding any values.
 		 * This way the Lesson is able to access its Course and print more
 		 * meaningful debug/warning messages. */
-		course->append(lesson);
+		// TODO: This conflicts initialization of the LessonsMap!
+		/*course->append(lesson);*/
 
 		// Set title
 		text = lessonsElem.firstChildElement("title").text();
@@ -190,6 +191,8 @@ CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator,
 		// Copy text
 		text = lessonsElem.firstChildElement("text").text();
 		lesson->setText(text);
+
+		course->append(lesson);
 
 		lesson->setBuiltin(true);
 	}

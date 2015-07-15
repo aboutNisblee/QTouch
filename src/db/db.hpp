@@ -11,8 +11,8 @@
 #include <QSharedPointer>
 #include <QString>
 
-#include "utils/profile.hpp"
-#include "utils/course.hpp"
+#include "entities/profile.hpp"
+#include "entities/course.hpp"
 #include "utils/exceptions.hpp"
 
 class QSqlDatabase;
@@ -84,7 +84,7 @@ public:
 	 */
 	void insert(const CoursePtr& course) throw (DatabaseException);
 
-	void insert(const CourseList& courses) throw (DatabaseException);
+	void insert(const ConstCourseList& courses) throw (DatabaseException);
 
 	CourseList courses(COURSE_SELECTOR selector) throw (DatabaseException);
 	LessonList lessons(const CoursePtr& course) throw (DatabaseException);

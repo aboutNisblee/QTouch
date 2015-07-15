@@ -1,12 +1,20 @@
+/**
+ * \file mainwindow.hpp
+ *
+ * \date 20.06.2015
+ * \author Moritz Nisblé moritz.nisble@gmx.de
+ */
+
 #ifndef MAINWINDOW_HPP
 #define MAINWINDOW_HPP
 
 #include <QQuickWindow>
 
-#include <QPointer>
+#include "datamodel.hpp"
 
 class QQmlEngine;
 class QQmlComponent;
+class QQuickItem;
 
 /**
  * Namespace of QTouch
@@ -14,17 +22,20 @@ class QQmlComponent;
 namespace qtouch
 {
 
-class HomeScreenController;
-class LessonModel;
+class CourseModel;
 
 class MainWindow: public QQuickWindow
 {
-Q_OBJECT
+	Q_OBJECT
+
 public:
-	explicit MainWindow(QQmlEngine* engine = 0);
+	explicit MainWindow(QQmlEngine* engine = 0, QWindow* parent = 0);
 	~MainWindow();
 
+	bool init();
+
 signals:
+//	void sizeChanged(int width, int height);
 
 public slots:
 
@@ -32,16 +43,13 @@ protected:
 	void resizeEvent(QResizeEvent* e);
 
 private:
-	QPointer<QQmlEngine> mwEngine;
-	QQmlComponent* component;
-	QPointer<QQuickItem> rootItem;
+	QQmlEngine* mwEngine;
+	QQmlComponent* mwComponent;
+	QQuickItem* mwItem;
 
-//    HomeScreenController* hsController;
-
-	LessonModel* lessonModel;
-
-	void init();
-	bool componentError(QQmlComponent*);
+	DataModelPtr mDataModel;
+//	QSharedPointer<CourseModel> mCourseModel;
+	CourseModel* mCourseModel;
 
 	Q_DISABLE_COPY(MainWindow)
 };

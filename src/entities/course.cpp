@@ -192,7 +192,7 @@ void Course::setDescription(const QString& description)
  * Replace the Lesson container, drop the current one.
  * @param lessons
  */
-void Course::replace(const LessonList& lessons)
+void Course::replace(LessonList lessons)
 {
 	mLessons.clear();
 	mLessonMap.clear();

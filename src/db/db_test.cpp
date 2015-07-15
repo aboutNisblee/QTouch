@@ -139,7 +139,7 @@ void DbTest::insertCourses()
 		sourceFileList.append(coursepath.filePath(s));
 	}
 
-	CourseList clSourse;
+	ConstCourseList clSourse;
 	CourseList clTarget;
 
 	xml::ParseResult result;

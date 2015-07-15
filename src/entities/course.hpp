@@ -103,7 +103,7 @@ public:
 	const QString& getDescription() const;
 	void setDescription(const QString& description);
 
-	void replace(const LessonList& lessons);
+	void replace(LessonList lessons);
 	void append(const LessonPtr& lesson);
 
 	int size() const;

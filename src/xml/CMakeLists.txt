@@ -5,14 +5,14 @@ melp_add_sources(SRCS
 set(PARSER_TEST_SRCS
 	parser_test.cpp
 	parser.cpp
-	../utils/course.cpp
+	../entities/course.cpp
 )
 
 set(WRITER_TEST_SRCS
 	writer_test.cpp
 	writer.cpp
 	parser.cpp
-	../utils/course.cpp
+	../entities/course.cpp
 )
 
 qt5_add_resources(XML_TEST_QRCS ${CMAKE_SOURCE_DIR}/resources/resources.qrc)

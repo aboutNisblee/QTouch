@@ -35,7 +35,7 @@ namespace
 #include "db_help.hpp"
 using namespace qtouch::db::internal;
 
-void ins(DbPtr db, const CoursePtr& course)
+void ins(DbPtr db, const ConstCoursePtr& course)
 {
 	QSqlQuery q(*db);
 
@@ -236,7 +236,7 @@ void Db::insert(const CoursePtr& course) throw (DatabaseException)
 	}
 }
 
-void Db::insert(const CourseList& courses) throw (DatabaseException)
+void Db::insert(const ConstCourseList& courses) throw (DatabaseException)
 {
 	open();
 
@@ -244,7 +244,7 @@ void Db::insert(const CourseList& courses) throw (DatabaseException)
 
 	try
 	{
-		for (CourseList::const_iterator it = courses.begin(); it != courses.end(); ++it)
+		for (ConstCourseList::const_iterator it = courses.begin(); it != courses.end(); ++it)
 			ins(db, *it);
 		end_transaction(db);
 	}

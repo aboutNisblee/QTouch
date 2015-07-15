@@ -1,6 +1,6 @@
 set(uuidcorrector_SRCS
 	uuidcorrector.cpp
-	../utils/course.cpp
+	../entities/course.cpp
 	../xml/parser.cpp
 	../xml/writer.cpp
 )
