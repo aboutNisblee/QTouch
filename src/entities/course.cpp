@@ -192,10 +192,9 @@ void Course::setDescription(const QString& description)
  * Replace the Lesson container, drop the current one.
  * @param lessons
  */
-void Course::replace(LessonList lessons)
+void Course::replace(ConstLessonList lessons)
 {
 	mLessons.clear();
-	mLessonMap.clear();
 	for (const_iterator it = lessons.begin(); it != lessons.end(); ++it)
 	{
 		/* Make a "deep" copy of the given lesson
@@ -207,7 +206,6 @@ void Course::replace(LessonList lessons)
 		l->setCourse(thiz);
 
 		mLessons.append(l);
-		mLessonMap.insert(l->getId(), l);
 	}
 }
 
@@ -223,10 +221,6 @@ void Course::append(const LessonPtr& lesson)
 	lesson->setCourse(thiz);
 
 	mLessons.append(lesson);
-	if(lesson->getId().isNull())
-		qCritical() << "Do not append Lessons without IDs!";
-
-	mLessonMap.insert(lesson->getId(), lesson);
 }
 
 int Course::size() const
@@ -241,18 +235,22 @@ ConstLessonPtr Course::at(int i) const
 
 bool Course::contains(const QUuid& id) const
 {
-	if(mLessonMap.contains(id))
-		return true;
-	else
-		return false;
+	for(const_iterator it = mLessons.begin(); it != mLessons.end(); ++it)
+	{
+		if((*it)->getId() == id)
+			return true;
+	}
+	return false;
 }
 
 ConstLessonPtr Course::get(const QUuid& id) const
 {
-	if(mLessonMap.contains(id))
-		return mLessonMap.value(id);
-	else
-		return ConstLessonPtr();
+	for(const_iterator it = mLessons.begin(); it != mLessons.end(); ++it)
+	{
+		if((*it)->getId() == id)
+			return *it;
+	}
+	return ConstLessonPtr();
 }
 
 int Course::indexOf(const LessonPtr& lesson) const

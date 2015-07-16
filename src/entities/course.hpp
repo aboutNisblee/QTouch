@@ -24,8 +24,7 @@ class Lesson;
 typedef QSharedPointer<Lesson> LessonPtr;
 typedef QSharedPointer<const Lesson> ConstLessonPtr;
 
-typedef QList<ConstLessonPtr> LessonList;
-typedef QMap<QUuid, ConstLessonPtr> LessonMap;
+typedef QList<ConstLessonPtr> ConstLessonList;
 
 class Course;
 typedef QSharedPointer<Course> CoursePtr;
@@ -93,7 +92,7 @@ private:
 class Course: public SharedThis, public CourseLessonBase
 {
 public:
-	typedef LessonList::ConstIterator const_iterator;
+	typedef ConstLessonList::ConstIterator const_iterator;
 
 	static CoursePtr create();
 	static CoursePtr clone(const ConstCoursePtr& org);
@@ -103,7 +102,7 @@ public:
 	const QString& getDescription() const;
 	void setDescription(const QString& description);
 
-	void replace(LessonList lessons);
+	void replace(ConstLessonList lessons);
 	void append(const LessonPtr& lesson);
 
 	int size() const;
@@ -129,8 +128,7 @@ private:
 	Course(const ConstCoursePtr& org);
 
 	QString mDescription;
-	LessonList mLessons;
-	LessonMap mLessonMap;
+	ConstLessonList mLessons;
 
 	Q_DISABLE_COPY(Course)
 };

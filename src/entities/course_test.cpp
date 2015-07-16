@@ -19,7 +19,7 @@ class CourseTest: public QObject
 public:
 	CourseTest()
 	{
-		lessoncount = 1;
+		lessoncount = 100;
 
 		/* Create some reference data to test against */
 
@@ -49,6 +49,8 @@ private slots:
 	void cloning();
 	void parentPointer();
 
+	void manipulateAfterAppend();
+
 	void hash();
 	void serialization();
 
@@ -56,7 +58,7 @@ private:
 	quint16 lessoncount;
 
 	CoursePtr uutCourse;
-	LessonList uutLessons;
+	ConstLessonList uutLessons;
 
 	QString courseTitle;
 	QUuid courseId;
@@ -143,7 +145,7 @@ void CourseTest::cloning()
 	// Manipulate the copy
 	LessonPtr lesson(new Lesson);
 	lesson->setTitle("XXX");
-	LessonList list;
+	ConstLessonList list;
 	list.append(lesson);
 	copy->replace(list);
 
@@ -167,6 +169,19 @@ void CourseTest::parentPointer()
 	// Get parent should return a NULL pointer
 	//	qDebug() << lesson->getCourse() << "address" << lesson->getCourse().data();
 	QVERIFY(!lesson->getCourse());
+}
+
+void CourseTest::manipulateAfterAppend()
+{
+	QUuid id = QUuid::createUuid();
+
+	LessonPtr newLesson(new Lesson);
+
+	uutCourse->append(newLesson);
+
+	newLesson->setId(id);
+
+	QVERIFY(uutCourse->get(id)->getId() == id);
 }
 
 void CourseTest::hash()
