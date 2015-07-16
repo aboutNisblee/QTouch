@@ -180,7 +180,7 @@ void DbTest::insertCourses()
 
 		for (CourseList::iterator clTarget_iter = clTarget.begin(); clTarget_iter != clTarget.end(); ++clTarget_iter)
 		{
-			LessonList lessons = db->lessons(*clTarget_iter);
+			ConstLessonList lessons = db->lessons(*clTarget_iter);
 
 			// Add lessons to course
 			(*clTarget_iter)->replace(lessons);

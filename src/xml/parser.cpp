@@ -23,10 +23,7 @@ namespace qtouch
 namespace xml
 {
 
-namespace
-{
-
-QXmlSchema schema(const QString& xsd_path)
+ValidatorPtr createValidator(const QString& xsd_path) throw (FileException, XmlException)
 {
 	QFile xsd(xsd_path);
 
@@ -34,18 +31,21 @@ QXmlSchema schema(const QString& xsd_path)
 		throw FileException("Cannot open schema definition file", xsd.fileName());
 
 	QXmlSchema schema;
+
+	/* Memory leak!
+	 * 2912 bytes are definitely lost
+	 * despite API usage just like explained in documentation
+	 * qthelp://org.qt-project.qtxmlpatterns.542/qtxmlpatterns/qxmlschema.html
+	 * Is completely independent from whether the file lives as long as the
+	 * schema or closed after load.
+	 * Also using "bool QXmlSchema::load(const QUrl & source)" makes no
+	 * difference.
+	 * TODO: Take a look into the sources and maybe create a bugreport. */
 	schema.load(&xsd, QUrl::fromLocalFile(xsd.fileName()));
 	if (!schema.isValid())
 		throw XmlException("Invalid schema definition file", xsd.fileName());
 
-	return schema;
-}
-
-} /* anonymous namespace */
-
-ValidatorPtr createValidator(const QString& xsd_path) throw (FileException, XmlException)
-{
-	ValidatorPtr v(new QXmlSchemaValidator(schema(xsd_path)));
+	ValidatorPtr v(new QXmlSchemaValidator(schema));
 	return v;
 }
 
@@ -162,8 +162,7 @@ CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator,
 		/* Append the lesson before adding any values.
 		 * This way the Lesson is able to access its Course and print more
 		 * meaningful debug/warning messages. */
-		// TODO: This conflicts initialization of the LessonsMap!
-		/*course->append(lesson);*/
+		course->append(lesson);
 
 		// Set title
 		text = lessonsElem.firstChildElement("title").text();
@@ -191,8 +190,6 @@ CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator,
 		// Copy text
 		text = lessonsElem.firstChildElement("text").text();
 		lesson->setText(text);
-
-		course->append(lesson);
 
 		lesson->setBuiltin(true);
 	}

@@ -87,7 +87,7 @@ public:
 	void insert(const ConstCourseList& courses) throw (DatabaseException);
 
 	CourseList courses(COURSE_SELECTOR selector) throw (DatabaseException);
-	LessonList lessons(const CoursePtr& course) throw (DatabaseException);
+	ConstLessonList lessons(const CoursePtr& course) throw (DatabaseException);
 
 private:
 	QSharedPointer<QSqlDatabase> db;

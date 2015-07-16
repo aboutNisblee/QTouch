@@ -293,11 +293,11 @@ CourseList Db::courses(COURSE_SELECTOR selector) throw (DatabaseException)
 	return result;
 }
 
-LessonList Db::lessons(const CoursePtr& course) throw (DatabaseException)
+ConstLessonList Db::lessons(const CoursePtr& course) throw (DatabaseException)
 {
 	open();
 
-	LessonList result;
+	ConstLessonList result;
 
 	QSqlQuery q(*db);
 
