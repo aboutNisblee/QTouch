@@ -15,20 +15,29 @@
 namespace qtouch
 {
 
+class CourseModel;
+
 class LessonModel: public QAbstractListModel
 {
 	Q_OBJECT
 
-	Q_PROPERTY(int selectedLessonIndex READ getSelectedLessonIndex WRITE selectLesson NOTIFY selectedLessonIndexChanged)
+	Q_PROPERTY(int selectedLessonIndex READ getSelectedLessonIndex NOTIFY selectedLessonIndexChanged)
+
+	Q_PROPERTY(QUuid selectedLessonId READ getSelectedLessonId NOTIFY selectedLessonIdChanged)
+	Q_PROPERTY(QString selectedLessonTitle READ getSelectedLessonTitle NOTIFY selectedLessonTitleChanged)
+	Q_PROPERTY(QString selectedLessonNewChars READ getSelectedLessonNewChars NOTIFY selectedLessonNewCharsChanged)
+	Q_PROPERTY(bool isSelectedLessonBuiltin READ isSelectedLessonBuiltin NOTIFY selectedLessonBuiltinChanged)
+	Q_PROPERTY(QString selectedLessonText READ getSelectedLessonText NOTIFY selectedLessonTextChanged)
 
 public:
+	/** LessonModelRoles */
 	enum LessonModelRoles
 	{
-		UuidRole = Qt::UserRole + 1,
-		TitleRole,
-		NewCharsRole,
-		BuiltinRole,
-		TextRole
+		UuidRole = Qt::UserRole + 1,//!< UuidRole lId
+		TitleRole,                  //!< TitleRole lTitle
+		NewCharsRole,               //!< NewCharsRole lNewChars
+		BuiltinRole,                //!< BuiltinRole lBuiltin
+		TextRole                    //!< TextRole lText
 	};
 
 	explicit LessonModel(QObject* parent = 0);
@@ -40,18 +49,31 @@ public:
 
 	Q_INVOKABLE QVariantMap get(int index);
 
-	void selectLesson(int index);
-	int getSelectedLessonIndex() const;
+	Q_INVOKABLE void selectLesson(int index);
 
-	void setCourse(const QUuid& courseId);
+	inline int getSelectedLessonIndex() const { return mSelected; }
+	inline QUuid getSelectedLessonId() const { return index(mSelected).data(UuidRole).toUuid(); }
+	inline QString getSelectedLessonTitle() const { return index(mSelected).data(TitleRole).toString(); }
+	inline QString getSelectedLessonNewChars() const { return index(mSelected).data(NewCharsRole).toString(); }
+	inline bool isSelectedLessonBuiltin() const { return index(mSelected).data(BuiltinRole).toBool(); }
+	inline QString getSelectedLessonText() const { return index(mSelected).data(TextRole).toString(); }
 
 signals:
 	void selectedLessonIndexChanged();
+
+	void selectedLessonIdChanged();
+	void selectedLessonTitleChanged();
+	void selectedLessonNewCharsChanged();
+	void selectedLessonBuiltinChanged();
+	void selectedLessonTextChanged();
 
 protected:
 	QHash<int, QByteArray> roleNames() const;
 
 private:
+	friend class CourseModel;
+	inline void setCourse(const QUuid& courseId) { mCourseId = courseId; }
+
 	DataModelPtr mDm;
 
 	QUuid mCourseId;
@@ -62,18 +84,32 @@ class CourseModel: public QAbstractListModel
 {
 	Q_OBJECT
 
-	Q_PROPERTY(int selectedCourseIndex READ getSelectedCourseIndex WRITE selectCourse NOTIFY selectedCourseIndexChanged)
+	Q_PROPERTY(int selectedCourseIndex READ getSelectedCourseIndex NOTIFY selectedCourseIndexChanged)
+
+	/**
+	 * The LessonModel for the lessons of the currently selected course.
+	 * @note Since the pointer never changes its value you cannot rebind this property to another one
+	 * and catch the onChanged signal. Use property aliasing instead of rebinding.
+	 * Binding to this property directly works, because of the explicit emission of selectedLessonModelChanged.
+	 */
 	Q_PROPERTY(LessonModel* selectedLessonModel READ getSelectedLessonModel NOTIFY selectedLessonModelChanged)
 
+	Q_PROPERTY(QUuid selectedCourseId READ getSelectedCourseId NOTIFY selectedCourseIdChanged)
+	Q_PROPERTY(QString selectedCourseTitle READ getSelectedCourseTitle NOTIFY selectedCourseTitleChanged)
+	Q_PROPERTY(QString selectedCourseDescription READ getSelectedCourseDescription NOTIFY selectedCourseDescriptionChanged)
+	Q_PROPERTY(bool isSelectedCourseBuiltin READ isSelectedCourseBuiltin NOTIFY selectedCourseBuiltinChanged)
+
 public:
+	/** CourseModelRoles */
 	enum CourseModelRoles
 	{
-		UuidRole = Qt::UserRole + 1,
-		TitleRole,
-		DescriptionRole,
-		BuiltinRole,
+		UuidRole = Qt::UserRole + 1,//!< UuidRole cId
+		TitleRole,                  //!< TitleRole cTitle
+		DescriptionRole,            //!< DescriptionRole cDescription
+		BuiltinRole,                //!< BuiltinRole cBuiltin
 	};
 
+	explicit CourseModel(QObject* parent = 0);
 	explicit CourseModel(DataModelPtr model, QObject* parent = 0);
 	virtual ~CourseModel();
 
@@ -84,20 +120,26 @@ public:
 
 	Q_INVOKABLE QVariantMap get(int index);
 
-	/* TODO: Is this really smart?
-	 * This could be completely moved to the view when
-	 * the selection feature is removed and clients passes the index
-	 * of the course they need a LessonModel for.
-	 */
-	void selectCourse(int index);
-	int getSelectedCourseIndex() const;
-	LessonModel* getSelectedLessonModel() const;
+	Q_INVOKABLE void selectCourse(int index);
+
+	inline int getSelectedCourseIndex() const { return mSelected; }
+	inline LessonModel* getSelectedLessonModel() const { return mLessonModel; }
+
+	inline QUuid getSelectedCourseId() const { return index(mSelected).data(UuidRole).toUuid(); }
+	inline QString getSelectedCourseTitle() const { return index(mSelected).data(TitleRole).toString(); }
+	inline QString getSelectedCourseDescription() const { return index(mSelected).data(DescriptionRole).toString(); }
+	inline bool isSelectedCourseBuiltin() const { return index(mSelected).data(BuiltinRole).toBool(); }
 
 	//	Q_INVOKABLE LessonModel* getLessonModel(int index) const;
 
 signals:
 	void selectedCourseIndexChanged();
 	void selectedLessonModelChanged();
+
+	void selectedCourseIdChanged();
+	void selectedCourseTitleChanged();
+	void selectedCourseDescriptionChanged();
+	void selectedCourseBuiltinChanged();
 
 protected:
 	QHash<int, QByteArray> roleNames() const;

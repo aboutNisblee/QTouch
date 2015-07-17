@@ -17,7 +17,6 @@ namespace qtouch
 LessonModel::LessonModel(QObject* parent):
 	QAbstractListModel(parent), mSelected(-1)
 {
-
 }
 
 LessonModel::LessonModel(DataModelPtr model, QObject* parent) :
@@ -72,6 +71,12 @@ QVariant LessonModel::data(const QModelIndex& index, int role) const
 	}
 }
 
+/**
+ * Access model directly by using Roles.
+ * E.g. lessonModel.get(lessonModel.get.selectedLessonIndex).lNewChars
+ * @param i The course index.
+ * @return A QMap that associates the roles and the values as QVariants.
+ */
 QVariantMap LessonModel::get(int row)
 {
 	// QVariantMap is a synonym for QMap<QString, QVariant>
@@ -103,21 +108,12 @@ void LessonModel::selectLesson(int index)
 		mSelected = -1;
 	}
 	else /* Do net check for index changes. Simply update and fire! */
+		//	else if(mSelected != index)
 	{
 		mSelected = index;
 	}
 
 	emit selectedLessonIndexChanged();
-}
-
-int LessonModel::getSelectedLessonIndex() const
-{
-	return mSelected;
-}
-
-void LessonModel::setCourse(const QUuid& courseId)
-{
-	mCourseId = courseId;
 }
 
 QHash<int, QByteArray> LessonModel::roleNames() const
@@ -129,6 +125,11 @@ QHash<int, QByteArray> LessonModel::roleNames() const
 	roles[BuiltinRole] = "lBuiltin";
 	roles[TextRole] = "lText";
 	return roles;
+}
+
+CourseModel::CourseModel(QObject* parent):
+	QAbstractListModel(parent), mLessonModel(0), mSelected(-1)
+{
 }
 
 CourseModel::CourseModel(DataModelPtr model, QObject* parent):
@@ -177,7 +178,13 @@ QVariant CourseModel::data(const QModelIndex& index, int role) const
 	}
 }
 
-QVariantMap CourseModel::get(int row)
+/**
+ * Access model directly by using Roles.
+ * E.g. courseModel.get(courseModel.selectedCourseIndex).cDescription
+ * @param i The course index.
+ * @return A QMap that associates the roles and the values as QVariants.
+ */
+QVariantMap CourseModel::get(int i)
 {
 	// QVariantMap is a synonym for QMap<QString, QVariant>
 	QVariantMap result;
@@ -185,17 +192,17 @@ QVariantMap CourseModel::get(int row)
 	// Get the hash table dictionary of role names
 	QHash<int, QByteArray> names = roleNames();
 
-	QHashIterator<int, QByteArray> i(names);
-	while (i.hasNext())
+	QHashIterator<int, QByteArray> it(names);
+	while (it.hasNext())
 	{
-		i.next();
+		it.next();
 
 		// Get the index for the given row
-		QModelIndex idx = index(row, 0);
+		QModelIndex idx = index(i, 0);
 		// Use the index to access the data
-		QVariant data = idx.data(i.key());
+		QVariant data = idx.data(it.key());
 
-		result[i.value()] = data;
+		result[it.value()] = data;
 	}
 	return result;
 }
@@ -211,25 +218,19 @@ void CourseModel::selectCourse(int index)
 	{
 		mSelected = index;
 
+		// Change the model before firing index changed!
 		mLessonModel->setCourse(mDm->getCourseId(index));
 		emit selectedLessonModelChanged();
-
-		// Change the model before firing index changed!
 		emit selectedCourseIndexChanged();
+
+		emit selectedCourseIdChanged();
+		emit selectedCourseTitleChanged();
+		emit selectedCourseDescriptionChanged();
+		emit selectedCourseBuiltinChanged();
 
 		// This fires selectedLessonIndexChanged
 		mLessonModel->selectLesson(0);
 	}
-}
-
-int CourseModel::getSelectedCourseIndex() const
-{
-	return mSelected;
-}
-
-LessonModel* CourseModel::getSelectedLessonModel() const
-{
-	return mLessonModel;
 }
 
 /**

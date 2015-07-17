@@ -44,8 +44,12 @@ void registerQmlTypes()
 //	qmlRegisterUncreatableType<MainWindowController>("de.nisble.qtouch", 1, 0, "CourseModel",
 //	        "Lifetime is maintained by backend");
 
+	qRegisterMetaType<CourseModel*>("CourseModel*");
+	qmlRegisterType<CourseModel>("de.nisble.qtouch", 1, 0, "CourseModel");
+
 	qRegisterMetaType<LessonModel*>("LessonModel*");
-	qmlRegisterType<LessonModel>("de.nisble.qtouch", 1, 0, "LessonModel");
+//	qmlRegisterType<LessonModel>("de.nisble.qtouch", 1, 0, "LessonModel");
+	qmlRegisterType<LessonModel>();
 }
 
 } /* namespace anonymous */
