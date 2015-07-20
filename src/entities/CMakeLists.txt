@@ -1,6 +1,6 @@
 melp_add_sources(SRCS
-	profile.cpp
 	course.cpp
+	profile.cpp
 	typo.cpp
 )
 

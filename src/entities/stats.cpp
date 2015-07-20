@@ -1,11 +1,11 @@
 /**
- * \file profile_test.cpp
+ * \file stats.cpp
  *
- * \date 02.07.2015
+ * \date 24.07.2015
  * \author Moritz Nisblé moritz.nisble@gmx.de
  */
 
-#include "profile.hpp"
+#include "stats.hpp"
 
 namespace qtouch
 {

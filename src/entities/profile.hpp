@@ -8,29 +8,49 @@
 #ifndef PROFILE_HPP_
 #define PROFILE_HPP_
 
+#include <memory>
+#include <vector>
 #include <QString>
-#include <QSharedPointer>
+
+#include "stats.hpp"
 
 namespace qtouch
 {
 
-class Profile;
-typedef QSharedPointer<Profile> ProfilePtr;
-
 class Profile
 {
 public:
-	Profile();
-	virtual ~Profile();
+	typedef std::vector<std::shared_ptr<const Stats>>::const_iterator const_iterator;
 
-	const QString& getName() const;
-	void setName(const QString& name);
-	quint8 getSkillLevel() const;
-	void setSkillLevel(quint8 skillLevel);
+	/** SkillLevel */
+	enum SkillLevel
+	{
+		Beginner,//!< Beginner
+		Advanced //!< Advanced
+	};
+
+	explicit Profile(const QString& name, SkillLevel skill = Beginner) : mName(name), mSkillLevel(skill) {}
+	virtual ~Profile() {}
+
+	inline const QString& getName() const { return mName; }
+
+	inline SkillLevel getSkillLevel() const { return mSkillLevel; }
+	inline void setSkillLevel(SkillLevel skillLevel) { mSkillLevel = skillLevel; }
+
+	void push_back(const Stats& stats);
+	inline void clear() { mStats.clear(); }
+	inline void replace(std::vector<std::shared_ptr<const Stats>> stats) { mStats.swap(stats); }
+	inline int size() const { return mStats.size(); }
+
+	inline const_iterator begin() const { return mStats.begin(); }
+	inline const_iterator end() const { return mStats.end(); }
 
 private:
 	QString mName;
-	quint8 mSkillLevel;
+	SkillLevel mSkillLevel;
+
+	// Note: No deep copy needed. Manipulation impossible.
+	std::vector<std::shared_ptr<const Stats>> mStats;
 };
 
 } /* namespace qtouch */

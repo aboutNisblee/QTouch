@@ -8,50 +8,45 @@
 #ifndef COURSE_HPP_
 #define COURSE_HPP_
 
+#include <memory>
+#include <vector>
+
 #include <QString>
 #include <QUuid>
-
-#include <QList>
-#include <QMap>
 #include <QDataStream>
+#include <QByteArray>
+#include <QCryptographicHash>
 
-#include "utils/sharedthis.hpp"
+#include "utils/utils.hpp"
 
 namespace qtouch
 {
 
-class Lesson;
-typedef QSharedPointer<Lesson> LessonPtr;
-typedef QSharedPointer<const Lesson> ConstLessonPtr;
-
-typedef QList<ConstLessonPtr> ConstLessonList;
-
 class Course;
-typedef QSharedPointer<Course> CoursePtr;
-typedef QSharedPointer<const Course> ConstCoursePtr;
-
-typedef QList<ConstCoursePtr> ConstCourseList;
-typedef QList<CoursePtr> CourseList;
-typedef QMap<QUuid, ConstCoursePtr> ConstCourseMap;
 
 class CourseLessonBase
 {
 public:
-	virtual ~CourseLessonBase();
+	virtual ~CourseLessonBase() {}
 
-	virtual const QUuid& getId() const;
+	virtual const QUuid& getId() const { return mId; }
+	// TODO: Remove this setter! Try to set PK in constructor to make a manipulation impossible!
 	virtual bool setId(const QUuid& id);
 
-	virtual QString getTitle() const;
-	virtual void setTitle(const QString& title);
+	virtual const QString& getTitle() const { return mTitle; }
+	virtual void setTitle(const QString& title) { mTitle = title; }
 
-	virtual bool isBuiltin() const;
-	virtual void setBuiltin(bool builtin);
+	virtual bool isBuiltin() const { return mBuiltin; }
+	virtual void setBuiltin(bool builtin) { mBuiltin = builtin; }
 
 	virtual QDataStream& serialize(QDataStream& out) const = 0;
+	QByteArray hash() const;
+
+	inline bool operator==(const CourseLessonBase& rhs) const { return hash() == rhs.hash(); }
+	inline bool operator!=(const CourseLessonBase& rhs) const { return hash() != rhs.hash(); }
 
 protected:
-	CourseLessonBase();
+	CourseLessonBase() : mBuiltin(false) {}
 
 	QUuid mId;
 	QString mTitle;
@@ -62,22 +57,23 @@ class Lesson: public CourseLessonBase
 {
 	friend class Course;
 public:
-	virtual ~Lesson();
+	virtual ~Lesson() {}
 
-	const QString& getNewChars() const;
-	void setNewChars(const QString& newChars);
+	inline const QString& getNewChars() const { return mNewChars; }
+	inline void setNewChars(const QString& newChars) { mNewChars = newChars; }
 
-	const QString& getText() const;
-	void setText(const QString& text);
+	inline const QString& getText() const { return mText; }
+	inline void setText(const QString& text) { mText = text; }
 
-	CoursePtr getCourse() const;
+	std::shared_ptr<Course> getCourse() const;
 
 	virtual QDataStream& serialize(QDataStream& out) const;
 
 private:
-	void setCourse(const CoursePtr& parent);
+	/* Store the back pointer to the owning object. */
+	inline void setCourse(std::shared_ptr<Course>& parent) { mCourse = parent; }
 
-	QWeakPointer<Course> mCourse;
+	std::weak_ptr<Course> mCourse;
 
 	QString mNewChars;
 	QString mText;
@@ -85,52 +81,46 @@ private:
 
 /**
  * Class that is able to manage a Course and its Lessons.
- * @note Since Lessons are managed in a list of pointers it is possible
- * to manipulate internal data by using the the iterators. Use the clone()
- * method before manipulating lessons.
  */
-class Course: public SharedThis, public CourseLessonBase
+class Course: public std::enable_shared_from_this<Course>, public CourseLessonBase
 {
 public:
-	typedef ConstLessonList::ConstIterator const_iterator;
+	typedef std::vector<std::shared_ptr<const Lesson>>::size_type size_type;
+	typedef std::vector<std::shared_ptr<const Lesson>>::const_iterator const_iterator;
 
-	static CoursePtr create();
-	static CoursePtr clone(const ConstCoursePtr& org);
+	static std::shared_ptr<Course> create();
+	static std::shared_ptr<Course> clone(const Course& org);
 
-	virtual ~Course();
+	virtual ~Course() {}
 
-	const QString& getDescription() const;
-	void setDescription(const QString& description);
+	inline const QString& getDescription() const { return mDescription; }
+	inline void setDescription(const QString& description) { mDescription = description; }
 
-	void replace(ConstLessonList lessons);
-	void append(const LessonPtr& lesson);
+	void push_back(const Lesson& lesson);
 
-	int size() const;
+	template<typename Iterator>
+	const_iterator insert(const_iterator position, Iterator first, Iterator last);
 
-	ConstLessonPtr at(int i) const;
+	inline int size() const { return mLessons.size(); }
+	inline void clear() { mLessons.clear(); }
+
+	inline std::shared_ptr<const Lesson> at(size_type i) const throw(std::out_of_range) { return mLessons.at(i); }
+	inline std::shared_ptr<const Lesson> operator[](size_type i) const throw(std::out_of_range) { return mLessons.at(i); }
 
 	bool contains(const QUuid& id) const;
-	ConstLessonPtr get(const QUuid& id) const;
+	std::shared_ptr<const Lesson> get(const QUuid& lessonId) const;
 
-	int indexOf(const LessonPtr& lesson) const;
-
-	const_iterator begin() const;
-	const_iterator end() const;
-
-	static QByteArray hash(const ConstCoursePtr& course);
-	static QByteArray hash(const CourseList& courses);
-	static QByteArray hash(const ConstCourseList& courses);
+	inline const_iterator begin() const {return mLessons.begin(); }
+	inline const_iterator end() const { return mLessons.end(); }
 
 	virtual QDataStream& serialize(QDataStream& out) const;
 
 private:
-	Course();
-	Course(const ConstCoursePtr& org);
+	Course() {}
+	Course(const Course& org);
 
 	QString mDescription;
-	ConstLessonList mLessons;
-
-	Q_DISABLE_COPY(Course)
+	std::vector<std::shared_ptr<const Lesson>> mLessons;
 };
 
 /**
@@ -140,14 +130,55 @@ private:
  * @return The output stream.
  */
 template<class T>
-QDataStream& operator<<(QDataStream& out, const T& object)
+inline QDataStream& operator<<(QDataStream& out, const T& object)
 {
-	return object->serialize(out);
+	return object.serialize(out);
+}
+
+/**
+ * Calculate the MD5 hash over a given range of Courses or Lessons.
+ * @param first Iterator to the first Course.
+ * @param last Iterator behind the last Course.
+ * @return The MD5 hash.
+ */
+template<typename Iterator>
+QByteArray hash(Iterator first, Iterator last)
+{
+	QByteArray buffer;
+	QDataStream stream(&buffer, QIODevice::WriteOnly);
+	while (first != last)
+	{
+		stream << value(*first);
+		++first;
+	}
+	return QCryptographicHash::hash(buffer, QCryptographicHash::Md5);
+}
+
+template<typename Iterator>
+Course::const_iterator Course::insert(const_iterator position, Iterator first, Iterator last)
+{
+	ptrdiff_t offset = position - begin();
+	for (; first != last; ++first)
+	{
+		/* Make a "deep" copy of the given lesson
+		 * to not alter the parent ptr of the passed one.
+		 * Its not really deep because its members are implicitly shared. */
+		auto l = std::make_shared<Lesson>(**first);
+		auto thiz = shared_from_this();
+		l->setCourse(thiz);
+
+		position = mLessons.insert(position, l);
+		++position;
+	}
+	return begin() + offset;
 }
 
 struct CourseListAscTitle
 {
-	bool operator()(const ConstCoursePtr& lhs, const ConstCoursePtr& rhs) { return (lhs->getTitle() < rhs->getTitle()); }
+	bool operator()(const std::shared_ptr<const Course>& lhs, const std::shared_ptr<const Course>& rhs)
+	{
+		return (lhs->getTitle() < rhs->getTitle());
+	}
 };
 
 } /* namespace qtouch */

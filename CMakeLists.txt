@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 project(QTouch)
 
-find_package(Qt5 REQUIRED COMPONENTS Widgets Qml Quick Test Sql Xml XmlPatterns)
+find_package(Qt5 REQUIRED COMPONENTS Widgets Qml Quick Test QuickTest Sql Xml XmlPatterns)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -33,7 +33,6 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
 	enable_testing()
 	
 	# Enable creation of tests
-	# TODO: Add macro for test creation and let creation depend on this variable!
 	set(MELP_TEST_CREATION ON)
 
 	# Enable tools creation
@@ -47,6 +46,10 @@ else()
     # Disable qDebug output in release builds
     add_definitions(-DQT_NO_DEBUG_OUTPUT)
 endif()
+
+# C++ 11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3")
@@ -62,6 +65,7 @@ include_directories(src)
 
 add_subdirectory(src)
 add_subdirectory(src/entities)
+add_subdirectory(src/utils)
 add_subdirectory(src/xml)
 add_subdirectory(src/db)
 add_subdirectory(src/gui)

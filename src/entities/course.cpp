@@ -7,28 +7,12 @@
 
 #include "course.hpp"
 
-#include <QByteArray>
-#include <QCryptographicHash>
 #include <QDebug>
 
 namespace qtouch
 {
 
-CourseLessonBase::CourseLessonBase() :
-	mBuiltin(false)
-{
-}
-
-CourseLessonBase::~CourseLessonBase()
-{
-}
-
-inline const QUuid& CourseLessonBase::getId() const
-{
-	return mId;
-}
-
-inline bool CourseLessonBase::setId(const QUuid& id)
+bool CourseLessonBase::setId(const QUuid& id)
 {
 	if (id.isNull())
 	{
@@ -37,53 +21,24 @@ inline bool CourseLessonBase::setId(const QUuid& id)
 	}
 	else
 	{
+		if (!mId.isNull())
+			qWarning() << this << "Primary key change detected";
+
 		mId = id;
 		return true;
 	}
 }
 
-inline QString CourseLessonBase::getTitle() const
+/**
+ * Calculate the MD5 hash.
+ * @return The MD5 hash.
+ */
+QByteArray CourseLessonBase::hash() const
 {
-	return mTitle;
-}
-
-inline void CourseLessonBase::setTitle(const QString& title)
-{
-	mTitle = title;
-}
-
-inline bool CourseLessonBase::isBuiltin() const
-{
-	return mBuiltin;
-}
-
-inline void CourseLessonBase::setBuiltin(bool builtin)
-{
-	mBuiltin = builtin;
-}
-
-Lesson::~Lesson()
-{
-}
-
-const QString& Lesson::getNewChars() const
-{
-	return mNewChars;
-}
-
-void Lesson::setNewChars(const QString& newChars)
-{
-	mNewChars = newChars;
-}
-
-const QString& Lesson::getText() const
-{
-	return mText;
-}
-
-void Lesson::setText(const QString& text)
-{
-	mText = text;
+	QByteArray buffer;
+	QDataStream stream(&buffer, QIODevice::WriteOnly);
+	stream << *this;
+	return QCryptographicHash::hash(buffer, QCryptographicHash::Md5);
 }
 
 /**
@@ -92,19 +47,14 @@ void Lesson::setText(const QString& text)
  * this function returns a smart pointer to NULL.
  * @return A Course or NULL.
  */
-CoursePtr Lesson::getCourse() const
+std::shared_ptr<Course> Lesson::getCourse() const
 {
 	/* Get a strong reference to the parent.
 	 * This may fail, when Lessons was never added to a Course. */
-	CoursePtr c = mCourse.lock();
+	auto c = mCourse.lock();
 	return c;
 }
 
-/* Store the back pointer to the owning object. */
-inline void Lesson::setCourse(const CoursePtr& parent)
-{
-	mCourse = parent;
-}
 
 QDataStream& Lesson::serialize(QDataStream& out) const
 {
@@ -116,7 +66,7 @@ QDataStream& Lesson::serialize(QDataStream& out) const
  * Create a Course instance managed by a shared pointer.
  * @return A share pointer to the Course instance.
  */
-CoursePtr Course::create()
+std::shared_ptr<Course> Course::create()
 {
 	/* What's going on here? ... Let me explain :)
 	 * A course manages a list of lessons. Both classes inherit from Resource.
@@ -130,8 +80,8 @@ CoursePtr Course::create()
 	 * to it.
 	 * 2. After the Course is deleted, the Lesson must not return the reference
 	 * to the Course it belonged to, because the memory is already freed.
-	 * Here we can use a weak pointer (here called "mParent").
-	 * BUT: The all parent pointers stored inside the Lessons must be initialized
+	 * Here we can use a weak pointer (here called "mCourse").
+	 * BUT: The parent pointers stored inside the Lessons must be initialized
 	 * by the same shared pointer to the Course, because they must share the same
 	 * reference counter.
 	 * (Rule: Never store the same address in multiple smart pointers!)
@@ -148,179 +98,63 @@ CoursePtr Course::create()
 	 * the Lessons.
 	 * How tricky ...
 	 */
-	CoursePtr p(new Course);
-	p->initWeakThis(p);
+	std::shared_ptr<Course> p(new Course);
 	return p;
 }
 
-CoursePtr Course::clone(const ConstCoursePtr& org)
+std::shared_ptr<Course> Course::clone(const Course& org)
 {
 	/* Create a new course by coping the original one.
-	 * After the protected constructor made a shallow copy of
+	 * After the copy constructor made a shallow copy of
 	 * the object, we have to replace the lessons. */
-	CoursePtr p(new Course(org));
-	p->initWeakThis(p);
-	p->replace(org->mLessons);
+	std::shared_ptr<Course> p(new Course(org));
+	p->insert(p->begin(), org.mLessons.begin(), org.mLessons.end());
 	return p;
 }
 
-/* Protected: see create() */
-Course::Course()
+Course::Course(const Course& org) :
+	enable_shared_from_this(), CourseLessonBase(org), mDescription(org.mDescription)
 {
 }
 
-Course::Course(const ConstCoursePtr& org) :
-	mDescription(org->mDescription)
+void Course::push_back(const Lesson& lesson)
 {
-}
+	auto thiz = shared_from_this();
 
-Course::~Course()
-{
-}
+	auto copy = std::make_shared<Lesson>(lesson);
+	copy->setCourse(thiz);
 
-inline const QString& Course::getDescription() const
-{
-	return mDescription;
-}
-
-void Course::setDescription(const QString& description)
-{
-	mDescription = description;
-}
-
-/**
- * Replace the Lesson container, drop the current one.
- * @param lessons
- */
-void Course::replace(ConstLessonList lessons)
-{
-	mLessons.clear();
-	for (const_iterator it = lessons.begin(); it != lessons.end(); ++it)
-	{
-		/* Make a "deep" copy of the given lesson
-		 * to not alter the parent ptr of the passed one.
-		 * Its not really deep because its members are implicitly shared. */
-		LessonPtr l(new Lesson(**it));
-
-		CoursePtr thiz(sharedFromWeakThis().staticCast<Course>());
-		l->setCourse(thiz);
-
-		mLessons.append(l);
-	}
-}
-
-/**
- * Append a Lesson.
- * @note Despite the Course takes ownership of the given Lesson,
- * the Lesson is not copied. It can still be manipulated from outside.
- * @param lesson
- */
-void Course::append(const LessonPtr& lesson)
-{
-	CoursePtr thiz(sharedFromWeakThis().staticCast<Course>());
-	lesson->setCourse(thiz);
-
-	mLessons.append(lesson);
-}
-
-int Course::size() const
-{
-	return mLessons.size();
-}
-
-ConstLessonPtr Course::at(int i) const
-{
-	return mLessons.at(i);
+	mLessons.push_back(copy);
 }
 
 bool Course::contains(const QUuid& id) const
 {
-	for(const_iterator it = mLessons.begin(); it != mLessons.end(); ++it)
+	for (const auto& it : mLessons)
 	{
-		if((*it)->getId() == id)
+		if (it->getId() == id)
 			return true;
 	}
 	return false;
 }
 
-ConstLessonPtr Course::get(const QUuid& id) const
+std::shared_ptr<const Lesson> Course::get(const QUuid& lessonId) const
 {
-	for(const_iterator it = mLessons.begin(); it != mLessons.end(); ++it)
+	for (const auto& it : mLessons)
 	{
-		if((*it)->getId() == id)
-			return *it;
+		if (it->getId() == lessonId)
+			return it;
 	}
-	return ConstLessonPtr();
-}
-
-int Course::indexOf(const LessonPtr& lesson) const
-{
-	return mLessons.indexOf(lesson);
-}
-
-Course::const_iterator Course::begin() const
-{
-	return mLessons.begin();
-}
-
-Course::const_iterator Course::end() const
-{
-	return mLessons.end();
+	return std::shared_ptr<const Lesson>();
 }
 
 QDataStream& Course::serialize(QDataStream& out) const
 {
 	out << getId() << getTitle() << getDescription() << isBuiltin();
-	for (Course::const_iterator it = begin(); it != end(); ++it)
+	for (const auto& it : mLessons)
 	{
 		out << (*it);
 	}
 	return out;
-}
-
-/**
- * Calculate the MD5 hash of a given Course.
- * @param course A Course.
- * @return The MD5 hash.
- */
-QByteArray Course::hash(const ConstCoursePtr& course)
-{
-	QByteArray buffer;
-	QDataStream stream(&buffer, QIODevice::WriteOnly);
-	stream << course;
-	return QCryptographicHash::hash(buffer, QCryptographicHash::Md5);
-}
-
-/**
- * Calculate the MD5 hash of a given list of Courses.
- * @param courses A list of constant Courses.
- * @return The MD5 hash.
- */
-QByteArray Course::hash(const ConstCourseList& courses)
-{
-	QByteArray buffer;
-	for (ConstCourseList::const_iterator it = courses.begin(); it != courses.end(); ++it)
-	{
-		QDataStream stream(&buffer, QIODevice::WriteOnly);
-		stream << (*it);
-	}
-	return QCryptographicHash::hash(buffer, QCryptographicHash::Md5);
-}
-
-/**
- * Calculate the MD5 hash of a given list of Courses.
- * @param courses A list of Courses.
- * @return The MD5 hash.
- */
-QByteArray Course::hash(const CourseList& courses)
-{
-	QByteArray buffer;
-	for (CourseList::const_iterator it = courses.begin(); it != courses.end(); ++it)
-	{
-		QDataStream stream(&buffer, QIODevice::WriteOnly);
-		stream << (*it);
-	}
-	return QCryptographicHash::hash(buffer, QCryptographicHash::Md5);
 }
 
 }/* namespace qtouch */

@@ -30,7 +30,7 @@ public:
 		for (quint16 i = 0; i < lessoncount; ++i)
 		{
 			lessonTitles.append(QStringLiteral("Title No. %1").arg(i + 1));
-			lessonIds.append(QUuid::createUuid());
+			lessonIds.push_back(QUuid::createUuid());
 			lessonNewCharss.append(QStringLiteral("fj"));
 			lessonTexts.append(QStringLiteral("fff jjj"));
 		}
@@ -49,51 +49,57 @@ private slots:
 	void cloning();
 	void parentPointer();
 
-	void manipulateAfterAppend();
+	void append();
 
 	void hash();
-	void serialization();
+	void hashList();
 
 private:
 	quint16 lessoncount;
 
-	CoursePtr uutCourse;
-	ConstLessonList uutLessons;
+	std::shared_ptr<Course> uutCourse;
+	std::vector<std::shared_ptr<Lesson>> uutLessons;
 
 	QString courseTitle;
 	QUuid courseId;
 	QString courseDescription;
 
 	QStringList lessonTitles;
-	QList<QUuid> lessonIds;
+	std::vector<QUuid> lessonIds;
 	QStringList lessonNewCharss;
 	QStringList lessonTexts;
 
-	void checkCourse(const CoursePtr& c);
+	void checkCourse(const Course& c);
 };
 
-void CourseTest::checkCourse(const CoursePtr& c)
+void CourseTest::checkCourse(const Course& c)
 {
+	QCOMPARE(c.getId(), courseId);
+	QCOMPARE(c.getTitle(), courseTitle);
+	QCOMPARE(c.getDescription(), courseDescription);
+
 	// Verify that we have enough reference data
-	QVERIFY(((quint16) c->size()) <= lessoncount);
+	QVERIFY(((quint16) c.size()) <= lessoncount);
 
 	QStringListIterator itTitle(lessonTitles);
-	QListIterator<QUuid> itId(lessonIds);
+	std::vector<QUuid>::const_iterator itId = lessonIds.begin();
 	QStringListIterator itNewChars(lessonNewCharss);
 	QStringListIterator itText(lessonTexts);
 
 	//	qDebug() << "Course address" << c.data();
 
-	for (Course::const_iterator it = c->begin(); it != c->end(); ++it)
+	for (auto& it : c)
 	{
-		QCOMPARE((*it)->getTitle(), itTitle.next());
-		QCOMPARE((*it)->getId(), itId.next());
-		QCOMPARE((*it)->getNewChars(), itNewChars.next());
-		QCOMPARE((*it)->getText(), itText.next());
+		QCOMPARE(it->getTitle(), itTitle.next());
+		QCOMPARE(it->getId(), *itId);
+		QCOMPARE(it->getNewChars(), itNewChars.next());
+		QCOMPARE(it->getText(), itText.next());
 
 		// Check that all Lessons have a correct back pointer to its Course
 		//		qDebug() << "Parent address" << (*it)->getCourse().data();
-		QVERIFY((*it)->getCourse() == c.data());
+		QVERIFY(it->getCourse().get() == &c);
+
+		++itId;
 	}
 }
 
@@ -115,20 +121,21 @@ void CourseTest::init()
 	// Create Lessons, fill them with ref data and add it to a list
 	for (int i = 0; i < lessoncount; ++i)
 	{
-		LessonPtr l(new Lesson);
+		auto l = std::make_shared<Lesson>();
 		l->setTitle(lessonTitles[i]);
 		l->setId(lessonIds[i]);
 		l->setNewChars(lessonNewCharss[i]);
 		l->setText(lessonTexts[i]);
 
-		uutLessons.append(l);
+		uutLessons.push_back(l);
 	}
 
 	// Add Lessons to Course
-	uutCourse->replace(uutLessons);
+	uutCourse->clear();
+	uutCourse->insert(uutCourse->begin(), uutLessons.begin(), uutLessons.end());
 
 	// Check initialization
-	checkCourse(uutCourse);
+	checkCourse(*uutCourse);
 }
 
 /*
@@ -137,28 +144,31 @@ void CourseTest::init()
 void CourseTest::cloning()
 {
 	// Clone the Course
-	CoursePtr copy = Course::clone(uutCourse);
+	auto copy = Course::clone(*uutCourse);
 
 	// And check the copy
-	checkCourse(copy);
+	checkCourse(*copy);
 
-	// Manipulate the copy
-	LessonPtr lesson(new Lesson);
-	lesson->setTitle("XXX");
-	ConstLessonList list;
-	list.append(lesson);
-	copy->replace(list);
+	// Manipulate the copy by replacing the lesson list
+	Lesson lesson;
+	lesson.setTitle("XXX");
+
+	copy->clear();
+	copy->push_back(lesson);
 
 	// And check original is untouched
-	checkCourse(uutCourse);
+	checkCourse(*uutCourse);
+
+	QVERIFY(copy->size() == 1);
 }
 
 void CourseTest::parentPointer()
 {
-	ConstLessonPtr lesson;
+	std::shared_ptr<const Lesson> lesson;
+
 	{
 		// Make a copy of the Course
-		CoursePtr copy = Course::clone(uutCourse);
+		auto copy = Course::clone(*uutCourse);
 
 		// Get a reference to the first lesson
 		lesson = *copy->begin();
@@ -171,52 +181,46 @@ void CourseTest::parentPointer()
 	QVERIFY(!lesson->getCourse());
 }
 
-void CourseTest::manipulateAfterAppend()
+void CourseTest::append()
 {
-	QUuid id = QUuid::createUuid();
+	{
+		Lesson newLesson;
+		uutCourse->push_back(newLesson);
+	}
 
-	LessonPtr newLesson(new Lesson);
-
-	uutCourse->append(newLesson);
-
-	newLesson->setId(id);
-
-	QVERIFY(uutCourse->get(id)->getId() == id);
+	QVERIFY(uutCourse->size() == lessoncount + 1);
 }
 
 void CourseTest::hash()
 {
-	QByteArray buffer = Course::hash(uutCourse);
+	QByteArray h1 = uutCourse->hash();
+	qDebug() << "MD5: " << h1.toHex();
 
-	QVERIFY(buffer.size() == 16);
-
-	qDebug() << "MD5: " << buffer.toHex();
-
-	// Make a backup of the first hash
-	QByteArray hash(buffer);
-
-	buffer.clear();
+	// Manipulate the course
+	uutCourse->setBuiltin(!uutCourse->isBuiltin());
 
 	// Calculate again
-	buffer = Course::hash(uutCourse);
+	QByteArray h2 = uutCourse->hash();
+	qDebug() << "MD5: " << h2.toHex();
 
-	QVERIFY(buffer.size() == 16);
-
-	// Verify same
-	QVERIFY(hash == buffer);
+	// Verify not same
+	QVERIFY(h1 != h2);
 }
 
-void CourseTest::serialization()
+void CourseTest::hashList()
 {
-	QByteArray buffer;
-	QDataStream stream(&buffer, QIODevice::WriteOnly);
+	QByteArray h1 = qtouch::hash(uutLessons.begin(), uutLessons.end());
+	qDebug() << "MD5: " << h1.toHex();
 
-	qDebug() << uutCourse.isNull();
-	using qtouch::operator<<;
-	stream << uutCourse;
+	// Manipulate the a lesson
+	uutLessons.at(lessoncount / 2)->setBuiltin(!uutLessons.at(lessoncount / 2)->isBuiltin());
 
-	qDebug() << "Size of serialized test course:" << buffer.size();
-	qDebug() << "Value:" << buffer.toHex();
+	// Calculate again
+	QByteArray h2 = qtouch::hash(uutLessons.begin(), uutLessons.end());
+	qDebug() << "MD5: " << h2.toHex();
+
+	// Verify not same
+	QVERIFY(h1 != h2);
 }
 
 } /* namespace qtouch */
