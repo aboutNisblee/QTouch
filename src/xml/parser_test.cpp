@@ -6,7 +6,6 @@
  */
 
 #include <QtTest/QtTest>
-#include <QLinkedList>
 #include <QDir>
 
 #include "parser.hpp"
@@ -42,24 +41,24 @@ private slots:
 	void parseCourses();
 
 private:
-	void verifyTestCourse(const CoursePtr& c);
+	void verifyTestCourse(const Course& c);
 
-	ValidatorPtr validator;
+	std::unique_ptr<QXmlSchemaValidator> validator;
 };
 
-void XmlParserTest::verifyTestCourse(const CoursePtr& c)
+void XmlParserTest::verifyTestCourse(const Course& c)
 {
-	QCOMPARE(c->getId().toString(), QStringLiteral("{4e007d5e-613a-4a26-bff3-658d44d9cf10}"));
-	QCOMPARE(c->getTitle(), QStringLiteral("TestCourse"));
-	QCOMPARE(c->getDescription(),
+	QCOMPARE(c.getId().toString(), QStringLiteral("{4e007d5e-613a-4a26-bff3-658d44d9cf10}"));
+	QCOMPARE(c.getTitle(), QStringLiteral("TestCourse"));
+	QCOMPARE(c.getDescription(),
 	         QStringLiteral("This file is only for testing purposes and will be filtered by application."));
-	QCOMPARE(c->isBuiltin(), true);
+	QCOMPARE(c.isBuiltin(), true);
 
 	// TODO: Add keyboard layout
 
-	QVERIFY2(c->size() == TestcourseLessonCount, "Wrong lesson count");
+	QVERIFY2(c.size() == TestcourseLessonCount, "Wrong lesson count");
 
-	Course::const_iterator it = c->begin();
+	auto it = c.begin();
 
 	QCOMPARE((*it)->getId().toString(), QStringLiteral("{d6e5a9a9-3c31-4175-8d58-245695c60b08}"));
 	QCOMPARE((*it)->getTitle(), QStringLiteral("TestLesson1"));
@@ -96,7 +95,7 @@ void XmlParserTest::invalidSchemaFilePath()
 
 void XmlParserTest::invalidXmlFilePath()
 {
-	QVERIFY_EXCEPTION_THROWN(validate(QStringLiteral(":/testing/courses/FOOBAR.xml"), validator),
+	QVERIFY_EXCEPTION_THROWN(validate(QStringLiteral(":/testing/courses/FOOBAR.xml"), *validator),
 	                         FileException);
 }
 
@@ -107,7 +106,7 @@ void XmlParserTest::invalidSchemaFile()
 
 void XmlParserTest::validation()
 {
-	QCOMPARE(validate(QStringLiteral(":/testing/courses/testcourse.xml"), validator), true);
+	QCOMPARE(validate(QStringLiteral(":/testing/courses/testcourse.xml"), *validator), true);
 }
 
 void XmlParserTest::parseTestCourse()
@@ -115,19 +114,18 @@ void XmlParserTest::parseTestCourse()
 	ParseResult result;
 	QString message;
 
-	CoursePtr course;
-
 	try
 	{
-		course = parseCourse(QStringLiteral(":/testing/courses/testcourse.xml"), validator, &result,
+		auto course = parseCourse(QStringLiteral(":/testing/courses/testcourse.xml"), *validator, &result,
 		                     &message);
+
+		verifyTestCourse(*course);
 	}
 	catch (Exception& e)
 	{
 		QFAIL(qUtf8Printable(e.message()));
 	}
 
-	verifyTestCourse(course);
 }
 
 void XmlParserTest::parseCourses()
@@ -142,19 +140,17 @@ void XmlParserTest::parseCourses()
 
 	qDebug() << coursefiles;
 
-	ConstCourseList courseList;
+	QList<std::shared_ptr<Course>> courseList;
 
 	QStringListIterator it(coursefiles);
 	while (it.hasNext())
 	{
-		CoursePtr course;
-
 		ParseResult result;
 		QString message;
 
 		try
 		{
-			course = parseCourse(it.next(), validator, &result, &message);
+			auto course = parseCourse(it.next(), *validator, &result, &message);
 
 			if (result != Ok)
 			{

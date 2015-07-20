@@ -7,7 +7,6 @@
 
 #include "parser.hpp"
 
-#include <QList>
 #include <QStringList>
 #include <QFile>
 
@@ -23,7 +22,7 @@ namespace qtouch
 namespace xml
 {
 
-ValidatorPtr createValidator(const QString& xsd_path) throw (FileException, XmlException)
+std::unique_ptr<QXmlSchemaValidator> createValidator(const QString& xsd_path) throw (FileException, XmlException)
 {
 	QFile xsd(xsd_path);
 
@@ -45,7 +44,7 @@ ValidatorPtr createValidator(const QString& xsd_path) throw (FileException, XmlE
 	if (!schema.isValid())
 		throw XmlException("Invalid schema definition file", xsd.fileName());
 
-	ValidatorPtr v(new QXmlSchemaValidator(schema));
+	std::unique_ptr<QXmlSchemaValidator> v(new QXmlSchemaValidator(schema));
 	return v;
 }
 
@@ -55,14 +54,14 @@ ValidatorPtr createValidator(const QString& xsd_path) throw (FileException, XmlE
  * @param validator A schema validator created by e.g. validator().
  * @return True when XML file is valid, else false.
  */
-bool validate(const QString& xml_path, const ValidatorPtr& validator) throw (FileException, XmlException)
+bool validate(const QString& xml_path, const QXmlSchemaValidator& validator) throw (FileException, XmlException)
 {
 	QFile xml(xml_path);
 
 	if (!xml.open(QIODevice::ReadOnly))
 		throw FileException("Cannot open XML file", xml.fileName());
 
-	if (!validator->validate(&xml))
+	if (!validator.validate(&xml))
 	{
 		qWarning() << "Schema validation of \"" << xml.fileName() << "\" failed.";
 		return false;
@@ -79,7 +78,7 @@ bool validate(const QString& xml_path, const ValidatorPtr& validator) throw (Fil
  * @param warningMessage An optional warning message.
  * @return A new Course instance.
  */
-CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator, ParseResult* result,
+std::shared_ptr<Course> parseCourse(const QString& course_path, const QXmlSchemaValidator& validator, ParseResult* result,
                       QString* warningMessage) throw (FileException, XmlException)
 {
 	QFile xml(course_path);
@@ -90,14 +89,14 @@ CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator,
 		throw FileException("Cannot open XML file", xml.fileName());
 	}
 
-	if (!validator->validate(&xml))
+	if (!validator.validate(&xml))
 		throw XmlException("Schema validation failed", xml.fileName());
 
 	// NOTE: Validator doesn't reset the file!
 	xml.reset();
 
 	// Create a Course
-	CoursePtr course = Course::create();
+	auto course = Course::create();
 
 	QDomDocument dom;
 	QString errMsg;
@@ -157,41 +156,38 @@ CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator,
 	for (QDomElement lessonsElem = root.firstChildElement("lessons").firstChildElement(); !lessonsElem.isNull();
 	        lessonsElem = lessonsElem.nextSiblingElement())
 	{
-		LessonPtr lesson(new Lesson);
-
-		/* Append the lesson before adding any values.
-		 * This way the Lesson is able to access its Course and print more
-		 * meaningful debug/warning messages. */
-		course->append(lesson);
+		Lesson lesson;
 
 		// Set title
 		text = lessonsElem.firstChildElement("title").text();
-		lesson->setTitle(text);
+		lesson.setTitle(text);
 
 		// Set ID
 		text = lessonsElem.firstChildElement("id").text();
-		if (!lesson->setId(text))
+		if (!lesson.setId(text))
 		{
 			if (result)
 				*result = InvalidId;
 			if (warningMessage)
 			{
 				*warningMessage += QLatin1String("Invalid Lesson UUID\n");
-				*warningMessage += QLatin1String("    Course:") % lesson->getCourse()->getTitle() % "\n";
-				*warningMessage += QLatin1String("    Lesson:") % lesson->getTitle() % "\n";
-				*warningMessage += QLatin1String("    Generated:") % lesson->getId().toString() % "\n";
+				*warningMessage += QLatin1String("    Course:") % course->getTitle() % "\n";
+				*warningMessage += QLatin1String("    Lesson:") % lesson.getTitle() % "\n";
+				*warningMessage += QLatin1String("    Generated:") % lesson.getId().toString() % "\n";
 			}
 		}
 
 		// Add new characters
 		text = lessonsElem.firstChildElement("newCharacters").text();
-		lesson->setNewChars(text);
+		lesson.setNewChars(text);
 
 		// Copy text
 		text = lessonsElem.firstChildElement("text").text();
-		lesson->setText(text);
+		lesson.setText(text);
 
-		lesson->setBuiltin(true);
+		lesson.setBuiltin(true);
+
+		course->push_back(lesson);
 	}
 
 	return course;

@@ -37,25 +37,25 @@ private slots:
 	void writeTestCourse();
 
 private:
-	void verifyTestCourse(const CoursePtr& c);
+	void verifyTestCourse(const Course& c);
 
-	ValidatorPtr validator;
-	CoursePtr testcourse;
+	std::unique_ptr<QXmlSchemaValidator> validator;
+	std::shared_ptr<Course> testcourse;
 };
 
-void XmlWriterTest::verifyTestCourse(const CoursePtr& c)
+void XmlWriterTest::verifyTestCourse(const Course& c)
 {
-	QCOMPARE(c->getId().toString(), QStringLiteral("{4e007d5e-613a-4a26-bff3-658d44d9cf10}"));
-	QCOMPARE(c->getTitle(), QStringLiteral("TestCourse"));
-	QCOMPARE(c->getDescription(),
+	QCOMPARE(c.getId().toString(), QStringLiteral("{4e007d5e-613a-4a26-bff3-658d44d9cf10}"));
+	QCOMPARE(c.getTitle(), QStringLiteral("TestCourse"));
+	QCOMPARE(c.getDescription(),
 	         QStringLiteral("This file is only for testing purposes and will be filtered by application."));
-	QCOMPARE(c->isBuiltin(), true);
+	QCOMPARE(c.isBuiltin(), true);
 
 	// TODO: Add keyboard layout
 
-	QVERIFY2(c->size() == TestcourseLessonCount, "Wrong lesson count");
+	QVERIFY2(c.size() == TestcourseLessonCount, "Wrong lesson count");
 
-	Course::const_iterator it = c->begin();
+	Course::const_iterator it = c.begin();
 
 	QCOMPARE((*it)->getId().toString(), QStringLiteral("{d6e5a9a9-3c31-4175-8d58-245695c60b08}"));
 	QCOMPARE((*it)->getTitle(), QStringLiteral("TestLesson1"));
@@ -83,7 +83,7 @@ void XmlWriterTest::initTestCase()
 		ParseResult result;
 		QString message;
 
-		testcourse = parseCourse(QStringLiteral(":/testing/courses/testcourse.xml"), validator, &result, &message);
+		testcourse = parseCourse(QStringLiteral(":/testing/courses/testcourse.xml"), *validator, &result, &message);
 
 		if (Ok != result)
 		{
@@ -91,7 +91,7 @@ void XmlWriterTest::initTestCase()
 		}
 
 		// This should be unnecessary as long as the parser test runs before this test.
-		verifyTestCourse(testcourse);
+		verifyTestCourse(*testcourse);
 	}
 	catch (Exception& e)
 	{
@@ -101,7 +101,7 @@ void XmlWriterTest::initTestCase()
 
 void XmlWriterTest::invalidFilePath()
 {
-	QVERIFY_EXCEPTION_THROWN(writeCourse(testcourse, QStringLiteral(":/testing/courses/FOOBAR.xml")), FileException);
+	QVERIFY_EXCEPTION_THROWN(writeCourse(*testcourse, QStringLiteral(":/testing/courses/FOOBAR.xml")), FileException);
 }
 
 void XmlWriterTest::writeTestCourse()
@@ -116,21 +116,21 @@ void XmlWriterTest::writeTestCourse()
 			}
 		}
 
-		writeCourse(testcourse, OutputFile);
+		writeCourse(*testcourse, OutputFile);
 
 		// Let the parser read written data
 		ParseResult result;
 		QString message;
 
-		CoursePtr readback = parseCourse(OutputFile, validator, &result, &message);
+		auto readback = parseCourse(OutputFile, *validator, &result, &message);
 
-		if (!validate(OutputFile, validator))
+		if (!validate(OutputFile, *validator))
 		{
 			QFAIL("Unable to validate written file");
 		}
 
 		// Verify the written data
-		verifyTestCourse(readback);
+		verifyTestCourse(*readback);
 	}
 	catch (Exception& e)
 	{

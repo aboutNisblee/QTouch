@@ -8,7 +8,7 @@
 #ifndef PARSER_HPP_
 #define PARSER_HPP_
 
-#include <QtContainerFwd>
+#include <memory>
 #include <QXmlSchemaValidator>
 
 #include "entities/course.hpp"
@@ -28,13 +28,11 @@ namespace xml
 
 enum ParseResult { Ok, InvalidId };
 
-typedef QSharedPointer<QXmlSchemaValidator> ValidatorPtr;
+std::unique_ptr<QXmlSchemaValidator> createValidator(const QString& xsd_path) throw (FileException, XmlException);
 
-ValidatorPtr createValidator(const QString& xsd_path) throw (FileException, XmlException);
+bool validate(const QString& xml_path, const QXmlSchemaValidator& validator) throw (FileException, XmlException);
 
-bool validate(const QString& xml_path, const ValidatorPtr& validator) throw (FileException, XmlException);
-
-CoursePtr parseCourse(const QString& course_path, const ValidatorPtr& validator, ParseResult* result, QString* warningMessage) throw (FileException, XmlException);
+std::shared_ptr<Course> parseCourse(const QString& course_path, const QXmlSchemaValidator& validator, ParseResult* result, QString* warningMessage) throw (FileException, XmlException);
 
 } /* namespace xml */
 

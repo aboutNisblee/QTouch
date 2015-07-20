@@ -19,7 +19,7 @@ namespace qtouch
 namespace xml
 {
 
-void writeCourse(const CoursePtr& course, const QString& file_path) throw (FileException, XmlException)
+void writeCourse(const Course& course, const QString& file_path) throw (FileException, XmlException)
 {
 	QFile output(file_path);
 	if (!output.open(QIODevice::WriteOnly))
@@ -36,15 +36,15 @@ void writeCourse(const CoursePtr& course, const QString& file_path) throw (FileE
 	writer.writeStartElement("course");
 
 	writer.writeStartElement("id");
-	writer.writeCharacters(course->getId().toString());
+	writer.writeCharacters(course.getId().toString());
 	writer.writeEndElement();
 
 	writer.writeStartElement("title");
-	writer.writeCharacters(course->getTitle());
+	writer.writeCharacters(course.getTitle());
 	writer.writeEndElement();
 
 	writer.writeStartElement("description");
-	writer.writeCharacters(course->getDescription());
+	writer.writeCharacters(course.getDescription());
 	writer.writeEndElement();
 
 	writer.writeStartElement("keyboardLayout");
@@ -52,24 +52,24 @@ void writeCourse(const CoursePtr& course, const QString& file_path) throw (FileE
 	writer.writeEndElement();
 
 	writer.writeStartElement("lessons");
-	for (Course::const_iterator it = course->begin(); it != course->end(); ++it)
+	for (const auto& it :course)
 	{
 		writer.writeStartElement("lesson");
 
 		writer.writeStartElement("id");
-		writer.writeCharacters((*it)->getId().toString());
+		writer.writeCharacters(it->getId().toString());
 		writer.writeEndElement();
 
 		writer.writeStartElement("title");
-		writer.writeCharacters((*it)->getTitle());
+		writer.writeCharacters(it->getTitle());
 		writer.writeEndElement();
 
 		writer.writeStartElement("newCharacters");
-		writer.writeCharacters((*it)->getNewChars());
+		writer.writeCharacters(it->getNewChars());
 		writer.writeEndElement();
 
 		writer.writeStartElement("text");
-		writer.writeCharacters((*it)->getText());
+		writer.writeCharacters(it->getText());
 		writer.writeEndElement();
 
 		writer.writeEndElement(); // </lesson>
