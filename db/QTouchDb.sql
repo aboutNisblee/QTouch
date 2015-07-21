@@ -2,22 +2,32 @@ PRAGMA user_version = 1;
 PRAGMA foreign_keys = true;
 
 DROP TRIGGER IF EXISTS StatsDateTimeCheck;
-DROP TRIGGER IF EXISTS LessonListLessonDeleter;
+DROP TRIGGER IF EXISTS LessonListBeforeDelete;
+DROP TRIGGER IF EXISTS LessonListBeforeChildIdUpdate;
+DROP TRIGGER IF EXISTS LessonListAfterInsertHead;
 DROP TRIGGER IF EXISTS LessonListAfterInsert;
 DROP TRIGGER IF EXISTS LessonListBeforeInsert;
 
-DROP VIEW IF EXISTS vLessonListForward;
 DROP VIEW IF EXISTS vLessons;
+DROP VIEW IF EXISTS vLessonListForward;
+DROP VIEW IF EXISTS vDanglingLessons;
 
 DROP TABLE IF EXISTS tblStats;
 DROP TABLE IF EXISTS tblLessonList;
 DROP TABLE IF EXISTS tblCourse;
 DROP TABLE IF EXISTS tblLesson;
 DROP TABLE IF EXISTS tblProfile;
+DROP TABLE IF EXISTS tblMeta;
+
+-- Key/Value table for meta information.
+CREATE TABLE IF NOT EXISTS tblMeta (
+	pkKey				TEXT NOT NULL PRIMARY KEY,
+	cValue				TEXT
+) WITHOUT ROWID;
 
 -- User profiles.
 CREATE TABLE IF NOT EXISTS tblProfile (
-	cProfileName		TEXT NOT NULL PRIMARY KEY,
+	pkProfileName		TEXT NOT NULL PRIMARY KEY,
 	cSkillLevel			INTEGER NOT NULL DEFAULT 0
 ) WITHOUT ROWID;
 
@@ -52,47 +62,81 @@ CREATE TABLE IF NOT EXISTS tblCourse (
 --	The handling is done in a trigger.
 -- FIXME: It is possible to make tree from the list by passing a parentID that differs from the ID of the last entry of a list.
 --	For the moment the software must ensure that the right parentID is passed.
+-- The unique constraint forbids adding the same lesson twice to one course list. That would make things much more
+--  complecated since the application would have to be aware of the pkLessonListId to distinguish between the lessons.
+--  Furthermore it makes no sense to add a lesson twice, since the user could simply replay the same lesson.
+--  HINT: The GUI should make such a constallation impossible by using e.g. a drag and drop system.
 CREATE TABLE IF NOT EXISTS tblLessonList (
 	pkLessonListId		INTEGER PRIMARY KEY AUTOINCREMENT,
 	fkCourseUuid		TEXT REFERENCES tblCourse(pkCourseUuid) ON UPDATE CASCADE ON DELETE CASCADE,
 	fkLessonUuid		TEXT NOT NULL REFERENCES tblLesson(pkLessonUuid) ON UPDATE CASCADE ON DELETE CASCADE,
 	-- List handling
 	fkParentId			INTEGER DEFAULT NULL REFERENCES tblLessonList(pkLessonListId),
-	fkChildId			INTEGER DEFAULT NULL REFERENCES tblLessonList(pkLessonListId)
+	fkChildId			INTEGER DEFAULT NULL REFERENCES tblLessonList(pkLessonListId),
+	UNIQUE(fkCourseUuid,fkLessonUuid)
 );
 
 -- Ensure the list head is connected to a valid course before insert.
--- Ensure each coure is connected to only one list head.
 -- Ensure that a child does not specify a different course than its parent.
 CREATE TRIGGER IF NOT EXISTS LessonListBeforeInsert BEFORE INSERT ON tblLessonList
 BEGIN
 	SELECT RAISE(ABORT, 'LessonList constraint failed: List head lacks course') FROM tblLessonList
 		WHERE NEW.fkParentId ISNULL AND (SELECT pkCourseUuid FROM tblCourse WHERE pkCourseUuid = NEW.fkCourseUuid) ISNULL;
 
-	SELECT RAISE(ABORT, 'LessonList constraint failed: Course already connected') FROM tblLessonList
-		WHERE NEW.fkParentId ISNULL AND (SELECT count(*) FROM tblLessonList WHERE fkCourseUuid = NEW.fkCourseUuid) > 0;
-
 	SELECT RAISE(ABORT, 'LessonList constraint failed: Wrong course ID') FROM tblLessonList
 		WHERE NEW.fkParentId NOTNULL AND (SELECT fkCourseUuid FROM tblLessonList WHERE pkLessonListId = NEW.fkParentId) != NEW.fkCourseUuid;
 END;
 
 -- If the user ommit the course UUID on subsequent inserts, set it automatically to the UUID of the parent
--- Add the forward pointer to the parent after inserting a new lesson linst entry that isn't the first one
+-- Update forward pointers after inserting a new lesson list entry that isn't the first one
 CREATE TRIGGER IF NOT EXISTS LessonListAfterInsert AFTER INSERT ON tblLessonList
+WHEN NEW.fkParentId IS NOT NULL
 BEGIN
 	-- Ensure that each entry is connected to its course
 	UPDATE tblLessonList SET fkCourseUuid = (SELECT fkCourseUuid FROM tblLessonList WHERE pkLessonListId = NEW.fkParentId) WHERE fkCourseUuid ISNULL;
 
 	-- Add forward pointer
+	-- This will trigger LessonListBeforeChildIdUpdate with parent row as NEW
 	UPDATE tblLessonList SET fkChildId = NEW.pkLessonListId WHERE pkLessonListId = NEW.fkParentId;
 END;
 
--- Prevent dangling Lessons
-CREATE TRIGGER IF NOT EXISTS LessonListLessonDeleter AFTER DELETE ON tblLessonList
-WHEN (SELECT count(*) FROM tblLessonList WHERE fkLessonUuid = OLD.fkLessonUuid) = 0
+-- If the user ommit the course UUID on subsequent inserts, set it automatically to the UUID of the parent
+-- Update forward pointers after inserting a new lesson list head
+CREATE TRIGGER IF NOT EXISTS LessonListAfterInsertHead AFTER INSERT ON tblLessonList
+WHEN NEW.fkParentId IS NULL
 BEGIN
-	DELETE FROM tblLesson WHERE pkLessonUuid = OLD.fkLessonUuid;
+	-- Ensure that each entry is connected to its course
+	UPDATE tblLessonList SET fkCourseUuid = (SELECT fkCourseUuid FROM tblLessonList WHERE pkLessonListId = NEW.fkParentId) WHERE fkCourseUuid ISNULL;
+
+	-- Update parent pointer of old head
+	UPDATE tblLessonList SET fkParentId = NEW.pkLessonListId WHERE fkCourseUuid = NEW.fkCourseUuid AND fkParentId IS NULL AND pkLessonListId != NEW.pkLessonListId;
+
+	-- Update the child pointer of the new head to point to the old head
+	UPDATE tblLessonList SET fkChildId = (SELECT pkLessonListId FROM tblLessonList WHERE fkParentId = NEW.pkLessonListId) WHERE pkLessonListId = NEW.pkLessonListId;
 END;
+
+-- Correct the pointers when an update of fkChildId leads to multiple childs having the same parent
+CREATE TRIGGER IF NOT EXISTS LessonListBeforeChildIdUpdate BEFORE UPDATE OF fkChildId ON tblLessonList
+WHEN (SELECT count(*) FROM tblLessonList WHERE fkParentId = OLD.pkLessonListId) > 1
+BEGIN
+	-- Update parent pointer of the old child
+	UPDATE tblLessonList SET fkParentId = NEW.fkChildId WHERE pkLessonListId = OLD.fkChildId;
+	-- Update child pointer of the new child
+	UPDATE tblLessonList SET fkChildId = OLD.fkChildId WHERE pkLessonListId = NEW.fkChildId;
+END;
+
+-- Correct the pointers when a Lesson is deleted from the List
+CREATE TRIGGER IF NOT EXISTS LessonListBeforeDelete BEFORE DELETE ON tblLessonList
+BEGIN
+	-- Update child pointer of the old parent
+	UPDATE tblLessonList SET fkChildId = OLD.fkChildId WHERE pkLessonListId = OLD.fkParentId;
+	-- Update parent pointer of the old child
+	UPDATE tblLessonList SET fkParentId = OLD.fkParentId WHERE pkLessonListId = OLD.fkChildId;
+END;
+
+-- Search for dangling Lessons
+CREATE VIEW IF NOT EXISTS vDanglingLessons AS
+SELECT pkLessonUuid FROM tblLesson WHERE pkLessonUuid NOT IN  (SELECT fkLessonUuid FROM tblLessonList);
 
 CREATE VIEW IF NOT EXISTS vLessonListForward AS
 WITH RECURSIVE LessonListForward(pkLessonListId, fkCourseUuid, fkLessonUuid, fkParentId, fkChildId) AS
@@ -115,30 +159,32 @@ SELECT pkCourseUuid,
 	cLessonTitle,
 	cNewChars,
 	cLessonBuiltin,
-	cText
+	cText,
+	pkLessonListId
 FROM (
-	SELECT tblLesson.*,fkCourseUuid
+	SELECT tblLesson.*,fkCourseUuid,pkLessonListId
 	FROM tblLesson JOIN vLessonListForward ON pkLessonUuid = fkLessonUuid) AS Lesson
 JOIN tblCourse ON pkCourseUuid = fkCourseUuid;
 
 -- Table for statistics of passed lessons.
--- Has a composite PK of start time of the lesson and the profile name.
+-- Has a composite PK the lesson UUID and the profile name.
 -- DateTimes are stored in ISO format (e.g. 2015-07-01T14:44:52+0200 or higher precision).
--- Each entry holds a reference to the resolution table between course and lesson.
--- When the profile, course or lesson is deleted, the stats are deleted too.
+-- The stats does not depend on the LessonList entries anymore. That has the advantage that LessonList entries
+--	can be deleted and stored in another order without invalidating the stats.
+-- When the profile or the lesson is deleted, the stats are deleted too.
 CREATE TABLE IF NOT EXISTS tblStats (
-	pkStartDateTime		TEXT NOT NULL,
-	pkfkProfileName		TEXT NOT NULL REFERENCES tblProfile(cProfileName) ON UPDATE CASCADE ON DELETE CASCADE,
+	pkfkLessonUuid		TEXT NOT NULL REFERENCES tblLesson(pkLessonUuid) ON UPDATE CASCADE ON DELETE CASCADE,
+	pkfkProfileName		TEXT NOT NULL REFERENCES tblProfile(pkProfileName) ON UPDATE CASCADE ON DELETE CASCADE,
+	cStartDateTime		TEXT NOT NULL,
 	cEndDateTime		TEXT NOT NULL,
 	cCharCount			INTEGER NOT NULL,
 	cErrorCount			INTEGER,
-	fkLessonListId		INTEGER NOT NULL REFERENCES tblLessonList(pkLessonListId) ON UPDATE CASCADE ON DELETE CASCADE,
-	PRIMARY KEY(pkStartDateTime, pkfkProfileName)
+	PRIMARY KEY(pkfkLessonUuid, pkfkProfileName)
 ) WITHOUT ROWID;
 
 -- Check that Stats.end_datetime is bigger that Stats.start_datetime
 CREATE TRIGGER IF NOT EXISTS StatsDateTimeCheck BEFORE INSERT ON tblStats
-WHEN strftime('%s',NEW.pkStartDateTime) > strftime('%s',NEW.cEndDateTime)
+WHEN strftime('%s',NEW.cStartDateTime) > strftime('%s',NEW.cEndDateTime)
 BEGIN
 	SELECT RAISE(ABORT, 'Datetime constraint failed: Start bigger than end time');
 END;
@@ -187,32 +233,29 @@ INSERT INTO tblLessonList (fkLessonUuid,fkParentId) VALUES ('L4', (SELECT pkLess
 INSERT INTO tblLessonList (fkLessonUuid,fkCourseUuid) VALUES ('L2','C2');
 INSERT INTO tblLessonList (fkLessonUuid,fkParentId) VALUES ('L4', (SELECT last_insert_rowid() FROM tblLessonList WHERE fkLessonUuid = 'L2'));
 
+BEGIN TRANSACTION;
+SELECT('[1] SHOULD FAIL: ''UNIQUE constraint failed''');
+INSERT INTO tblLessonList (fkLessonUuid,fkParentId) VALUES ('L4', (SELECT last_insert_rowid() FROM tblLessonList WHERE fkLessonUuid = 'L2'));
+ROLLBACK;
+
 -- With the help of the inser trigger we should now have:
 -- L1 <-> L2 <-> L3 <-> L4
 -- L2 <-> L4
 
--- Check the links
+-- Check the links of Course C1
 SELECT 'LessonListAfterInsert: Parent or child link broken'
-	WHERE (SELECT fkParentId FROM tblLessonList WHERE fkLessonUuid = 'L1') != NULL
-	OR (SELECT fkChildId FROM tblLessonList WHERE fkLessonUuid = 'L1') != NULL;
-
-SELECT 'LessonListAfterInsert: Parent or child link broken'
-	WHERE
-		(SELECT fkParentId FROM tblLessonList WHERE fkLessonUuid = 'L2') != (SELECT pkLessonListId FROM tblLessonList WHERE fkLessonUuid = 'L1')
-	OR
-		(SELECT fkChildId FROM tblLessonList WHERE fkLessonUuid = 'L2') != (SELECT pkLessonListId FROM tblLessonList WHERE fkLessonUuid = 'L3') ;
-
-SELECT 'LessonListAfterInsert: Parent or child link broken'
-	WHERE
-		(SELECT fkParentId FROM tblLessonList WHERE fkLessonUuid = 'L3') != (SELECT pkLessonListId FROM tblLessonList WHERE fkLessonUuid = 'L2')
-	OR
-		(SELECT fkChildId FROM tblLessonList WHERE fkLessonUuid = 'L3') != (SELECT pkLessonListId FROM tblLessonList WHERE fkLessonUuid = 'L4') ;
-
-SELECT 'LessonListAfterInsert: Parent or child link broken'
-	WHERE
-		(SELECT fkParentId FROM tblLessonList WHERE fkLessonUuid = 'L4') != (SELECT pkLessonListId FROM tblLessonList WHERE fkLessonUuid = 'L3')
-	OR
-		(SELECT fkChildId FROM tblLessonList WHERE fkLessonUuid = 'L4') != NULL;
+	-- L1
+	WHERE (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L1') IS NOT NULL
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L1') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L2')
+	-- L2
+	OR (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L2') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L1')
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L2') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L3')
+	-- L3
+	OR (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L3') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L2')
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L3') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L4')
+	-- L4
+	OR (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L4') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L3')
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L4') IS NOT NULL;
 
 SELECT 'LessonListAfterInsert: Parent or child link broken'
 	WHERE (SELECT COUNT(*) FROM vLessonListForward WHERE fkCourseUuid = 'C1') != 4;
@@ -229,11 +272,6 @@ SELECT 'LessonListAfterInsert: Parent or child link broken'
 -- SELECT * FROM vLessons WHERE pkCourseUuid = 'C2';
 
 -- Test tblLessonLists insert triggers
-BEGIN TRANSACTION;
-SELECT('[1] SHOULD FAIL: ''Course already connected''');
-INSERT INTO tblLessonList (fkCourseUuid, fkLessonUuid) VALUES ('C2', 'L1');
-ROLLBACK;
-
 BEGIN TRANSACTION;
 -- Insert a new list head without passing a course UUID.
 SELECT('[2] SHOULD FAIL: ''List head lacks course''');
@@ -252,12 +290,12 @@ ROLLBACK;
 
 -- Let the user practice
 INSERT INTO tblStats VALUES (
-	strftime('%Y-%m-%dT%H:%M:%f','now'),
+	'L1',
 	'TestUser1',
+	strftime('%Y-%m-%dT%H:%M:%f','now'),
 	strftime('%Y-%m-%dT%H:%M:%f','now','+5 minutes'),
 	100,
-	10,
-	(SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L1')
+	10
 );
 SELECT 'Stats: Wrong row count'
 	WHERE (SELECT count(*) FROM tblStats) != 1;
@@ -269,8 +307,130 @@ SELECT 'Course: Wrong row count'
 	WHERE (SELECT count(*) FROM tblCourse) != 2;
 SELECT 'LessonList: Wrong row count'
 	WHERE (SELECT count(*) FROM tblLessonList) != 2;
+-- Delete dangling Lessons
+DELETE FROM tblLesson WHERE pkLessonUuid IN (SELECT pkLessonUuid FROM vDanglingLessons);
 SELECT 'Lesson: Wrong row count'
 	WHERE (SELECT count(*) FROM tblLesson) != 2;
 SELECT 'Stats: Wrong row count'
 	WHERE (SELECT count(*) FROM tblStats) != 0;
 ROLLBACK;
+
+-- Check updates
+BEGIN TRANSACTION;
+
+-- Update CourseTitle
+UPDATE tblCourse SET cCourseTitle = 'Course 1 Updated' WHERE pkCourseUuid = 'C1';
+-- Check row count
+SELECT 'Course: Wrong row count'
+	WHERE (SELECT COUNT(*) FROM tblCourse) != 3;
+-- Check CourseTitle
+SELECT printf('Course: cCourseTitle not updated. (still %Q)', cCourseTitle) FROM tblCourse
+	WHERE pkCourseUuid = 'C1' AND cCourseTitle != 'Course 1 Updated';
+-- Check update of LessonList
+SELECT 'Course: tblLessonList not updated correctly while updating cCourseTitle'
+	WHERE (SELECT count(*) FROM vLessons WHERE pkCourseUuid = 'C1' AND cCourseTitle = 'Course 1 Updated') != 4;
+
+-- Update CourseUuid (PK)
+UPDATE tblCourse SET pkCourseUuid = 'C1U' WHERE pkCourseUuid = 'C1';
+-- Check row count
+SELECT 'Course: Wrong row count'
+	WHERE (SELECT COUNT(*) FROM tblCourse) != 3;
+-- Check CourseUuid
+SELECT 'Course: pkCourseUuid not updated'
+	WHERE (SELECT count(*) FROM tblCourse WHERE pkCourseUuid != 'C1U' AND cCourseTitle = 'Course 1 Updated') != 0;
+-- Check update of LessonList
+SELECT 'Course: tblLessonList not updated correctly while updating pkCourseUuid'
+	WHERE (SELECT count(*) FROM vLessons WHERE pkCourseUuid = 'C1U' AND cCourseTitle = 'Course 1 Updated') != 4;
+
+-- Update LessonTitle
+UPDATE tblLesson SET cLessonTitle = 'Lesson 2 Updated' WHERE pkLessonUuid = 'L2';
+-- Check row count
+SELECT 'Lesson: Wrong row count'
+	WHERE (SELECT COUNT(*) FROM tblLesson) != 4;
+-- Check LessonTitle
+SELECT printf('Lesson: cLessonTitle not updated. (still %Q)', cLessonTitle) FROM tblLesson
+	WHERE pkLessonUuid = 'L2' AND cLessonTitle != 'Lesson 2 Updated';
+-- Check update of LessonList
+SELECT 'Lesson: tblLessonList not updated correctly while updating cLessonTitle'
+	WHERE (SELECT count(*) FROM vLessons WHERE pkLessonUuid = 'L2' AND cLessonTitle = 'Lesson 2 Updated') != 2;
+
+-- Update LessonUuid (PK)
+UPDATE tblLesson SET pkLessonUuid = 'L2U' WHERE pkLessonUuid = 'L2';
+-- Check row count
+SELECT 'Lesson: Wrong row count'
+	WHERE (SELECT COUNT(*) FROM tblLesson) != 4;
+-- Check LessonUuid
+SELECT 'Lesson: pkLessonUuid not updated'
+	WHERE (SELECT count(*) FROM tblLesson WHERE pkLessonUuid != 'L2U' AND cLessonTitle = 'Lesson 2 Updated') != 0;
+-- Check update of LessonList
+SELECT 'Lesson: tblLessonList not updated correctly while updating pkLessonUuid'
+	WHERE (SELECT count(*) FROM vLessons WHERE pkLessonUuid = 'L2U' AND cLessonTitle = 'Lesson 2 Updated') != 2;
+
+ROLLBACK;
+
+
+-- Manipulate LessonList
+-- Insert L3 between L2 and L4 into Course C2
+-- L2 <-> L3 <-> L4
+INSERT INTO tblLessonList (fkLessonUuid,fkParentId) VALUES ('L3', (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2'));
+-- Check new row count
+SELECT 'LessonListBeforeChildIdUpdate: Parent or child link broken'
+	WHERE (SELECT COUNT(*) FROM vLessonListForward WHERE fkCourseUuid = 'C2') != 3;
+-- Check the links
+SELECT 'LessonListBeforeChildIdUpdate: Parent or child links broken'
+	-- L2 links
+	WHERE (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2') IS NOT NULL
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L3')
+	-- L3 links
+	OR (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L3') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2')
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L3') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4')
+	-- L4 links
+	OR (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L3')
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4') IS NOT NULL;
+
+-- Delete L3 between L2 and L4 from Course C2
+-- L2 <-> L4
+DELETE FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L3';
+-- Check new row count
+SELECT 'LessonListBeforeChildIdUpdate: Parent or child link broken'
+	WHERE (SELECT COUNT(*) FROM vLessonListForward WHERE fkCourseUuid = 'C2') != 2;
+-- Check the links
+SELECT 'LessonListBeforeChildIdUpdate: Parent or child links broken'
+	-- L2 links
+	WHERE (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2') IS NOT NULL
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4')
+	-- L4 links
+	OR (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2')
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4') IS NOT NULL;
+
+-- Delete L4 from Course C2
+DELETE FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4';
+-- Check new row count
+SELECT 'LessonListBeforeChildIdUpdate: Parent or child link broken'
+	WHERE (SELECT COUNT(*) FROM vLessonListForward WHERE fkCourseUuid = 'C2') != 1;
+-- Check the links
+SELECT 'LessonListBeforeChildIdUpdate: Parent or child links broken'
+	-- L2 links
+	WHERE (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2') IS NOT NULL
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2') IS NOT NULL;
+
+-- Prepend L4 before L2 into Course C2
+-- L4 <-> L2
+INSERT INTO tblLessonList (fkLessonUuid,fkCourseUuid) VALUES ('L4','C2');
+-- Insert L3 between L4 and L2 into Course C2
+-- L4 <-> L3 <-> L2
+INSERT INTO tblLessonList (fkLessonUuid,fkParentId) VALUES ('L3', (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4'));
+-- Check new row count
+SELECT 'LessonListBeforeChildIdUpdate: Parent or child link broken'
+	WHERE (SELECT COUNT(*) FROM vLessonListForward WHERE fkCourseUuid = 'C2') != 3;
+-- Check the links
+SELECT 'LessonListBeforeChildIdUpdate: Parent or child links broken'
+	-- L4 links
+	WHERE (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4') IS NOT NULL
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L3')
+	-- L3 links
+	OR (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L3') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L4')
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L3') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2')
+	-- L4 links
+	OR (SELECT fkParentId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2') != (SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L3')
+	OR (SELECT fkChildId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2') IS NOT NULL;
