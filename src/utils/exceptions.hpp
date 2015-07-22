@@ -28,95 +28,50 @@ namespace qtouch
 class Exception: public QException
 {
 public:
-	explicit Exception(QString msg): msg(msg) {}
+	explicit Exception(const QString& msg): mMsg(msg) {}
 	virtual ~Exception() throw () {}
 
 	virtual void raise() const { throw* this; }
 	virtual Exception* clone() const { return new Exception(*this); }
 
-	virtual const char* what() const throw () { return msg.toLatin1().data(); }
-	virtual QString message() const throw () { return msg; }
+	virtual const char* what() const throw () { return mMsg.toLatin1().data(); }
+	virtual QString message() const throw () { return mMsg; }
 
 protected:
-	QString msg;
+	QString mMsg;
 };
 
-struct FileException: public Exception
+class FileException: public Exception
 {
 public:
-	FileException(QString msg, QString file): Exception(msg), file(file) {}
+	FileException(const QString& msg, const QString& filename): Exception(msg), mFileName(filename) {}
 	virtual ~FileException() throw () {}
 
 	virtual void raise() const { throw* this; }
 	virtual FileException* clone() const { return new FileException(*this); }
 
-	virtual QString message() const throw () { return msg % " in " % file; }
-	virtual const QString& filename() const throw() { return file; }
+	virtual QString message() const throw () { return mMsg % " in " % mFileName; }
+	virtual const QString& filename() const throw() { return mFileName; }
 
 protected:
-	QString file;
+	QString mFileName;
 };
 
-struct XmlException: public Exception
+class XmlException: public Exception
 {
 public:
-	XmlException(QString msg, QString file): Exception(msg), file(file) {}
+	XmlException(const QString& msg, const QString& filename): Exception(msg), mFileName(filename) {}
 	virtual ~XmlException() throw () {}
 
 	virtual void raise() const { throw* this; }
 	virtual XmlException* clone() const { return new XmlException(*this); }
 
-	virtual QString message() const throw () { return msg % " in " % file; }
-	virtual const QString& filename() const throw() { return file; }
+	virtual QString message() const throw () { return mMsg % " in " % mFileName; }
+	virtual const QString& filename() const throw() { return mFileName; }
 
 protected:
-	QString file;
+	QString mFileName;
 };
-
-struct DatabaseException: public Exception
-{
-public:
-	DatabaseException(QString msg): Exception(msg) {}
-	virtual ~DatabaseException() throw () {}
-
-	virtual void raise() const { throw* this; }
-	virtual DatabaseException* clone() const { return new DatabaseException(*this); }
-
-	virtual QString message() const throw() { return QStringLiteral(""); }
-};
-
-struct SqlDriverException: public DatabaseException
-{
-public:
-	SqlDriverException(QString msg, QString drvMsg): DatabaseException(msg), drvMsg(drvMsg) {}
-	virtual ~SqlDriverException() throw () {}
-
-	virtual void raise() const { throw* this; }
-	virtual SqlDriverException* clone() const { return new SqlDriverException(*this); }
-
-	virtual QString message() const throw() { return msg % " -- Driver message: " % drvMsg; }
-	virtual const QString& driverMessage() const throw() { return drvMsg; }
-
-protected:
-	QString drvMsg;
-};
-
-struct SqlException: public DatabaseException
-{
-public:
-	SqlException(QString msg, QString dbMsg): DatabaseException(msg), dbMsg(dbMsg) {}
-	virtual ~SqlException() throw () {}
-
-	virtual void raise() const { throw* this; }
-	virtual SqlException* clone() const { return new SqlException(*this); }
-
-	virtual QString message() const throw() { return msg % " -- Database message: " % dbMsg; }
-	virtual const QString& databaseMessage() const throw() { return dbMsg; }
-
-protected:
-	QString dbMsg;
-};
-
 
 } /* namespace qtouch */
 
