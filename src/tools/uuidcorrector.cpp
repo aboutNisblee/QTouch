@@ -46,12 +46,10 @@ struct Config
 // *INDENT-OFF*
 struct CourseFile
 {
-	CourseFile(const qtouch::CoursePtr& c, const QString& p) : course(c), filePath(p) {}
-	qtouch::CoursePtr course;
+	CourseFile(std::shared_ptr<qtouch::Course> c, const QString& p) : course(c), filePath(p) {}
+	std::shared_ptr<qtouch::Course> course;
 	QString filePath;
 };
-typedef QSharedPointer<CourseFile> CourseFilePtr;
-typedef QList<CourseFilePtr> CourseFileList;
 // *INDENT-ON*
 
 QTextStream& qStdOut()
@@ -155,7 +153,7 @@ int main(int argc, char* argv[])
 	QDir coursepath(c.xmlDir, "*.xml", QDir::Name | QDir::IgnoreCase, QDir::Files);
 
 	QStringList coursefiles;
-	foreach(QString const & s, coursepath.entryList())
+	for (const auto& s : coursepath.entryList())
 	{
 		coursefiles.append(coursepath.filePath(s));
 	}
@@ -163,14 +161,14 @@ int main(int argc, char* argv[])
 	if (c.verbose)
 	{
 		qStdOut() << "Course files found in " << c.xmlDir << " :" << "\n";
-		foreach(const QString & s, coursefiles)
+		for (const auto& s : coursefiles)
 		{
 			qStdOut() << "    " << s << "\n";
 		}
 	}
 
 	// Create a validator
-	qtouch::xml::ValidatorPtr validator;
+	std::unique_ptr<QXmlSchemaValidator> validator;
 	try
 	{
 		validator = qtouch::xml::createValidator(c.xsdFile);
@@ -181,18 +179,16 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	CourseFileList candidates;
+	std::vector<std::shared_ptr<CourseFile>> candidates;
 
 	for (QStringList::const_iterator it = coursefiles.begin(); it != coursefiles.end(); ++it)
 	{
-		qtouch::CoursePtr course;
-
 		qtouch::xml::ParseResult error;
 		QString message;
 
 		try
 		{
-			course = qtouch::xml::parseCourse(*it, validator, &error, &message);
+			auto course = qtouch::xml::parseCourse(*it, *validator, &error, &message);
 
 			if (qtouch::xml::InvalidId == error)
 			{
@@ -202,8 +198,8 @@ int main(int argc, char* argv[])
 					qStdOut() << message;
 				}
 
-				CourseFilePtr c(new CourseFile(course, *it));
-				candidates.append(c);
+				auto c = std::make_shared<CourseFile>(course, *it);
+				candidates.push_back(c);
 			}
 		}
 		catch (qtouch::Exception& e)
@@ -213,7 +209,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	foreach(const CourseFilePtr & candidate, candidates)
+	for (const auto& candidate : candidates)
 	{
 		if (c.simulation)
 		{
@@ -247,7 +243,7 @@ int main(int argc, char* argv[])
 		// Write the corrected data out
 		try
 		{
-			qtouch::xml::writeCourse(candidate->course, candidate->filePath);
+			qtouch::xml::writeCourse(*candidate->course, candidate->filePath);
 		}
 		catch (qtouch::Exception& e)
 		{
