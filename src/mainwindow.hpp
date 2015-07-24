@@ -35,7 +35,7 @@ public:
 	bool init();
 
 signals:
-//	void sizeChanged(int width, int height);
+	//	void sizeChanged(int width, int height);
 
 public slots:
 
@@ -47,8 +47,7 @@ private:
 	QQmlComponent* mwComponent;
 	QQuickItem* mwItem;
 
-	DataModelPtr mDataModel;
-//	QSharedPointer<CourseModel> mCourseModel;
+	DataModel* mDataModel;
 	CourseModel* mCourseModel;
 
 	Q_DISABLE_COPY(MainWindow)

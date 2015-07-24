@@ -39,23 +39,18 @@ bool componentError(QQmlComponent* c)
 
 void registerQmlTypes()
 {
-//	qmlRegisterUncreatableType<MainWindowController>("de.nisble.qtouch", 1, 0, "HomeScreenController",
-//	        "Lifetime is maintained by backend");
-//	qmlRegisterUncreatableType<MainWindowController>("de.nisble.qtouch", 1, 0, "CourseModel",
-//	        "Lifetime is maintained by backend");
-
 	qRegisterMetaType<CourseModel*>("CourseModel*");
 	qmlRegisterType<CourseModel>("de.nisble.qtouch", 1, 0, "CourseModel");
 
 	qRegisterMetaType<LessonModel*>("LessonModel*");
-//	qmlRegisterType<LessonModel>("de.nisble.qtouch", 1, 0, "LessonModel");
+	//	qmlRegisterType<LessonModel>("de.nisble.qtouch", 1, 0, "LessonModel");
 	qmlRegisterType<LessonModel>();
 }
 
 } /* namespace anonymous */
 
 MainWindow::MainWindow(QQmlEngine* engine, QWindow* parent) :
-		QQuickWindow(parent), mwEngine(engine), mwComponent(0), mwItem(0), mCourseModel(0)
+	QQuickWindow(parent), mwEngine(engine), mwComponent(0), mwItem(0), mDataModel(0), mCourseModel(0)
 {
 }
 
@@ -89,7 +84,7 @@ bool MainWindow::init()
 	// Register needed types
 	registerQmlTypes();
 
-	mDataModel.reset(new DataModel());
+	mDataModel = new DataModel(this);
 
 	try
 	{
@@ -103,7 +98,6 @@ bool MainWindow::init()
 
 	/* TODO: Check it!
 	 * QML cares about deletion, when no parent is set!?
-	 * This class cannot be parent, since this is not an QObject.
 	 */
 	mCourseModel = new CourseModel(mDataModel, this);
 
