@@ -11,15 +11,17 @@
 
 #include <QDebug>
 
+#include "datamodel.hpp"
+
 namespace qtouch
 {
 
 LessonModel::LessonModel(QObject* parent):
-	QAbstractListModel(parent), mSelected(-1)
+	QAbstractListModel(parent), mDm(0), mSelected(-1)
 {
 }
 
-LessonModel::LessonModel(DataModelPtr model, QObject* parent) :
+LessonModel::LessonModel(DataModel* model, QObject* parent) :
 	QAbstractListModel(parent), mDm(model), mSelected(-1)
 {
 }
@@ -114,6 +116,12 @@ void LessonModel::selectLesson(int index)
 	}
 
 	emit selectedLessonIndexChanged();
+
+	emit selectedLessonIdChanged();
+	emit selectedLessonTitleChanged();
+	emit selectedLessonNewCharsChanged();
+	emit selectedLessonBuiltinChanged();
+	emit selectedLessonTextChanged();
 }
 
 QHash<int, QByteArray> LessonModel::roleNames() const
@@ -128,11 +136,11 @@ QHash<int, QByteArray> LessonModel::roleNames() const
 }
 
 CourseModel::CourseModel(QObject* parent):
-	QAbstractListModel(parent), mLessonModel(0), mSelected(-1)
+	QAbstractListModel(parent), mDm(0), mLessonModel(0), mSelected(-1)
 {
 }
 
-CourseModel::CourseModel(DataModelPtr model, QObject* parent):
+CourseModel::CourseModel(DataModel* model, QObject* parent):
 	QAbstractListModel(parent), mDm(model)
 {
 	mLessonModel = new LessonModel(mDm, this);

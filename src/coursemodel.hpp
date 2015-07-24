@@ -9,12 +9,12 @@
 #define COURSEMODEL_HPP_
 
 #include <QAbstractListModel>
-
-#include "datamodel.hpp"
+#include <QUuid>
 
 namespace qtouch
 {
 
+class DataModel;
 class CourseModel;
 
 class LessonModel: public QAbstractListModel
@@ -41,7 +41,7 @@ public:
 	};
 
 	explicit LessonModel(QObject* parent = 0);
-	explicit LessonModel(DataModelPtr model, QObject* parent = 0);
+	explicit LessonModel(DataModel* model, QObject* parent = 0);
 	virtual ~LessonModel();
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -74,7 +74,7 @@ private:
 	friend class CourseModel;
 	inline void setCourse(const QUuid& courseId) { mCourseId = courseId; }
 
-	DataModelPtr mDm;
+	DataModel* mDm;
 
 	QUuid mCourseId;
 	int mSelected;
@@ -110,7 +110,7 @@ public:
 	};
 
 	explicit CourseModel(QObject* parent = 0);
-	explicit CourseModel(DataModelPtr model, QObject* parent = 0);
+	explicit CourseModel(DataModel* model, QObject* parent = 0);
 	virtual ~CourseModel();
 
 	// TODO: Add flags to control enabled items! E.g. different language, never used, ...
@@ -145,7 +145,7 @@ protected:
 	QHash<int, QByteArray> roleNames() const;
 
 private:
-	DataModelPtr mDm;
+	DataModel* mDm;
 
 	// Lifetime managed by Qt
 	LessonModel* mLessonModel;
