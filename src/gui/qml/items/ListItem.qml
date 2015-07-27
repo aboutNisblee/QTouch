@@ -2,23 +2,46 @@ import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.0
 
+/*
+ListView item
+*/
 Item {
-    id: listItem
+    id: root
 
-    // Text to show on the label
-    property string labelText: "Insert text here ..."
-    // Opacity of the text
-    property real labelOpacity: 1
+    property alias text: label.text
+    property alias textFormat: label.textFormat
     // Source of an optional icon to show infront of the text
-    property string iconSource
+    property alias iconSource: icon.source
+    // If enabled each Item knows three states: UNSELECTED, HOVERED, SELECTED
+    // If disabled the HOVERED state is ommited and background properties are
+    // statically set to theitem.
+    property alias hoverable: mouseArea.hoverEnabled
+
+    property real topMargin: 4
+    property real bottomMargin: 4
+
+    property alias bgColor: background.color
+    property int bgBorderWidth: 0
+    property color bgBorderColor: "black"
+    property alias bgRadius: background.radius
+
+    property real bgHoveredOpacity: 0.4
+    // Note: If a highlighter item is used, simply set bgMaxOpacity to 0
+    property real bgMaxOpacity: 1
+
+    property bool isCurrentItem: false
 
     signal clicked
     signal doubleClicked
 
-    //    implicitHeight: Math.max(label.height, icon.height)
-    implicitHeight: label.height + 8
+    implicitHeight: label.height + topMargin + bottomMargin
 
-    state: ListView.isCurrentItem ? "selected" : mouseArea.containsMouse ? "hovered" : "normal"
+    state: {
+        if (hoverable)
+            isCurrentItem ? "SELECTED" : mouseArea.containsMouse ? "HOVERED" : "UNSELECTED"
+        else
+            isCurrentItem ? "SELECTED" : "UNSELECTED"
+    }
 
     Item {
         id: content
@@ -46,95 +69,76 @@ Item {
             }
 
             visible: !!iconSource
-            source: iconSource
-
             height: label.height
             width: height
+
+            fillMode: Image.PreserveAspectFit
         }
 
         // Text
         Label {
             id: label
 
-            // Wrap text
-            maximumLineCount: 1
-            elide: Text.ElideRight
-
             anchors {
                 left: icon.visible ? icon.right : parent.left
                 right: parent.right
                 leftMargin: 4
                 rightMargin: 4
-
-                // FIXME!! Margins are anchor specific!
-                // They are only used when the anchores are used!!!
-                //                topMargin: 10
-                //                bottomMargin: 10
                 verticalCenter: parent.verticalCenter
             }
 
-            text: labelText
-            opacity: labelOpacity
+            // Wrap text
+            maximumLineCount: 1
+            elide: Text.ElideRight
         }
     }
 
     Rectangle {
         id: background
 
-        anchors {
-            fill: parent
-            topMargin: content.anchors.topMargin
-            bottomMargin: content.anchors.bottomMargin
-            leftMargin: content.anchors.leftMargin
-            rightMargin: content.anchors.rightMargin
-        }
-
-        color: "lightgrey"
-//        border.color: "white"
-//        border.width: 1
-        radius: 3
-        opacity: 1
+        anchors.fill: parent
+        opacity: bgMaxOpacity
+        border.width: bgBorderWidth
+        border.color: bgBorderColor
     }
 
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        hoverEnabled: true
-
         onClicked: parent.clicked()
         onDoubleClicked: parent.doubleClicked()
     }
 
     states: [
         State {
-            name: "normal"
+            name: "UNSELECTED"
             PropertyChanges {
                 target: background
-                visible: false
+                visible: (hoverable) ? false : true
             }
         },
         State {
-            name: "hovered"
+            name: "HOVERED"
             PropertyChanges {
                 target: background
                 visible: true
-                opacity: 0.4
+                opacity: bgHoveredOpacity
             }
         },
         State {
-            name: "selected"
+            name: "SELECTED"
             PropertyChanges {
                 target: background
                 visible: true
-                opacity: 0.8
+                opacity: bgMaxOpacity
             }
         }
     ]
 
     transitions: [
         Transition {
-            from: "normal"
-            to: "hovered"
+            from: "UNSELECTED"
+            to: "HOVERED"
             NumberAnimation {
                 target: background
                 property: "opacity"
@@ -143,8 +147,8 @@ Item {
             }
         },
         Transition {
-            from: "hovered"
-            to: "normal"
+            from: "HOVERED"
+            to: "UNSELECTED"
             NumberAnimation {
                 target: background
                 property: "opacity"
