@@ -51,8 +51,9 @@
         <file>courses/us.workman.xml</file>
         <file>courses/us.xml</file>
         <file>courses/course.xsd</file>
+        <file>icons/32x32/list-add.png</file>
     </qresource>
     <qresource prefix="/testing">
         <file>courses/testcourse.xml</file>
-    </qresource>    
+    </qresource>
 </RCC>
