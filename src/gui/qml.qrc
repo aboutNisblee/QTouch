@@ -2,6 +2,10 @@
     <qresource prefix="/">
         <file>qml/MainWindow.qml</file>
         <file>qml/HomeScreen.qml</file>
+        <file>qml/CourseSelector.qml</file>
+        <file>qml/LessonSelector.qml</file>
+        <file>qml/ProfileScreen.qml</file>
+        <file>qml/TrainingScreen.qml</file>
         <file>qml/items/ListItem.qml</file>
     </qresource>
 </RCC>

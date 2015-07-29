@@ -1,200 +1,141 @@
 import QtQuick 2.3
-import QtQuick.Controls 1.2
-import QtQuick.Layouts 1.0
-import QtQuick.Controls.Styles 1.2
+import QtQuick.Controls 1.3
 
-import de.nisble.qtouch 1.0
-//import "qrc:/qml/items" as Items
-import "items" as Items
+Item {
+    id: root
 
-ColumnLayout {
-    id: homeScreen
-
-    // This is not nice, because now the lifetime of the controller depends
-    // on the view. But its even better than injecting the controller as property.
-    HomeScreenController {
-        id: controller
-    }
-
-    visible: controller.visible
-
-    // Bind to the signals of the Controller
-    Component.onCompleted: {
-        console.log("HomeScreen loaded")
-
-        controller.onLoaded()
-    }
-
-    ToolBar {
-        id: toolBar
-
-        // Note: ToolBar does not like the injection of the Layout properties.
-        // "QML ToolBar: Binding loop detected for property "width" when parent made visible.
+    CourseSelector {
+        id: courseSelector
         anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+
+            topMargin: 5
+        }
+
+        currentCourseModel: courseModel
+
+        // React to output signals
+        onCourseSelected: {
+            console.debug("courseSelector.onCourseSelected: " + index)
+            courseModel.selectCourse(index)
+        }
+        onShowCourseDescription: {
+            lblCourseDescription.state = (enabled) ? "VISIBLE" : "INVISIBLE"
+        }
+    }
+
+    // Label that can be inflated by clicking the btCourseDescription button that
+    // is placed on the PathView delegate of CourseSelector.
+    Label {
+        id: lblCourseDescription
+
+        anchors {
+            top: courseSelector.bottom
+            topMargin: 5
+            right: parent.right
+            rightMargin: 5
+            left: parent.left
+            leftMargin: 5
+
+            bottomMargin: 10
+        }
+
+        // Access course model at the currently selected index and get the description
+        text: courseModel.selectedCourseDescription
+
+        visible: height > 0
+        state: "INVISIBLE"
+
+        states: [
+            State {
+                name: "INVISIBLE"
+                PropertyChanges {
+                    target: lblCourseDescription
+                    height: 0
+                    opacity: 0
+                }
+            },
+            State {
+                name: "VISIBLE"
+                PropertyChanges {
+                    target: lblCourseDescription
+                    height: contentHeight
+                    opacity: 1
+                }
+            }
+        ] // states
+
+        transitions: [
+            Transition {
+                from: "INVISIBLE"
+                to: "VISIBLE"
+                SequentialAnimation {
+                    PropertyAnimation {
+                        property: "height"
+                        easing.type: Easing.Linear
+                        duration: 150
+                    }
+                    PropertyAnimation {
+                        property: "opacity"
+                        easing.type: Easing.Linear
+                        duration: 150
+                    }
+                }
+            },
+            Transition {
+                from: "VISIBLE"
+                to: "INVISIBLE"
+                SequentialAnimation {
+                    PropertyAnimation {
+                        property: "opacity"
+                        easing.type: Easing.Linear
+                        duration: 150
+                    }
+                    PropertyAnimation {
+                        property: "height"
+                        easing.type: Easing.Linear
+                        duration: 150
+                    }
+                }
+            }
+        ] // transitions
+
+        Behavior on height {
+            PropertyAnimation {
+                easing.type: Easing.Linear
+                duration: 150
+            }
+        }
+        Behavior on opacity {
+            PropertyAnimation {
+                easing.type: Easing.Linear
+                duration: 150
+            }
+        }
+    } // Label
+
+    LessonSelector {
+        id: lessonSelector
+        anchors {
+            top: lblCourseDescription.bottom
+            bottom: parent.bottom
             right: parent.right
             left: parent.left
+
+            topMargin: 5
         }
+        // Fill the column
+        height: parent.height - courseSelector.height - lblCourseDescription.height
 
-        RowLayout {
-            // Note: ToolBar has no Layout
-            anchors.right: parent.right
-            anchors.left: parent.left
+        currentLessonModel: courseModel.selectedLessonModel
+        previewText: courseModel.selectedLessonModel.selectedLessonText
 
-            ToolButton {
-                id: btUser
-
-                iconName: "user-identity"
-                iconSource: "qrc:/icons/64x64/user-identity.png"
-
-                //                onClicked: {
-                //                    textAreaLeft.text = "btUser clicked"
-                //                }
-            }
-
-            // Spacer
-            Item {
-                Layout.fillWidth: true
-            }
-
-            ToolButton {
-                id: btConfigure
-
-                Layout.alignment: Qt.AlignRight
-
-                iconName: "configure"
-                iconSource: "qrc:/icons/64x64/configure.png"
-
-                onClicked: {
-                    lessonPreview.text = "btConfigure clicked"
-
-                    lessonSelector.update()
-                }
-            }
+        // React to output signals
+        onLessonSelected: {
+            console.debug("lessonSelector.onLessonSelected: " + index)
+            courseModel.selectedLessonModel.selectLesson(index)
         }
     }
-
-    RowLayout {
-        id: courseSelector
-        Layout.fillWidth: true
-
-        Label {
-            id: textCourseName
-            font.weight: Font.Bold
-            text: qsTr("Deutsch")
-        }
-
-        Button {
-            id: btCourseInfo
-            iconName: "dialog-information"
-            iconSource: "qrc:/icons/64x64/dialog-information.png"
-            checkable: true
-        }
-
-        Item {
-            Layout.fillWidth: true
-        }
-
-        Button {
-            id: btPreviousCourse
-            Layout.alignment: Qt.AlignRight
-            iconName: "arrow-left"
-            iconSource: "qrc:/icons/32x32/arrow-left.png"
-        }
-
-        Button {
-            id: btNextCourse
-            Layout.alignment: Qt.AlignRight
-            iconName: "arrow-right"
-            iconSource: "qrc:/icons/32x32/arrow-right.png"
-        }
-    }
-
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: 0
-
-        ScrollView {
-            id: lessonSelector
-
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            style: ScrollViewStyle {
-                // Transient and inc/dec controls or not transient and no controls
-//                transientScrollBars: true
-                incrementControl: Item {}
-                decrementControl: Item {}
-
-                handle: Item {
-                    implicitWidth: 14
-                    implicitHeight: 26
-                    Rectangle {
-                        anchors {
-                            fill: parent
-                            topMargin: 2
-                            leftMargin: 2
-                            rightMargin: 2
-                            bottomMargin: 2
-                        }
-                        color: "lightgray"
-                        radius: 3
-                    }
-                }
-                scrollBarBackground: Item {
-                    implicitWidth: 14
-                    implicitHeight: 26
-                }
-            }
-
-            ListView {
-                id: lessonSelectorView
-
-                anchors.fill: parent
-
-                clip: true
-
-                model: lessonModel
-                delegate: Items.ListItem {
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                    }
-
-                    // For QML representations of role names see documentation of
-                    // QAbstractItemModel::roleNames()
-                    labelText: display
-
-                    // labelOpacity: 1
-                    iconSource: index > 10 ? "qrc:/icons/32x32/object-locked.png" : ""
-
-                    onClicked: {
-                        // Selecttion
-                        lessonSelectorView.currentIndex = index
-
-                        // lessonPreview.text = ListView.model.lessonModel
-                        lessonPreview.text = display
-                    }
-                    onDoubleClicked: {
-
-                    }
-                }
-            }
-        }
-        TextArea {
-            id: lessonPreview
-
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            frameVisible: false
-
-            enabled: false
-            text: "Right one"
-        }
-    }
-
-    // TODO: Add it to MainWindow!
-    //    StatusBar {
-
-    //    }
-}
+} // Item
