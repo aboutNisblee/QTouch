@@ -18,7 +18,7 @@ namespace qtouch
 namespace xml
 {
 
-void writeCourse(const Course& course, const QString& file_path) throw (FileException, XmlException);
+void writeCourse(const Course& course, const QString& file_path);
 
 } /* namespace xml */
 } /* namespace qtouch */

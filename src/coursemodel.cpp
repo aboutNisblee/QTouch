@@ -17,7 +17,7 @@ namespace qtouch
 {
 
 LessonModel::LessonModel(QObject* parent):
-	QAbstractListModel(parent), mDm(0), mSelected(-1)
+	QAbstractListModel(parent), mDm(nullptr), mSelected(-1)
 {
 }
 
@@ -136,7 +136,7 @@ QHash<int, QByteArray> LessonModel::roleNames() const
 }
 
 CourseModel::CourseModel(QObject* parent):
-	QAbstractListModel(parent), mDm(0), mLessonModel(0), mSelected(-1)
+	QAbstractListModel(parent), mDm(nullptr), mLessonModel(0), mSelected(-1)
 {
 }
 

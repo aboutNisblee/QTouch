@@ -28,11 +28,11 @@ namespace xml
 
 enum ParseResult { Ok, InvalidId };
 
-std::unique_ptr<QXmlSchemaValidator> createValidator(const QString& xsd_path) throw (FileException, XmlException);
+std::unique_ptr<QXmlSchemaValidator> createValidator(const QString& xsd_path);
 
-bool validate(const QString& xml_path, const QXmlSchemaValidator& validator) throw (FileException, XmlException);
+bool validate(const QString& xml_path, const QXmlSchemaValidator& validator);
 
-std::shared_ptr<Course> parseCourse(const QString& course_path, const QXmlSchemaValidator& validator, ParseResult* result, QString* warningMessage) throw (FileException, XmlException);
+std::shared_ptr<Course> parseCourse(const QString& course_path, const QXmlSchemaValidator& validator, ParseResult* result, QString* warningMessage);
 
 } /* namespace xml */
 

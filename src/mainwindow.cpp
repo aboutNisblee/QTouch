@@ -15,6 +15,7 @@
 
 #include <QDebug>
 
+#include "utils/exceptions.hpp"
 #include "coursemodel.hpp"
 
 namespace qtouch
@@ -50,7 +51,8 @@ void registerQmlTypes()
 } /* namespace anonymous */
 
 MainWindow::MainWindow(QQmlEngine* engine, QWindow* parent) :
-	QQuickWindow(parent), mwEngine(engine), mwComponent(0), mwItem(0), mDataModel(0), mCourseModel(0)
+	QQuickWindow(parent), mwEngine(engine), mwComponent(nullptr), mwItem(nullptr), mDataModel(nullptr),
+	mCourseModel(nullptr)
 {
 }
 

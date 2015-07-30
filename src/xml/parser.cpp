@@ -22,7 +22,7 @@ namespace qtouch
 namespace xml
 {
 
-std::unique_ptr<QXmlSchemaValidator> createValidator(const QString& xsd_path) throw (FileException, XmlException)
+std::unique_ptr<QXmlSchemaValidator> createValidator(const QString& xsd_path)
 {
 	QFile xsd(xsd_path);
 
@@ -52,9 +52,10 @@ std::unique_ptr<QXmlSchemaValidator> createValidator(const QString& xsd_path) th
  * Check a single XML file against is schema definition.
  * @param xml_path Path to the XML file.
  * @param validator A schema validator created by e.g. validator().
+ * @throw FileException or XmlException
  * @return True when XML file is valid, else false.
  */
-bool validate(const QString& xml_path, const QXmlSchemaValidator& validator) throw (FileException, XmlException)
+bool validate(const QString& xml_path, const QXmlSchemaValidator& validator)
 {
 	QFile xml(xml_path);
 
@@ -76,10 +77,11 @@ bool validate(const QString& xml_path, const QXmlSchemaValidator& validator) thr
  * @param validator A schema validator created by e.g. validator().
  * @param result The status indicating the success of parsing.
  * @param warningMessage An optional warning message.
+ * @throw FileException or XmlException
  * @return A new Course instance.
  */
 std::shared_ptr<Course> parseCourse(const QString& course_path, const QXmlSchemaValidator& validator, ParseResult* result,
-                      QString* warningMessage) throw (FileException, XmlException)
+                      QString* warningMessage)
 {
 	QFile xml(course_path);
 

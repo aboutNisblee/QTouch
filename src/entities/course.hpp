@@ -98,14 +98,28 @@ public:
 
 	void push_back(const Lesson& lesson);
 
+	// TODO: Make it compatible to std::insert_iterator
 	template<typename Iterator>
 	const_iterator insert(const_iterator position, Iterator first, Iterator last);
 
 	inline int size() const { return mLessons.size(); }
+	inline bool empty() const { return mLessons.empty(); }
 	inline void clear() { mLessons.clear(); }
 
-	inline std::shared_ptr<const Lesson> at(size_type i) const throw(std::out_of_range) { return mLessons.at(i); }
-	inline std::shared_ptr<const Lesson> operator[](size_type i) const throw(std::out_of_range) { return mLessons.at(i); }
+	/**
+	 * Get a pointer to a Lesson at a specific position.
+	 * @param i The index.
+	 * @throw std::out_of_range if i is out of range.
+	 * @return A std::shared_ptr to the questioned Lesson.
+	 */
+	inline std::shared_ptr<const Lesson> at(size_type i) const { return mLessons.at(i); }
+	/**
+	 * Get a pointer to a Lesson at a specific position.
+	 * @param i The index.
+	 * @throw std::out_of_range if i is out of range.
+	 * @return A std::shared_ptr to the questioned Lesson.
+	 */
+	inline std::shared_ptr<const Lesson> operator[](size_type i) const { return mLessons.at(i); }
 
 	bool contains(const QUuid& id) const;
 	std::shared_ptr<const Lesson> get(const QUuid& lessonId) const;

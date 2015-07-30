@@ -19,7 +19,13 @@ namespace qtouch
 namespace xml
 {
 
-void writeCourse(const Course& course, const QString& file_path) throw (FileException, XmlException)
+/**
+ * Write a course file.
+ * @param course A Course.
+ * @param file_path The target file path.
+ * @throw FileException, XmlException
+ */
+void writeCourse(const Course& course, const QString& file_path)
 {
 	QFile output(file_path);
 	if (!output.open(QIODevice::WriteOnly))

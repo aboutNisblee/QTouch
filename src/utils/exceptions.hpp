@@ -29,13 +29,13 @@ class Exception: public QException
 {
 public:
 	explicit Exception(const QString& msg): mMsg(msg) {}
-	virtual ~Exception() throw () {}
+	virtual ~Exception() noexcept {}
 
 	virtual void raise() const { throw* this; }
 	virtual Exception* clone() const { return new Exception(*this); }
 
-	virtual const char* what() const throw () { return mMsg.toLatin1().data(); }
-	virtual QString message() const throw () { return mMsg; }
+	virtual const char* what() const noexcept { return mMsg.toLatin1().data(); }
+	virtual QString message() const noexcept { return mMsg; }
 
 protected:
 	QString mMsg;
@@ -45,13 +45,13 @@ class FileException: public Exception
 {
 public:
 	FileException(const QString& msg, const QString& filename): Exception(msg), mFileName(filename) {}
-	virtual ~FileException() throw () {}
+	virtual ~FileException() noexcept {}
 
 	virtual void raise() const { throw* this; }
 	virtual FileException* clone() const { return new FileException(*this); }
 
-	virtual QString message() const throw () { return mMsg % " in " % mFileName; }
-	virtual const QString& filename() const throw() { return mFileName; }
+	virtual QString message() const noexcept { return mMsg % " in " % mFileName; }
+	virtual const QString& filename() const noexcept { return mFileName; }
 
 protected:
 	QString mFileName;
@@ -61,13 +61,13 @@ class XmlException: public Exception
 {
 public:
 	XmlException(const QString& msg, const QString& filename): Exception(msg), mFileName(filename) {}
-	virtual ~XmlException() throw () {}
+	virtual ~XmlException() noexcept {}
 
 	virtual void raise() const { throw* this; }
 	virtual XmlException* clone() const { return new XmlException(*this); }
 
-	virtual QString message() const throw () { return mMsg % " in " % mFileName; }
-	virtual const QString& filename() const throw() { return mFileName; }
+	virtual QString message() const noexcept { return mMsg % " in " % mFileName; }
+	virtual const QString& filename() const noexcept { return mFileName; }
 
 protected:
 	QString mFileName;
