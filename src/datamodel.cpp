@@ -13,6 +13,8 @@
 #include <QDebug>
 
 #include "xml/parser.hpp"
+#include "db/dbv1.hpp"
+#include "db/dbhelper.hpp"
 
 namespace qtouch
 {
@@ -41,7 +43,11 @@ DataModel::~DataModel()
 {
 }
 
-void DataModel::init() throw (Exception)
+/**
+ * Initialize the data model.
+ * @throw qtouch::Exception
+ */
+void DataModel::init()
 {
 	// Get all course files from the resources
 	QDir coursepath(QStringLiteral(":/courses"), "*.xml", QDir::Name | QDir::IgnoreCase, QDir::Files);
@@ -58,6 +64,7 @@ void DataModel::init() throw (Exception)
 	// Create a validator
 	auto validator = xml::createValidator(QStringLiteral(":/courses/course.xsd"));
 
+	// Parse Course files
 	QStringListIterator it(sourceFileList);
 	while (it.hasNext())
 	{
@@ -78,95 +85,30 @@ void DataModel::init() throw (Exception)
 	// Initialize the database
 	/* XXX: Use QStandardPaths::DataLocation when < 5.4
 	 * else QStandardPaths::AppDataLocation */
-	db.reset(new Db(QString("QTouch.sqlite")));
+
+	mDb = DbV1::create();
+	mDbHelper = std::unique_ptr<DbHelper>(new DbHelper(mDb, QStringLiteral("QTouch.sqlite")));
+
+	// Check database schema version
+	if(mDbHelper->getShemaVersion() != 1)
+	{
+		// FIXME: Drop and recreate for now
+		mDb->dropSchema();
+		mDb->createSchema();
+	}
 
 	// Read the hash of the build-in courses from the database
-	QByteArray dbHash;
-	// XXX: DEBUGGING: Force recreation
-//	db->open(QString(), true);
-	db->open(QString());
-
-	dbHash = db->getCourseHash();
+	QByteArray dbHash = mDbHelper->getCourseHash();
 
 	// Compare (On match, loading from Db is redundant)
 	if (parsedHash != dbHash)
 	{
-		qWarning() << "Built-in courses in database differ from courses files: Update needed.";
+		qDebug() << "Built-in courses in database differ from courses files: Update needed.";
 
-		std::vector<std::shared_ptr<Course>> dbCourses;
+		mDbHelper->updateBuiltinCourses(parsedCourses.begin(), parsedCourses.end());
 
-		// Read all built-in courses from the database
-		dbCourses = db->courses(Db::BuiltIn);
-
-		// Get the lessons
-		for (auto& pC : dbCourses)
-			db->replaceLessons(*pC);
-
-		// Sorting
-		std::sort(dbCourses.begin(), dbCourses.end(), CourseListAscTitle());
-
-		// Match the Courses from the XML files against the courses in the database
-
-		// Make a working copy
-		auto dbCp = dbCourses;
-
-		// Iterate over the source courses
-		for (auto pIter = parsedCourses.begin(); pIter != parsedCourses.end(); ++pIter)
-		{
-			bool action = false;
-
-			for (auto dIter = dbCp.begin(); dIter != dbCp.end(); ++dIter)
-			{
-				// Compare IDs
-				if ((*pIter)->getId() == (*dIter)->getId())
-				{
-					// if ID are equal -> compare values
-					if ((**pIter) != (**dIter))
-					{
-						// if unequal -> update of destination needed
-						qDebug() << "Updating Course:" << (*pIter)->getId().toString() << " (" << (*pIter)->getTitle() << ")";
-						db->update(**pIter);
-					}
-
-					// remove from working copy
-					dbCp.erase(dIter);
-					action = true;
-					break;
-				}
-			}
-
-			// if course not found in database -> insert
-			if (!action)
-			{
-				qDebug() << "Inserting new Course:" << (*pIter)->getId().toString() << " (" << (*pIter)->getTitle() << ")";
-				db->insert(**pIter);
-			}
-		}
-
-		// the entries left in the destination copy must be redundant -> remove
-		for (const auto& d : dbCp)
-		{
-			qDebug() << "Deleting old Course:" << d->getId().toString() << " (" << d->getTitle() << ")";
-			db->deleteCourse(d->getId());
-		}
-
-		// Read all built-in courses from the database
-		auto written = db->courses(Db::BuiltIn);
-
-		// Get the lessons
-		for (auto& pC : written)
-			db->replaceLessons(*pC);
-
-		std::sort(written.begin(), written.end(), CourseListAscTitle());
-
-		auto writtenHash = hash(written.begin(), written.end());
-		if (writtenHash != parsedHash)
-		{
-			throw Exception("Hash mismatch after database update");
-		}
-
-		// If everything went fine, update the hash in the database
-		db->setCourseHash(writtenHash);
+		if (parsedHash != mDbHelper->getCourseHash())
+			qCritical() << "Hash mismatch after database update! Using course files";
 	}
 
 	mCourses = parsedCourses;
