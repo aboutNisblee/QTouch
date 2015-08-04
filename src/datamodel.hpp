@@ -11,10 +11,15 @@
 #include <map>
 #include <QObject>
 
-#include "db/db.hpp"
+#include "entities/course.hpp"
+#include "entities/profile.hpp"
+#include "entities/stats.hpp"
 
 namespace qtouch
 {
+
+class DbInterface;
+class DbHelper;
 
 class DataModel: public QObject
 {
@@ -24,7 +29,7 @@ public:
 	explicit DataModel(QObject* parent = 0);
 	virtual ~DataModel();
 
-	void init() throw (Exception);
+	void init();
 
 	// Course
 
@@ -82,7 +87,8 @@ public:
 	QString getLessonText(const QUuid& courseId, const QUuid& lessonId) const;
 
 private:
-	std::unique_ptr<Db> db;
+	std::shared_ptr<DbInterface> mDb;
+	std::unique_ptr<DbHelper> mDbHelper;
 
 	std::vector<std::shared_ptr<Course>> mCourses;
 	std::map<QUuid, std::shared_ptr<Course>> mCourseMap;
