@@ -2,6 +2,7 @@ import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.0
 
+
 /*
 ListView item
 */
@@ -69,7 +70,7 @@ Item {
             }
 
             visible: !!iconSource
-            height: label.height
+            height: label.font.pixelSize * 1.2
             width: height
 
             fillMode: Image.PreserveAspectFit
@@ -87,9 +88,9 @@ Item {
                 verticalCenter: parent.verticalCenter
             }
 
-            // Wrap text
-            maximumLineCount: 1
-            elide: Text.ElideRight
+            wrapMode: Text.WordWrap
+
+            // Note: text and textFormat is directly set by root item
         }
     }
 
