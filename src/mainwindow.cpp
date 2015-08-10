@@ -17,6 +17,7 @@
 
 #include "utils/exceptions.hpp"
 #include "coursemodel.hpp"
+#include "gui/textpage.hpp"
 
 namespace qtouch
 {
@@ -46,6 +47,8 @@ void registerQmlTypes()
 	qRegisterMetaType<LessonModel*>("LessonModel*");
 	//	qmlRegisterType<LessonModel>("de.nisble.qtouch", 1, 0, "LessonModel");
 	qmlRegisterType<LessonModel>();
+
+	qmlRegisterType<TextPage>("de.nisble.qtouch", 1, 0, "TextPage");
 }
 
 } /* namespace anonymous */
@@ -80,7 +83,7 @@ bool MainWindow::init()
 	if (!mwEngine)
 		mwEngine = new QQmlEngine(this);
 
-	// TODO: For what its worth??
+	// Install the IncubationController of QQuickWindow
 	mwEngine->setIncubationController(incubationController());
 
 	// Register needed types

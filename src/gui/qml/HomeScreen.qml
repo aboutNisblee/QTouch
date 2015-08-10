@@ -130,6 +130,7 @@ Item {
         height: parent.height - courseSelector.height - lblCourseDescription.height
 
         currentLessonModel: courseModel.selectedLessonModel
+        previewTitle: courseModel.selectedLessonModel.selectedLessonTitle
         previewText: courseModel.selectedLessonModel.selectedLessonText
 
         // React to output signals

@@ -4,6 +4,10 @@
 file(GLOB QMLSRCS qml/*.qml qml/*.js qml/items/*.qml)
 melp_add_sources(SRCS ${QMLSRCS})
 
+melp_add_sources(SRCS
+	textpage.cpp
+)
+
 ## QML Tests
 # Add resources
 qt5_add_resources(QML_TEST_QRCS ${CMAKE_CURRENT_SOURCE_DIR}/qml.qrc)

@@ -2,7 +2,9 @@ import QtQuick 2.3
 import QtQuick.Controls 1.3
 import QtQuick.Controls.Styles 1.3
 import QtQml.Models 2.1
+import QtGraphicalEffects 1.0
 
+import de.nisble.qtouch 1.0
 import "items" as Items
 
 
@@ -26,8 +28,10 @@ Item {
     // Input property interface
     // The lesson model of the currently selected course
     property alias currentLessonModel: delegateModel.model
+    // Title for the preview panel
+    property alias previewTitle: txtPreview.title
     // Text for the preview panel
-    property string previewText
+    property alias previewText: txtPreview.text
 
     signal // Output signal interface
     lessonSelected(int index)
@@ -65,14 +69,17 @@ Item {
     } // delegateModel
 
     Row {
+        id: rowLayout
+
         anchors.fill: parent
+        spacing: 5
 
         ScrollView {
             anchors {
-                top: parent.top
-                bottom: parent.bottom
+                top: rowLayout.top
+                bottom: rowLayout.bottom
             }
-            width: parent.width / 2
+            width: rowLayout.width / 2
 
             focus: true
 
@@ -106,7 +113,7 @@ Item {
             ListView {
                 id: list
 
-                // Size redundant: ListView is implicitly anchored
+                // Implicitly anchored to ScrollView
 
                 // Settings
                 focus: true
@@ -146,26 +153,86 @@ Item {
 
             // Size
             anchors {
-                top: parent.top
-                bottom: parent.bottom
+                top: rowLayout.top
+                bottom: rowLayout.bottom
             }
-            width: parent.width / 2
+            width: rowLayout.width / 2
 
-            // Children
-            TextArea {
-                id: txtPreview
+            Item {
+                // Reserves the space above the button
+                id: previewContainer
                 anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
+                    top: preview.top
+                    left: preview.left
+                    right: preview.right
+
                     bottom: btStart.top
+
+                    topMargin: 10
+                    leftMargin: 30
+                    rightMargin: 30
                     bottomMargin: 10
                 }
-                backgroundVisible: true
-                frameVisible: true
 
-                text: root.previewText
-            } // txtLessonPreview
+                ScrollView {
+                    // Centers in parent and adapts its size to its contents
+                    // as long as its fits into its parent
+                    id: previewScroller
+
+                    anchors.centerIn: parent
+                    width: Math.min(
+                               previewBorder.width,
+                               previewContainer.width)
+                    height: Math.min(
+                                previewBorder.height,
+                                previewContainer.height)
+
+                    verticalScrollBarPolicy: Qt.ScrollBarAlwaysOff
+                    horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
+
+                    Rectangle {
+                        // Only a border that fits its content and centrs in its parent
+                        id: previewBorder
+
+                        anchors.centerIn: parent
+                        width: txtPreview.width
+                        height: txtPreview.height
+                        antialiasing: true
+                        border {
+                            width: 1
+                            color: "#000"
+                        }
+
+                        TextPage {
+                            id: txtPreview
+                            anchors.centerIn: parent
+
+                            autoWrap: true
+                            textMargin: 20
+
+                            // Because the text defines the width of
+                            // the whole item a manimum is needed for the
+                            // layout to know where to wrap the text.
+                            maxWidth: previewContainer.width
+                            // maxHeight: previewContainer.height
+
+                            // Note: title and text are set by root item via property alias
+                        } // txtPreview
+                    } // previewBorder
+
+                    InnerShadow {
+                        width: previewBorder.width
+                        height: previewBorder.height
+                        anchors.centerIn: parent
+                        horizontalOffset: -2
+                        verticalOffset: 2
+                        radius: 0
+                        samples: 16
+                        color: "black"
+                        source: previewBorder
+                    }
+                } // previewScroller
+            } // previewContainer
 
             Button {
                 id: btStart
@@ -182,7 +249,7 @@ Item {
                     // TODO
                     console.log("btLessonStart.onClicked: StartLesson")
                 }
-            } // btLessonStart
-        } // lessonPreview
+            } // btStart
+        } // preview
     } // RowLayout
 } // root
