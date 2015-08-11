@@ -7,5 +7,6 @@
         <file>qml/ProfileScreen.qml</file>
         <file>qml/TrainingScreen.qml</file>
         <file>qml/items/ListItem.qml</file>
+        <file>qml/items/InflatedLabel.qml</file>
     </qresource>
 </RCC>

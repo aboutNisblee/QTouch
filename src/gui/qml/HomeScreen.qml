@@ -1,6 +1,8 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.3
 
+import "items" as Items
+
 Item {
     id: root
 
@@ -28,13 +30,13 @@ Item {
             courseModel.selectCourse(index)
         }
         onShowCourseDescription: {
-            lblCourseDescription.state = (enabled) ? "VISIBLE" : ""
+            lblCourseDescription.inflated = enabled
         }
     }
 
     // Label that can be inflated by clicking the btCourseDescription button that
     // is placed on the PathView delegate of CourseSelector.
-    Label {
+    Items.InflatedLabel {
         id: lblCourseDescription
 
         anchors {
@@ -51,51 +53,7 @@ Item {
         // Access course model at the currently selected index and get the description
         text: courseModel.selectedCourseDescription
 
-        height: 0
-        opacity: 0
-
-        states: State {
-            name: "VISIBLE"
-            PropertyChanges {
-                target: lblCourseDescription
-                height: contentHeight
-                opacity: 1
-            }
-        } // states
-
-        transitions: [
-            Transition {
-                to: "VISIBLE"
-                SequentialAnimation {
-                    PropertyAnimation {
-                        property: "height"
-                        easing.type: Easing.Linear
-                        duration: 150
-                    }
-                    PropertyAnimation {
-                        property: "opacity"
-                        easing.type: Easing.Linear
-                        duration: 150
-                    }
-                }
-            },
-            Transition {
-                from: "VISIBLE"
-                SequentialAnimation {
-                    PropertyAnimation {
-                        property: "opacity"
-                        easing.type: Easing.Linear
-                        duration: 150
-                    }
-                    PropertyAnimation {
-                        property: "height"
-                        easing.type: Easing.Linear
-                        duration: 150
-                    }
-                }
-            }
-        ] // transitions
-    } // Label
+    }
 
     LessonSelector {
         id: lessonSelector
