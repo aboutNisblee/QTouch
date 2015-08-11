@@ -7,76 +7,192 @@ Item {
     id: root
 
     signal lessonStarted
-
     Component.onCompleted: {
         lessonSelector.onLessonStarted.connect(lessonStarted)
     }
 
-    CourseSelector {
-        id: courseSelector
+    states: State {
+        name: "PROFILE"
+        when: btProfile.checked
+    }
+
+    ToolBar {
+        id: toolBar
         anchors {
             top: parent.top
             left: parent.left
             right: parent.right
-
-            topMargin: 5
         }
 
-        currentCourseModel: courseModel
+        ToolButton {
+            id: btProfile
+            anchors {
+                left: parent.left
+                verticalCenter: parent.verticalCenter
+                leftMargin: 10
+            }
+            iconSource: "qrc:/icons/64x64/user-identity.png"
+            iconName: "user-identity"
+            checkable: true
+            //                    onCheckedChanged: home.state = (checked) ? "PROFILE" : ""
+        } // btProfile
 
-        onSelectedCourseIndexChanged: {
-            courseModel.selectCourse(selectedCourseIndex)
-        }
-    }
+        ToolButton {
+            id: btConfig
+            anchors {
+                right: parent.right
+                verticalCenter: parent.verticalCenter
+                rightMargin: 10
+            }
+            iconSource: "qrc:/icons/64x64/configure.png"
+            iconName: "configure"
+        } // btConfig
+    } // toolBar
 
-    // Label that can be inflated by clicking the btCourseDescription button that
-    // is placed on the PathView delegate of CourseSelector.
-    Items.InflatedLabel {
-        id: lblCourseDescription
+    Item {
+        id: container
 
         anchors {
-            top: courseSelector.bottom
-            topMargin: 5
-            right: parent.right
-            rightMargin: 5
-            left: parent.left
-            leftMargin: 5
-
-            bottomMargin: 10
+            top: toolBar.bottom
+            left: root.left
+            right: root.right
+            bottom: root.bottom
         }
 
-        // Access course model at the currently selected index and get the description
-        text: courseModel.selectedCourseDescription
+        CourseSelector {
+            id: courseSelector
 
-        inflated: courseSelector.courseDescriptionBottonChecked
-    }
+            anchors {
+                top: container.top
+                left: container.left
+                right: container.right
 
-    LessonSelector {
-        id: lessonSelector
+                topMargin: 5
+            }
+
+            currentCourseModel: courseModel
+
+            onSelectedCourseIndexChanged: {
+                courseModel.selectCourse(selectedCourseIndex)
+            }
+        } // courseSelector
+
+        // Label that is inflated the button that is placed
+        // on the PathView delegate of CourseSelector.
+        Items.InflatedLabel {
+            id: lblCourseDescription
+
+            anchors {
+                top: courseSelector.bottom
+                topMargin: 5
+                right: container.right
+                rightMargin: 5
+                left: container.left
+                leftMargin: 5
+
+                bottomMargin: 10
+            }
+
+            // Access course model at the currently selected index and get the description
+            text: courseModel.selectedCourseDescription
+
+            inflated: courseSelector.courseDescriptionBottonChecked
+        } // lblCourseDescription
+
+        LessonSelector {
+            id: lessonSelector
+            anchors {
+                top: lblCourseDescription.bottom
+                right: container.right
+                left: container.left
+                bottom: container.bottom
+
+                topMargin: 5
+            }
+            // Fill the column
+            height: container.height - courseSelector.height - lblCourseDescription.height
+
+            currentLessonModel: courseModel.selectedLessonModel
+            previewTitle: courseModel.selectedLessonModel.selectedLessonTitle
+            previewText: courseModel.selectedLessonModel.selectedLessonText
+
+            // React to output signals
+            onSelectedLessonIndexChanged: {
+                // console.debug("lessonSelector.onLessonSelected: " + index)
+                courseModel.selectedLessonModel.selectLesson(
+                            selectedLessonIndex)
+            }
+        } // lessonSelector
+    } // container
+
+    Loader {
+        id: profileScreenLoader
+
         anchors {
-            top: lblCourseDescription.bottom
-            bottom: parent.bottom
-            right: parent.right
-            left: parent.left
-
-            topMargin: 5
-        }
-        // Fill the column
-        height: parent.height - courseSelector.height - lblCourseDescription.height
-
-        currentLessonModel: courseModel.selectedLessonModel
-        previewTitle: courseModel.selectedLessonModel.selectedLessonTitle
-        previewText: courseModel.selectedLessonModel.selectedLessonText
-
-        // React to output signals
-        onSelectedLessonIndexChanged: {
-            // console.debug("lessonSelector.onLessonSelected: " + index)
-            courseModel.selectedLessonModel.selectLesson(selectedLessonIndex)
+            top: toolBar.bottom
+            right: root.right
+            left: root.left
         }
 
-        //        onLessonStarted: {
-        //            console.log("Starting Lesson: " + courseModel.selectedLessonModel.selectedLessonTitle
-        //                        + " of Course: " + courseModel.selectedCourseTitle)
-        //        }
-    }
+        height: 0
+        active: false
+
+        sourceComponent: ProfileScreen {
+            id: profileScreen
+
+            height: profileScreenLoader.height
+            width: profileScreenLoader.width
+        } // profileScreen
+
+        onLoaded: console.debug("profileScreenLoader loaded")
+    } // profileScreenLoader
+
+    transitions: [
+        Transition {
+            to: "PROFILE"
+            SequentialAnimation {
+                // Ensure profileScreen is loaded
+                ScriptAction {
+                    script: profileScreenLoader.active = true
+                }
+                // Dim homeScreen
+                PropertyAnimation {
+                    target: container
+                    property: "opacity"
+                    to: 0
+                    easing.type: Easing.Linear
+                    duration: 150
+                }
+                // Inflate profileScreen
+                PropertyAnimation {
+                    target: profileScreenLoader
+                    property: "height"
+                    to: root.height - toolBar.height
+                    easing.type: Easing.Linear
+                    duration: 250
+                }
+            }
+        },
+        Transition {
+            from: "PROFILE"
+            SequentialAnimation {
+                // Roll profileScreen in
+                PropertyAnimation {
+                    target: profileScreenLoader
+                    property: "height"
+                    to: 0
+                    easing.type: Easing.Linear
+                    duration: 250
+                }
+                // Show homeScreen
+                PropertyAnimation {
+                    target: container
+                    property: "opacity"
+                    to: 1
+                    easing.type: Easing.Linear
+                    duration: 350
+                }
+            }
+        }
+    ] // transitions
 } // Item

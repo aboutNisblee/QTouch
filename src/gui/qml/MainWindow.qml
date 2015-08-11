@@ -20,133 +20,13 @@ Rectangle {
         }
 
         // HomeScreen and ProfileScreen
-        front: Item {
-            id: home
+        front: HomeScreen {
+            id: homeScreen
 
             anchors.fill: parent
 
-            states: State {
-                name: "PROFILE"
-                when: btProfile.checked
-            }
-
-            ToolBar {
-                id: toolBar
-                anchors {
-                    top: home.top
-                    left: home.left
-                    right: home.right
-                }
-
-                ToolButton {
-                    id: btProfile
-                    anchors {
-                        left: parent.left
-                        verticalCenter: parent.verticalCenter
-                        leftMargin: 10
-                    }
-                    iconSource: "qrc:/icons/64x64/user-identity.png"
-                    iconName: "user-identity"
-                    checkable: true
-                    //                    onCheckedChanged: home.state = (checked) ? "PROFILE" : ""
-                } // btProfile
-
-                ToolButton {
-                    id: btConfig
-                    anchors {
-                        right: parent.right
-                        verticalCenter: parent.verticalCenter
-                        rightMargin: 10
-                    }
-                    iconSource: "qrc:/icons/64x64/configure.png"
-                    iconName: "configure"
-                } // btConfig
-            } // toolBar
-
-            HomeScreen {
-                id: homeScreen
-
-                anchors {
-                    top: toolBar.bottom
-                    right: home.right
-                    left: home.left
-                    bottom: home.bottom
-                }
-
-                onLessonStarted: flipper.state = "TRAINING"
-            } // homeScreen
-
-            Loader {
-                id: profileScreenLoader
-
-                anchors {
-                    top: toolBar.bottom
-                    right: home.right
-                    left: home.left
-                }
-
-                height: 0
-                active: false
-
-                sourceComponent: ProfileScreen {
-                    id: profileScreen
-
-                    height: profileScreenLoader.height
-                    width: profileScreenLoader.width
-                } // profileScreen
-
-                onLoaded: console.debug("profileScreenLoader loaded")
-            } // profileScreenLoader
-
-            transitions: [
-                Transition {
-                    to: "PROFILE"
-                    SequentialAnimation {
-                        // Ensure profileScreen is loaded
-                        ScriptAction {
-                            script: profileScreenLoader.active = true
-                        }
-                        // Dim homeScreen
-                        PropertyAnimation {
-                            target: homeScreen
-                            property: "opacity"
-                            to: 0
-                            easing.type: Easing.Linear
-                            duration: 150
-                        }
-                        // Inflate profileScreen
-                        PropertyAnimation {
-                            target: profileScreenLoader
-                            property: "height"
-                            to: home.height - toolBar.height
-                            easing.type: Easing.Linear
-                            duration: 250
-                        }
-                    }
-                },
-                Transition {
-                    from: "PROFILE"
-                    SequentialAnimation {
-                        // Roll profileScreen in
-                        PropertyAnimation {
-                            target: profileScreenLoader
-                            property: "height"
-                            to: 0
-                            easing.type: Easing.Linear
-                            duration: 250
-                        }
-                        // Show homeScreen
-                        PropertyAnimation {
-                            target: homeScreen
-                            property: "opacity"
-                            to: 1
-                            easing.type: Easing.Linear
-                            duration: 350
-                        }
-                    }
-                }
-            ] // transitions
-        } // front
+            onLessonStarted: flipper.state = "TRAINING"
+        } // homeScreen
 
         back: TrainingScreen {
             id: trainingScreen
@@ -193,7 +73,7 @@ Rectangle {
                         duration: 1000
                     }
                     PropertyAction {
-                        target: home
+                        target: homeScreen
                         property: "visible"
                         value: false
                     }
@@ -203,7 +83,7 @@ Rectangle {
                 from: "TRAINING"
                 SequentialAnimation {
                     PropertyAction {
-                        target: home
+                        target: homeScreen
                         property: "visible"
                         value: true
                     }

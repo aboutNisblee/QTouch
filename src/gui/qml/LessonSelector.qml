@@ -212,17 +212,18 @@ Item {
                         } // txtPreview
                     } // previewBorder
 
-                    InnerShadow {
-                        width: previewBorder.width
-                        height: previewBorder.height
-                        anchors.centerIn: parent
-                        horizontalOffset: -2
-                        verticalOffset: 2
-                        radius: 0
-                        samples: 16
-                        color: "black"
-                        source: previewBorder
-                    }
+                    // FIXME: Fails when opacity is faded out
+//                    InnerShadow {
+//                        width: previewBorder.width
+//                        height: previewBorder.height
+//                        anchors.centerIn: parent
+//                        horizontalOffset: -2
+//                        verticalOffset: 2
+//                        radius: 0
+//                        samples: 16
+//                        color: "black"
+//                        source: previewBorder
+//                    }
                 } // previewScroller
             } // previewContainer
 
