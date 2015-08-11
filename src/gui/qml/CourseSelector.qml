@@ -1,6 +1,7 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.3
 
+
 /*
 CourseSelector
 Horizontal course chooser sitting at the top of the home screen.
@@ -22,17 +23,17 @@ Item {
     // Input property interface
     property variant currentCourseModel
 
-    // Output signal interface
-    signal courseSelected(int index)
+    // Output property interface
+    property int selectedCourseIndex: 0
     // Propagate whether course details should be displayed or not
-    signal showCourseDescription(bool enabled)
+    property bool courseDescriptionBottonChecked: false
 
     PathView {
         id: path
 
         // FIXME: onCurrentIndexChanged fires two times on each index change! Why?
         property int lastIndex: 0
-        property bool courseDescriptionChecked: false
+        property bool bottonChecked: false
 
         // Size
         anchors {
@@ -86,11 +87,11 @@ Item {
                     iconName: "dialog-information"
                     iconSource: "qrc:/icons/64x64/dialog-information.png"
                     checkable: true
-                    checked: path.courseDescriptionChecked
+                    checked: path.bottonChecked
                     onCheckedChanged: {
-                        if (path.courseDescriptionChecked != checked) {
-                            path.courseDescriptionChecked = checked
-                            showCourseDescription(checked)
+                        if (path.bottonChecked != checked) {
+                            path.bottonChecked = checked
+                            courseDescriptionBottonChecked = checked
                         }
                     }
                 }
@@ -110,7 +111,7 @@ Item {
             // FIXME: Workaround (see above)
             if (currentIndex != lastIndex) {
                 lastIndex = currentIndex
-                courseSelected(currentIndex)
+                selectedCourseIndex = currentIndex
             }
         }
     } // path
@@ -123,9 +124,7 @@ Item {
         }
         iconName: "arrow-left"
         iconSource: "qrc:/icons/32x32/arrow-left.png"
-        onClicked: {
-            path.decrementCurrentIndex()
-        }
+        onClicked: path.decrementCurrentIndex()
     }
 
     Button {
@@ -136,8 +135,6 @@ Item {
         }
         iconName: "arrow-right"
         iconSource: "qrc:/icons/32x32/arrow-right.png"
-        onClicked: {
-            path.incrementCurrentIndex()
-        }
+        onClicked: path.incrementCurrentIndex()
     }
 }

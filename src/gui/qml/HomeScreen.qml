@@ -24,13 +24,8 @@ Item {
 
         currentCourseModel: courseModel
 
-        // React to output signals
-        onCourseSelected: {
-            // console.debug("courseSelector.onCourseSelected: " + index)
-            courseModel.selectCourse(index)
-        }
-        onShowCourseDescription: {
-            lblCourseDescription.inflated = enabled
+        onSelectedCourseIndexChanged: {
+            courseModel.selectCourse(selectedCourseIndex)
         }
     }
 
@@ -53,6 +48,7 @@ Item {
         // Access course model at the currently selected index and get the description
         text: courseModel.selectedCourseDescription
 
+        inflated: courseSelector.courseDescriptionBottonChecked
     }
 
     LessonSelector {
@@ -73,9 +69,9 @@ Item {
         previewText: courseModel.selectedLessonModel.selectedLessonText
 
         // React to output signals
-        onLessonSelected: {
+        onSelectedLessonIndexChanged: {
             // console.debug("lessonSelector.onLessonSelected: " + index)
-            courseModel.selectedLessonModel.selectLesson(index)
+            courseModel.selectedLessonModel.selectLesson(selectedLessonIndex)
         }
 
         //        onLessonStarted: {

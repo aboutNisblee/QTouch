@@ -33,9 +33,11 @@ Item {
     // Text for the preview panel
     property alias previewText: txtPreview.text
 
-    signal // Output signal interface
-    lessonSelected(int index)
-    signal lessonStarted()
+    // Output property interface
+    property int selectedLessonIndex: 0
+    signal
+    // Signals
+    lessonStarted
 
     VisualDataModel {
         id: delegateModel
@@ -58,13 +60,8 @@ Item {
             bgColor: "lightgray"
             bgRadius: 5
 
-            onClicked: {
-                // Selection
-                list.currentIndex = index
-            }
-            onDoubleClicked: {
-                lessonStarted()
-            }
+            onClicked: list.currentIndex = index
+            onDoubleClicked: lessonStarted()
         } // delegate
     } // delegateModel
 
@@ -142,9 +139,7 @@ Item {
                     }
                 } // highlight
 
-                onCurrentIndexChanged: {
-                    lessonSelected(currentIndex)
-                }
+                onCurrentIndexChanged: selectedLessonIndex = currentIndex
             } // list
         } //ScrollView
 
@@ -242,9 +237,7 @@ Item {
                     bottomMargin: 10
                 }
 
-                onClicked: {
-                    lessonStarted()
-                }
+                onClicked: lessonStarted()
             } // btStart
         } // preview
     } // RowLayout
