@@ -18,6 +18,7 @@
 #include "utils/exceptions.hpp"
 #include "coursemodel.hpp"
 #include "gui/textpage.hpp"
+#include "gui/trainingwidget.hpp"
 
 namespace qtouch
 {
@@ -49,6 +50,7 @@ void registerQmlTypes()
 	qmlRegisterType<LessonModel>();
 
 	qmlRegisterType<TextPage>("de.nisble.qtouch", 1, 0, "TextPage");
+	qmlRegisterType<TrainingWidget>("de.nisble.qtouch", 1, 0, "TrainingWidget");
 }
 
 } /* namespace anonymous */
