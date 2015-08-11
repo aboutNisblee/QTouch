@@ -4,6 +4,12 @@ import QtQuick.Controls 1.3
 Item {
     id: root
 
+    signal lessonStarted
+
+    Component.onCompleted: {
+        lessonSelector.onLessonStarted.connect(lessonStarted)
+    }
+
     CourseSelector {
         id: courseSelector
         anchors {
@@ -18,11 +24,11 @@ Item {
 
         // React to output signals
         onCourseSelected: {
-            console.debug("courseSelector.onCourseSelected: " + index)
+            // console.debug("courseSelector.onCourseSelected: " + index)
             courseModel.selectCourse(index)
         }
         onShowCourseDescription: {
-            lblCourseDescription.state = (enabled) ? "VISIBLE" : "INVISIBLE"
+            lblCourseDescription.state = (enabled) ? "VISIBLE" : ""
         }
     }
 
@@ -45,31 +51,20 @@ Item {
         // Access course model at the currently selected index and get the description
         text: courseModel.selectedCourseDescription
 
-        visible: height > 0
-        state: "INVISIBLE"
+        height: 0
+        opacity: 0
 
-        states: [
-            State {
-                name: "INVISIBLE"
-                PropertyChanges {
-                    target: lblCourseDescription
-                    height: 0
-                    opacity: 0
-                }
-            },
-            State {
-                name: "VISIBLE"
-                PropertyChanges {
-                    target: lblCourseDescription
-                    height: contentHeight
-                    opacity: 1
-                }
+        states: State {
+            name: "VISIBLE"
+            PropertyChanges {
+                target: lblCourseDescription
+                height: contentHeight
+                opacity: 1
             }
-        ] // states
+        } // states
 
         transitions: [
             Transition {
-                from: "INVISIBLE"
                 to: "VISIBLE"
                 SequentialAnimation {
                     PropertyAnimation {
@@ -86,7 +81,6 @@ Item {
             },
             Transition {
                 from: "VISIBLE"
-                to: "INVISIBLE"
                 SequentialAnimation {
                     PropertyAnimation {
                         property: "opacity"
@@ -101,19 +95,6 @@ Item {
                 }
             }
         ] // transitions
-
-        Behavior on height {
-            PropertyAnimation {
-                easing.type: Easing.Linear
-                duration: 150
-            }
-        }
-        Behavior on opacity {
-            PropertyAnimation {
-                easing.type: Easing.Linear
-                duration: 150
-            }
-        }
     } // Label
 
     LessonSelector {
@@ -135,8 +116,13 @@ Item {
 
         // React to output signals
         onLessonSelected: {
-            console.debug("lessonSelector.onLessonSelected: " + index)
+            // console.debug("lessonSelector.onLessonSelected: " + index)
             courseModel.selectedLessonModel.selectLesson(index)
         }
+
+        //        onLessonStarted: {
+        //            console.log("Starting Lesson: " + courseModel.selectedLessonModel.selectedLessonTitle
+        //                        + " of Course: " + courseModel.selectedCourseTitle)
+        //        }
     }
 } // Item

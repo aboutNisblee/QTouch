@@ -35,6 +35,7 @@ Item {
 
     signal // Output signal interface
     lessonSelected(int index)
+    signal lessonStarted()
 
     VisualDataModel {
         id: delegateModel
@@ -62,8 +63,7 @@ Item {
                 list.currentIndex = index
             }
             onDoubleClicked: {
-                // TODO
-                console.log("delegateModel.onDoubleClicked: StartLesson")
+                lessonStarted()
             }
         } // delegate
     } // delegateModel
@@ -180,12 +180,9 @@ Item {
                     id: previewScroller
 
                     anchors.centerIn: parent
-                    width: Math.min(
-                               previewBorder.width,
-                               previewContainer.width)
-                    height: Math.min(
-                                previewBorder.height,
-                                previewContainer.height)
+                    width: Math.min(previewBorder.width, previewContainer.width)
+                    height: Math.min(previewBorder.height,
+                                     previewContainer.height)
 
                     verticalScrollBarPolicy: Qt.ScrollBarAlwaysOff
                     horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
@@ -246,8 +243,7 @@ Item {
                 }
 
                 onClicked: {
-                    // TODO
-                    console.log("btLessonStart.onClicked: StartLesson")
+                    lessonStarted()
                 }
             } // btStart
         } // preview
