@@ -147,6 +147,11 @@ bool MainWindow::init()
 	else
 		qWarning() << "Invalid size of root item";
 
+	// XXX: DEBUGGING
+	connect(this, &QQuickWindow::activeFocusItemChanged, [=]() {
+		qDebug() << "Active focus given to" << activeFocusItem();
+	});
+
 	// FIXME: Not nice but fixes initialization problem
 	mCourseModel->selectCourse(0);
 
