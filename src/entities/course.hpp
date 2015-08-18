@@ -130,6 +130,7 @@ public:
 	virtual QDataStream& serialize(QDataStream& out) const;
 
 private:
+	// TODO: Disable move-ctor and assignment operator!
 	Course() {}
 	Course(const Course& org);
 

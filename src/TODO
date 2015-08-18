@@ -8,3 +8,6 @@
 	Remember to raise any data version number for the database to know that the data must be updated.
 		(Because we get other UUIDs when we correct the updated files) 
 
+[ ] Use C++11 constructor inheritance where possible.
+
+[ ] Use C++11 override specifier where appropriate.
