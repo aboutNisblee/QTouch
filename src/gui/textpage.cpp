@@ -93,7 +93,7 @@ void TextPage::setTextMargin(qreal textMargin)
 void TextPage::setMaxWidth(qreal maxWidth)
 {
 	mMaxWidth = maxWidth;
-	if (maxWidth > 0 && mAutoWrap && resize())
+	if (maxWidth > 0 && resize())
 		updateImage();
 
 	emit maxWidthChanged();
@@ -106,6 +106,24 @@ void TextPage::setMaxHeight(qreal maxHeight)
 		updateImage();
 
 	emit maxHeightChanged();
+}
+
+/*
+ * TODO: Should also remove duplicated spaces from the given text when
+ * autoWrap is disabled??
+ */
+void TextPage::updateDoc()
+{
+	mDoc.clear();
+	QTextCursor c(&mDoc);
+
+	c.setBlockFormat(mTitleBlockFormat);
+	c.insertText((mAutoWrap) ? mTitle.simplified() : mTitle, mTitleCharFormat);
+
+	c.insertBlock();
+
+	c.setBlockFormat(mTextBlockFormat);
+	c.insertText((mAutoWrap) ? mText.simplified() : mText, mTextCharFormat);
 }
 
 bool TextPage::resize()
@@ -146,24 +164,6 @@ bool TextPage::resize()
 	}
 
 	return false;
-}
-
-/*
- * TODO: Should also remove duplicated spaces from the given text when
- * autoWrap is disabled??
- */
-void TextPage::updateDoc()
-{
-	mDoc.clear();
-	QTextCursor c(&mDoc);
-
-	c.setBlockFormat(mTitleBlockFormat);
-	c.insertText((mAutoWrap) ? mTitle.simplified() : mTitle, mTitleCharFormat);
-
-	c.insertBlock();
-
-	c.setBlockFormat(mTextBlockFormat);
-	c.insertText((mAutoWrap) ? mText.simplified() : mText, mTextCharFormat);
 }
 
 void TextPage::updateImage()

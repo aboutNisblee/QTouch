@@ -78,13 +78,12 @@ signals:
 	void maxWidthChanged();
 	void maxHeightChanged();
 
-private slots:
-	bool resize();
-	void updateDoc();
-	void updateImage();
-
 protected:
-	virtual QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* updatePaintNodeData);
+	virtual void updateDoc();
+	virtual bool resize();
+	virtual void updateImage();
+
+	virtual QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* updatePaintNodeData) override;
 
 	QString mTitle;
 	QString mText;
