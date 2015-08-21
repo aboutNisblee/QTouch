@@ -17,9 +17,26 @@ class TrainingWidget: public TextPage
 {
 	Q_OBJECT
 
+	Q_PROPERTY(Qt::Key escapeKey MEMBER mEscKey NOTIFY escapeKeyChanged)
+
 public:
 	TrainingWidget(QQuickItem* parent = 0);
 	virtual ~TrainingWidget();
+
+signals:
+	void escape();
+	void escapeKeyChanged();
+
+protected:
+	virtual bool resize() override;
+	virtual void updateImage() override;
+
+protected:
+	virtual bool event(QEvent*) override;
+
+private:
+	qreal mTextScale = 1;
+	Qt::Key mEscKey = Qt::Key_Escape;
 };
 
 } /* namespace qtouch */
