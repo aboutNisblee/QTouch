@@ -3,7 +3,7 @@ import QtQuick.Controls 1.3
 
 import "items" as Items
 
-Item {
+FocusScope {
     id: root
 
     signal lessonStarted
@@ -15,6 +15,9 @@ Item {
         name: "PROFILE"
         when: btProfile.checked
     }
+
+    // Forward keys to children
+    Keys.forwardTo: [courseSelector, lessonSelector]
 
     ToolBar {
         id: toolBar
@@ -72,9 +75,8 @@ Item {
 
             currentCourseModel: courseModel
 
-            onSelectedCourseIndexChanged: {
-                courseModel.selectCourse(selectedCourseIndex)
-            }
+            onSelectedCourseIndexChanged: courseModel.selectCourse(
+                                              selectedCourseIndex)
         } // courseSelector
 
         // Label that is inflated the button that is placed

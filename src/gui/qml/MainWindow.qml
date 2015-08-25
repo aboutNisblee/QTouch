@@ -25,6 +25,9 @@ Rectangle {
 
             anchors.fill: parent
 
+            // Switch focus between front and back
+            focus: !trainingScreen.focus
+
             onLessonStarted: flipper.state = "TRAINING"
         } // homeScreen
 
@@ -32,12 +35,15 @@ Rectangle {
             id: trainingScreen
 
             anchors.fill: parent
-            visible: false // will be enabled in transition
+            // will be enabled in transition and controls focus
+            visible: false
+
+            focus: visible
 
             title: courseModel.selectedLessonModel.selectedLessonTitle
             text: courseModel.selectedLessonModel.selectedLessonText
 
-            onCancel: flipper.state = ""
+            onQuit: flipper.state = ""
         } // trainingScreen
 
         transform: Rotation {

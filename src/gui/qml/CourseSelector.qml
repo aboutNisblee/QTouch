@@ -7,7 +7,7 @@ CourseSelector
 Horizontal course chooser sitting at the top of the home screen.
 Consists of a PathView and two Buttons to switch between the courses.
 */
-Item {
+FocusScope {
     id: root
 
     implicitHeight: Math.max(path.height, btPreviousCourse.height)
@@ -17,16 +17,23 @@ Item {
     property real lrMargins: 10
     // Space between the elements
     property real spacer: 8
-    // Number of to be shown in the PathView
+    // Number of items to be shown in the PathView
     property int itemCount: 1
 
     // Input property interface
-    property variant currentCourseModel
+    // Set current course model
+    property alias currentCourseModel: path.model
 
     // Output property interface
+    // The index of the currently selected course
     property int selectedCourseIndex: 0
-    // Propagate whether course details should be displayed or not
-    property bool courseDescriptionBottonChecked: false
+    // Propagates whether course details should be displayed or not
+    property bool courseDescriptionBottonChecked: path.bottonChecked
+
+    // Control selection by keys when focus is disabled (Keys.forwardTo)
+    Keys.onLeftPressed: path.decrementCurrentIndex()
+    Keys.onRightPressed: path.incrementCurrentIndex()
+    Keys.onSpacePressed: path.bottonChecked = !path.bottonChecked
 
     PathView {
         id: path
@@ -35,7 +42,6 @@ Item {
         property int lastIndex: 0
         property bool bottonChecked: false
 
-        // Size
         anchors {
             top: parent.top
             bottom: parent.bottom
@@ -47,15 +53,11 @@ Item {
             rightMargin: root.spacer
         }
 
-        // Settings
-        focus: true
+        focus: root.focus
         Keys.onLeftPressed: decrementCurrentIndex()
         Keys.onRightPressed: incrementCurrentIndex()
 
         pathItemCount: root.itemCount
-
-        // Data
-        model: currentCourseModel
 
         delegate: Component {
             Item {
@@ -91,10 +93,9 @@ Item {
                     onCheckedChanged: {
                         if (path.bottonChecked != checked) {
                             path.bottonChecked = checked
-                            courseDescriptionBottonChecked = checked
                         }
                     }
-                }
+                } // btCourseDescription
             } // Item
         } // Component
 

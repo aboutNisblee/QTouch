@@ -18,7 +18,7 @@ Note: To keep the CourseModel as simple as possible, each course has is own less
 CourseModel produces it when its needed, by wrapping the lessons of a course in a LessonModel.
 A DelegateModel is used here to supply the delagate and LessonModel together to the ListView.
 */
-Item {
+FocusScope {
     id: root
 
     // Configuration properties
@@ -34,10 +34,16 @@ Item {
     property alias previewText: txtPreview.text
 
     // Output property interface
+    // The index of the currently selected lesson
     property int selectedLessonIndex: 0
-    signal
-    // Signals
-    lessonStarted
+
+    signal lessonStarted
+
+    // Control selection by keys when focus is disabled (Keys.forwardTo)
+    Keys.onUpPressed: list.decrementCurrentIndex()
+    Keys.onDownPressed: list.incrementCurrentIndex()
+    Keys.onReturnPressed: lessonStarted()
+    Keys.onEnterPressed: lessonStarted()
 
     VisualDataModel {
         id: delegateModel
@@ -78,7 +84,7 @@ Item {
             }
             width: rowLayout.width / 2
 
-            focus: true
+            focus: root.focus
 
             style: ScrollViewStyle {
                 // Transient and inc/dec controls or not transient and no controls
@@ -113,7 +119,7 @@ Item {
                 // Implicitly anchored to ScrollView
 
                 // Settings
-                focus: true
+                focus: root.focus
                 highlightFollowsCurrentItem: false
 
                 Keys.onUpPressed: decrementCurrentIndex()
@@ -213,17 +219,17 @@ Item {
                     } // previewBorder
 
                     // FIXME: Fails when opacity is faded out
-//                    InnerShadow {
-//                        width: previewBorder.width
-//                        height: previewBorder.height
-//                        anchors.centerIn: parent
-//                        horizontalOffset: -2
-//                        verticalOffset: 2
-//                        radius: 0
-//                        samples: 16
-//                        color: "black"
-//                        source: previewBorder
-//                    }
+                    //                    InnerShadow {
+                    //                        width: previewBorder.width
+                    //                        height: previewBorder.height
+                    //                        anchors.centerIn: parent
+                    //                        horizontalOffset: -2
+                    //                        verticalOffset: 2
+                    //                        radius: 0
+                    //                        samples: 16
+                    //                        color: "black"
+                    //                        source: previewBorder
+                    //                    }
                 } // previewScroller
             } // previewContainer
 
