@@ -169,10 +169,10 @@ FocusScope {
 
                     bottom: btStart.top
 
-                    topMargin: 10
+                    topMargin: 30
                     leftMargin: 30
                     rightMargin: 30
-                    bottomMargin: 10
+                    bottomMargin: 30
                 }
 
                 ScrollView {
@@ -205,14 +205,12 @@ FocusScope {
                             id: txtPreview
                             anchors.centerIn: parent
 
-                            autoWrap: true
                             textMargin: 20
 
                             // Because the text defines the width of
                             // the whole item a manimum is needed for the
-                            // layout to know where to wrap the text.
+                            // layout to be able to scale the text.
                             maxWidth: previewContainer.width
-                            // maxHeight: previewContainer.height
 
                             // Note: title and text are set by root item via property alias
                         } // txtPreview

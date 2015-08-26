@@ -64,8 +64,9 @@ void TextPage::setTitle(const QString& title)
 {
 	mTitle = title;
 	updateDoc();
-	resize();
-	updateImage();
+	if (resize())
+		updateImage();
+
 	emit titleChanged();
 }
 
@@ -73,8 +74,9 @@ void TextPage::setText(const QString& text)
 {
 	mText = text;
 	updateDoc();
-	resize();
-	updateImage();
+	if (resize())
+		updateImage();
+
 	emit textChanged();
 }
 
@@ -146,19 +148,27 @@ bool TextPage::resize()
 		itemWidth = mDoc.idealWidth();
 	}
 
+	/* Calculate scale
+	 * FIXME: It is impossible to determine the scale when mAutoWrap is true,
+	 * cause the whole text has only one line. Increase the char size manually,
+	 * when mAutoWrap is true.
+	 */
+	mTextScale = (mMaxWidth > 0) ? mMaxWidth / itemWidth : 1;
+
 	// Note: Its crucial to define the TextWidth before accessing the size().height()
 	mDoc.setTextWidth(itemWidth);
 
 	// height is defined by document as long as a maxHeight isn't specified
 	itemHeight = (mMaxHeight > 0 && mDoc.size().height() > mMaxHeight) ? mMaxHeight : mDoc.size().height();
 
-	if (itemWidth != width() || itemHeight != height())
+	if ((itemWidth * mTextScale) != width() || (itemHeight * mTextScale) != height())
 	{
-		//		qDebug() << "New TextPage size:" << "\n\twidth:" << itemWidth << "\n\theight:" <<
-		//		         itemHeight;
+		//		qDebug() << "New TextPage size:" <<
+		//		         "\n\titemWidth:" << itemWidth << "*" << mTextScale << "=" << (itemWidth * mTextScale) <<
+		//		         "\n\titemHeight:" << itemHeight << "*" << mTextScale << "=" << (itemHeight * mTextScale);
 
-		setWidth(itemWidth);
-		setHeight(itemHeight);
+		setWidth(itemWidth * mTextScale);
+		setHeight(itemHeight * mTextScale);
 
 		return true;
 	}
@@ -172,6 +182,7 @@ void TextPage::updateImage()
 	mImage->fill(0);
 
 	QPainter p(mImage.get());
+	p.scale(mTextScale, mTextScale);
 	p.setRenderHint(QPainter::TextAntialiasing);
 	mDoc.drawContents(&p);
 

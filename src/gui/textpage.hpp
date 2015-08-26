@@ -25,16 +25,17 @@ namespace qtouch
  * over the internal QTextDocument. It is used in the LessonPreview item to
  * show the preview of the Lesson text and serves as base class for the view
  * of the TrainingWidget.\n
- * There are two distinct layout modes this item can operate in.\n
+ * There are two distinct layout modes this item can operate on.\n
  * When the autoWrap property is disabled (default), the given text defines
  * the line wrapping ('\\n'). The width of the item is then set to the ideal
  * width of the text (i.e. the width of the longest line plus margins).
  * The width property of Item can then be used to determine the minimum needed
- * width.\n
+ * width. When in this mode the maxWidth property is specified, the text is scaled
+ * to for the TextPage to fill the given maxWidth.\n
  * If autoWrap is enabled all newline characters are deleted from the given
  * string and the text is automatically wrapped at word boundaries. Note that
- * in this mode a maximum width is needed for the document to be able to wrap
- * the text. This is specified by the maxWidth property.
+ * in this mode the maxWidth property should be set for the document to be able
+ * to wrap the text. Text scaling isn't possible in this mode.
  */
 class TextPage: public QQuickItem
 {
@@ -89,6 +90,7 @@ protected:
 	QString mText;
 
 	QTextDocument mDoc;
+	qreal mTextScale = 1;
 	std::unique_ptr<QImage> mImage;
 
 	bool mAutoWrap = false;
