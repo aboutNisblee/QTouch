@@ -207,9 +207,6 @@ FocusScope {
 
                             textMargin: 20
 
-                            // Because the text defines the width of
-                            // the whole item a manimum is needed for the
-                            // layout to be able to scale the text.
                             maxWidth: previewContainer.width
 
                             // Note: title and text are set by root item via property alias

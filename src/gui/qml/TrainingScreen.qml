@@ -7,6 +7,10 @@ import de.nisble.qtouch 1.0
 FocusScope {
     id: root
 
+    // Configuration properties
+    property int horizontalSheetMargin: 60
+    property int verticalSheetMargin: 60
+
     // Input property interface
     // Lesson title
     property alias title: trainingWidget.title
@@ -14,6 +18,10 @@ FocusScope {
     property alias text: trainingWidget.text
 
     signal quit
+
+    function reset() {
+        trainingWidget.reset()
+    }
 
     Column {
         id: columnLayout
@@ -28,7 +36,7 @@ FocusScope {
             }
 
             // XXX: DEBUGGING
-            height: 90
+            height: 150
 
             color: "red"
         }
@@ -40,55 +48,64 @@ FocusScope {
                 left: columnLayout.left
                 right: columnLayout.right
             }
-
-            //            width: columnLayout.width
             height: root.height - statsPlaceholder.height
 
             ScrollView {
-                // Centers in parent and adapts its size to its contents
-                // as long as its fits into its parent
                 id: widgetScroller
 
-                anchors.centerIn: parent
-                width: Math.min(widgetBorder.width, widgetContainer.width)
-                height: Math.min(widgetBorder.height, widgetContainer.height)
+                anchors.fill: parent
 
                 verticalScrollBarPolicy: Qt.ScrollBarAsNeeded
                 horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
 
                 focus: true
+                clip: true
 
-                // Only a border that fits its content and centers in its parent
                 Rectangle {
-                    id: widgetBorder
+                    id: widgetBackground
 
                     anchors.centerIn: parent
-                    width: trainingWidget.width
-                    height: trainingWidget.height
-                    antialiasing: true
-                    border {
-                        width: 1
-                        color: "#000"
-                    }
+                    width: widgetBorder.width + 2 * horizontalSheetMargin
+                    height: widgetBorder.height + 2 * verticalSheetMargin
 
-                    TrainingWidget {
-                        id: trainingWidget
+                    color: "lightgray"
+
+                    // Only a border that fits its content and centers in its parent
+                    Rectangle {
+                        id: widgetBorder
+
                         anchors.centerIn: parent
+                        width: trainingWidget.width
+                        height: trainingWidget.height
 
-                        focus: true
+                        border {
+                            width: 2
+                            color: "black"
+                        }
 
-                        autoWrap: false
-                        textMargin: 20
+                        TrainingWidget {
+                            id: trainingWidget
 
-                        // Because the text defines the width of
-                        // the whole item a manimum is needed for the
-                        // layout to know where to wrap the text.
-                        maxWidth: widgetContainer.width
+                            focus: true
 
-                        // Note: title and text are set by root item via property alias
-                        onEscape: root.quit()
-                    } // trainingWidget
-                } // previewBorder
+                            // A minimum width is needed for the widget to
+                            // be able to scale the font size
+                            minWidth: widgetContainer.width - 2 * horizontalSheetMargin
+
+                            textMargin: 25
+
+//                            viewport: Qt.rect(
+//                                          0,
+//                                          widgetScroller.flickableItem.contentY
+//                                          - verticalSheetMargin,
+//                                          widgetScroller.viewport.childrenRect.width,
+//                                          widgetScroller.viewport.childrenRect.height)
+
+                            // Note: title and text are set by root item via property alias
+                            onEscape: root.quit()
+                        } // trainingWidget
+                    } // widgetBorder
+                } // widgetBackground
 
                 //                InnerShadow {
                 //                    width: widgetBorder.width

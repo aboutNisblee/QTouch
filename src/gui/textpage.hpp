@@ -10,8 +10,8 @@
 
 #include <memory>
 #include <QQuickItem>
+#include <QRectF>
 #include <QTextDocument>
-
 #include <QTextBlockFormat>
 #include <QTextCharFormat>
 
@@ -20,22 +20,20 @@ class QImage;
 namespace qtouch
 {
 
+class TextFormat;
+
 /** Qt Quick item that is able to draw text.
  * This item is mimics the behavior of a TextArea but allows full control
  * over the internal QTextDocument. It is used in the LessonPreview item to
  * show the preview of the Lesson text and serves as base class for the view
  * of the TrainingWidget.\n
- * There are two distinct layout modes this item can operate on.\n
- * When the autoWrap property is disabled (default), the given text defines
- * the line wrapping ('\\n'). The width of the item is then set to the ideal
- * width of the text (i.e. the width of the longest line plus margins).
- * The width property of Item can then be used to determine the minimum needed
- * width. When in this mode the maxWidth property is specified, the text is scaled
- * to for the TextPage to fill the given maxWidth.\n
- * If autoWrap is enabled all newline characters are deleted from the given
- * string and the text is automatically wrapped at word boundaries. Note that
- * in this mode the maxWidth property should be set for the document to be able
- * to wrap the text. Text scaling isn't possible in this mode.
+ * Because the position of the line breaks is probably relevant to the
+ * lesson, the lesson text dictates the line wrapping. For the item to be able to
+ * scale the text to the right size, there are two properties: maxWidth and minWidth.
+ * When the ideal width for the given font size is bigger than maxWidth, the text is
+ * scaled down. When it's smaller than minWidth it's scaled up.\n
+ * The height of the whole document depends on the count of lines and the calculated
+ * scale (use a Flickable/ScrollView).
  */
 class TextPage: public QQuickItem
 {
@@ -44,10 +42,12 @@ class TextPage: public QQuickItem
 	Q_PROPERTY(QString title READ getTitle WRITE setTitle NOTIFY titleChanged)
 	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY textChanged)
 
-	Q_PROPERTY(bool autoWrap READ isAutoWrap WRITE setAutoWrap NOTIFY autoWrapChanged)
 	Q_PROPERTY(qreal textMargin READ getTextMargin WRITE setTextMargin NOTIFY textMarginChanged)
+
 	Q_PROPERTY(qreal maxWidth READ getMaxWidth WRITE setMaxWidth NOTIFY maxWidthChanged)
-	Q_PROPERTY(qreal maxHeight READ getMaxHeight WRITE setMaxHeight NOTIFY maxHeightChanged)
+	Q_PROPERTY(qreal minWidth READ getMinWidth WRITE setMinWidth NOTIFY minWidthChanged)
+
+	Q_PROPERTY(QRectF viewport READ getViewport WRITE setViewport NOTIFY viewportChanged)
 
 public:
 	TextPage(QQuickItem* parent = 0);
@@ -59,17 +59,17 @@ public:
 	inline QString getText() const { return mText; }
 	void setText(const QString& text);
 
-	inline bool isAutoWrap() const { return mAutoWrap; }
-	void setAutoWrap(bool enable);
-
 	inline qreal getTextMargin() const { return mDoc.documentMargin(); }
 	void setTextMargin(qreal textMargin);
 
 	inline qreal getMaxWidth() const { return mMaxWidth; }
 	void setMaxWidth(qreal maxWidth);
 
-	inline qreal getMaxHeight() const { return mMaxHeight; }
-	void setMaxHeight(qreal maxHeight);
+	inline qreal getMinWidth() const { return mMinWidth; }
+	void setMinWidth(qreal minWidth);
+
+	inline QRectF getViewport() const { return mViewport; }
+	void setViewport(QRectF viewport);
 
 signals:
 	void titleChanged();
@@ -77,10 +77,14 @@ signals:
 	void autoWrapChanged();
 	void textMarginChanged();
 	void maxWidthChanged();
-	void maxHeightChanged();
+	void minWidthChanged();
+    void viewportChanged();
 
 protected:
-	virtual void updateDoc();
+	std::unique_ptr<QTextCursor> getTextCursor();
+	QTextBlock getFirstTextBlock();
+
+	virtual void initializeDoc();
 	virtual bool resize();
 	virtual void updateImage();
 
@@ -90,19 +94,18 @@ protected:
 	QString mText;
 
 	QTextDocument mDoc;
-	qreal mTextScale = 1;
+	qreal mDocScale = 1;
 	std::unique_ptr<QImage> mImage;
 
-	bool mAutoWrap = false;
-
 	qreal mMaxWidth = 0;
-	qreal mMaxHeight = 0;
+	qreal mMinWidth = 0;
 
-	QTextBlockFormat mTitleBlockFormat;
+	QRectF mViewport;
+
 	QTextBlockFormat mTextBlockFormat;
-
-	QTextCharFormat mTitleCharFormat;
 	QTextCharFormat mTextCharFormat;
+	QTextBlockFormat mTitleBlockFormat;
+	QTextCharFormat mTitleCharFormat;
 };
 
 } /* namespace qtouch */

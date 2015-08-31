@@ -40,6 +40,11 @@ Rectangle {
 
             focus: visible
 
+            onVisibleChanged: {
+                if (visible)
+                    reset()
+            }
+
             title: courseModel.selectedLessonModel.selectedLessonTitle
             text: courseModel.selectedLessonModel.selectedLessonText
 
@@ -76,7 +81,8 @@ Rectangle {
                     NumberAnimation {
                         target: rotation
                         property: "angle"
-                        duration: 1000
+                        easing.type: Easing.InOutQuad
+                        duration: 500
                     }
                     PropertyAction {
                         target: homeScreen
@@ -96,7 +102,8 @@ Rectangle {
                     NumberAnimation {
                         target: rotation
                         property: "angle"
-                        duration: 1000
+                        easing.type: Easing.InOutQuad
+                        duration: 500
                     }
                     PropertyAction {
                         target: trainingScreen

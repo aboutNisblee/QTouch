@@ -8,6 +8,8 @@
 #ifndef TRAININGWIDGET_HPP_
 #define TRAININGWIDGET_HPP_
 
+#include <QTextCursor>
+
 #include "textpage.hpp"
 
 namespace qtouch
@@ -23,15 +25,26 @@ public:
 	TrainingWidget(QQuickItem* parent = 0);
 	virtual ~TrainingWidget();
 
+public slots:
+	void reset();
+
 signals:
 	void escape();
 	void escapeKeyChanged();
 
 protected:
-	virtual bool event(QEvent*) override;
+	virtual void keyPressEvent(QKeyEvent*) override;
+	virtual QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* updatePaintNodeData) override;
 
 private:
+	void resetCursor();
+	void updateCursorRectangle(const QTextCursor& cursor);
+
 	Qt::Key mEscKey = Qt::Key_Escape;
+	std::unique_ptr<QTextCursor> mCursor;
+
+	QTextCharFormat mCorrectTextCharFormat;
+	QTextCharFormat mFailureTextCharFormat;
 };
 
 } /* namespace qtouch */
