@@ -50,6 +50,8 @@ void TrainingWidget::reset()
 	initializeDoc();
 	resetCursor();
 	updateImage();
+
+	updateProgress(0);
 }
 
 void TrainingWidget::resetCursor()
@@ -61,6 +63,12 @@ void TrainingWidget::resetCursor()
 void TrainingWidget::updateCursorRectangle(const QTextCursor& /*cursor*/)
 {
 	qDebug() << "cursorPositionChanged";
+}
+
+void TrainingWidget::updateProgress(qreal percent)
+{
+	mProgress = percent;
+	emit progressChanged();
 }
 
 void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
@@ -163,7 +171,10 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 	}
 
 	if (dirty)
+	{
 		updateImage();
+		updateProgress((mCursor->position() - mTitle.size() - 1) / static_cast<qreal>(mText.size()));
+	}
 }
 
 QSGNode* TrainingWidget::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*updatePaintNodeData*/)

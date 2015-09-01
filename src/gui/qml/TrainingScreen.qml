@@ -39,6 +39,16 @@ FocusScope {
             height: 150
 
             color: "red"
+
+            ProgressBar {
+                id: progressIndicator
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    bottom: parent.bottom
+                }
+                value: trainingWidget.progress
+            }
         }
 
         Item {
@@ -94,12 +104,12 @@ FocusScope {
 
                             textMargin: 25
 
-//                            viewport: Qt.rect(
-//                                          0,
-//                                          widgetScroller.flickableItem.contentY
-//                                          - verticalSheetMargin,
-//                                          widgetScroller.viewport.childrenRect.width,
-//                                          widgetScroller.viewport.childrenRect.height)
+                            //                            viewport: Qt.rect(
+                            //                                          0,
+                            //                                          widgetScroller.flickableItem.contentY
+                            //                                          - verticalSheetMargin,
+                            //                                          widgetScroller.viewport.childrenRect.width,
+                            //                                          widgetScroller.viewport.childrenRect.height)
 
                             // Note: title and text are set by root item via property alias
                             onEscape: root.quit()
