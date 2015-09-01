@@ -18,7 +18,7 @@
 namespace qtouch
 {
 
-class DbInterface;
+struct DbInterface;
 class DbHelper;
 
 class DataModel: public QObject

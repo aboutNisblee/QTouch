@@ -19,6 +19,8 @@ namespace qtouch
 namespace
 {
 
+/* FIXME: MSVC isn't able to concatenate strings inside the QStringLiteral macro.
+ * See: https://blog.qt.io/blog/2014/06/13/qt-weekly-13-qstringliteral/ */
 const QString create_tblMeta = QStringLiteral("CREATE TABLE IF NOT EXISTS tblMeta (\n"
                                "	pkKey				TEXT NOT NULL PRIMARY KEY,\n"
                                "	cValue				TEXT\n"

@@ -11,3 +11,10 @@
 [ ] Use C++11 constructor inheritance where possible.
 
 [ ] Use C++11 override specifier where appropriate.
+
+[ ] Compatibility with MSVC:
+	- Add macro for "noexcept" that expands to nothing, when MSVC smaller than MSVC15
+		See: https://msdn.microsoft.com/de-de/library/Hh567368.aspx
+	- Never forward declare a class as struct or vice versa since it leads to linkage errors.
+	- Do not use multiline strings inside the QStringLiteral macro.
+		See: https://blog.qt.io/blog/2014/06/13/qt-weekly-13-qstringliteral/
