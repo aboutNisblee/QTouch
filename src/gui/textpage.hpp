@@ -41,13 +41,11 @@ class TextPage: public QQuickItem
 
 	Q_PROPERTY(QString title READ getTitle WRITE setTitle NOTIFY titleChanged)
 	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY textChanged)
-
 	Q_PROPERTY(qreal textMargin READ getTextMargin WRITE setTextMargin NOTIFY textMarginChanged)
-
 	Q_PROPERTY(qreal maxWidth READ getMaxWidth WRITE setMaxWidth NOTIFY maxWidthChanged)
 	Q_PROPERTY(qreal minWidth READ getMinWidth WRITE setMinWidth NOTIFY minWidthChanged)
-
-	Q_PROPERTY(QRectF viewport READ getViewport WRITE setViewport NOTIFY viewportChanged)
+	Q_PROPERTY(qreal docScale READ getDocScale NOTIFY docScaleChanged)
+	Q_PROPERTY(QRectF docClipRect READ getDocClipRect WRITE setDocClipRect NOTIFY docClipRectChanged)
 
 public:
 	TextPage(QQuickItem* parent = 0);
@@ -68,8 +66,10 @@ public:
 	inline qreal getMinWidth() const { return mMinWidth; }
 	void setMinWidth(qreal minWidth);
 
-	inline QRectF getViewport() const { return mViewport; }
-	void setViewport(QRectF viewport);
+	inline qreal getDocScale() const { return mDocScale; }
+
+	inline QRectF getDocClipRect() const { return mDocClipRect; }
+	void setDocClipRect(QRectF docClipRect);
 
 signals:
 	void titleChanged();
@@ -78,17 +78,21 @@ signals:
 	void textMarginChanged();
 	void maxWidthChanged();
 	void minWidthChanged();
-    void viewportChanged();
+	void docScaleChanged();
+	void docClipRectChanged();
 
 protected:
 	std::unique_ptr<QTextCursor> getTextCursor();
 	QTextBlock getFirstTextBlock();
 
-	virtual void initializeDoc();
-	virtual bool resize();
-	virtual void updateImage();
+	virtual void resetText();
+	virtual void resize();
 
-	virtual QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* updatePaintNodeData) override;
+	void onWindowChanged(QQuickWindow*);
+	virtual void onBeforeSynchronizing();
+	virtual QSGNode* updatePaintNode(QSGNode*, UpdatePaintNodeData*) override;
+
+	bool mImageDirty = false;
 
 	QString mTitle;
 	QString mText;
@@ -100,7 +104,7 @@ protected:
 	qreal mMaxWidth = 0;
 	qreal mMinWidth = 0;
 
-	QRectF mViewport;
+	QRectF mDocClipRect;
 
 	QTextBlockFormat mTextBlockFormat;
 	QTextCharFormat mTextCharFormat;

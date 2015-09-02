@@ -51,6 +51,8 @@ TextPage::TextPage(QQuickItem* parent):
 
 	mTitleCharFormat.setFont(QFontDatabase::systemFont(QFontDatabase::TitleFont));
 	mTitleCharFormat.setFontPointSize(mTextCharFormat.fontPointSize() * 1.5);
+
+	connect(this, &QQuickItem::windowChanged, this, &TextPage::onWindowChanged);
 }
 
 TextPage::~TextPage()
@@ -61,9 +63,7 @@ void TextPage::setTitle(const QString& title)
 {
 	// Remove line breaks; prevent creation of multiple blocks
 	mTitle = title.simplified();
-	initializeDoc();
-	resize();
-	updateImage();
+	resetText();
 
 	emit titleChanged();
 }
@@ -72,9 +72,7 @@ void TextPage::setText(const QString& text)
 {
 	/* TODO: Should we remove duplicated spaces from the given text? */
 	mText = text;
-	initializeDoc();
-	resize();
-	updateImage();
+	resetText();
 
 	emit textChanged();
 }
@@ -82,41 +80,40 @@ void TextPage::setText(const QString& text)
 void TextPage::setTextMargin(qreal textMargin)
 {
 	mDoc.setDocumentMargin(textMargin);
+	resize();
 	emit textMarginChanged();
 }
 
 void TextPage::setMaxWidth(qreal maxWidth)
 {
-	mMaxWidth = maxWidth;
-	if (maxWidth > 0 && resize())
+	if (maxWidth > 0)
 	{
-		/*qDebug() << "mMaxWidth" << mMaxWidth;*/
-		updateImage();
+		mMaxWidth = maxWidth;
+		resize();
+		emit maxWidthChanged();
 	}
-
-	emit maxWidthChanged();
 }
 
 void TextPage::setMinWidth(qreal minWidth)
 {
-	mMinWidth = minWidth;
-	if (minWidth > 0 && resize())
+	if (minWidth > 0)
 	{
-		/*qDebug() << "mMinWidth" << mMinWidth;*/
-		updateImage();
+		mMinWidth = minWidth;
+		resize();
+		emit minWidthChanged();
 	}
-	emit minWidthChanged();
 }
 
-void TextPage::setViewport(QRectF viewport)
+void TextPage::setDocClipRect(QRectF docClipRect)
 {
-	if (viewport.isValid())
+	if (docClipRect.isValid())
 	{
-		mViewport = viewport;
-		/*qDebug() << "mViewport" << mViewport;*/
-		updateImage();
+		mDocClipRect = docClipRect;
+		/*qDebug() << "mDocClipRect" << mDocClipRect;*/
+		mImageDirty = true;
+		update();
+		emit docClipRectChanged();
 	}
-	emit viewportChanged();
 }
 
 /**
@@ -138,7 +135,7 @@ QTextBlock TextPage::getFirstTextBlock()
 	return c.block();
 }
 
-void TextPage::initializeDoc()
+void TextPage::resetText()
 {
 	mDoc.clear();
 	QTextCursor c(&mDoc);
@@ -152,9 +149,11 @@ void TextPage::initializeDoc()
 	c.insertText(mText, mTextCharFormat);
 
 	Q_ASSERT(mDoc.blockCount() >= 2);
+
+	resize();
 }
 
-bool TextPage::resize()
+void TextPage::resize()
 {
 	mDoc.setTextWidth(-1);
 
@@ -168,6 +167,8 @@ bool TextPage::resize()
 		mDocScale = mMinWidth / idealWidth;
 	else
 		mDocScale = 1;
+
+	emit docScaleChanged();
 
 	// Note: Its crucial to define the TextWidth before accessing the size().height()
 	mDoc.setTextWidth(idealWidth);
@@ -186,48 +187,62 @@ bool TextPage::resize()
 
 		mImage.reset(new QImage(width(), height(), QImage::Format_ARGB32_Premultiplied));
 
-		return true;
+		mImageDirty = true;
 	}
-
-	return false;
 }
 
-/* TODO: Minimize calls to updateImage! */
-void TextPage::updateImage()
+void TextPage::onWindowChanged(QQuickWindow* window)
 {
-	if (!mImage)
-		return;
+	if (window)
+		connect(window, &QQuickWindow::beforeSynchronizing, this, &TextPage::onBeforeSynchronizing, Qt::DirectConnection);
+}
 
-	mImage->fill(Qt::transparent);
-	//	mImage->fill(Qt::white);
-
-	QPainter p(mImage.get());
-	//	p.setRenderHint(QPainter::TextAntialiasing);
-
-	/* FIXME: Text scaling seems to be quite inefficient, at least in Linux. */
-	p.scale(mDocScale, mDocScale);
-
-	if (mViewport.isValid())
+/**
+ * Direct connected to QQuickWindow::beforeSynchronizing and called before rendering of next frame.
+ * Despite this function is called in render thread it is safe to access members, because the GUI thread
+ * is already blocked.
+ */
+void TextPage::onBeforeSynchronizing()
+{
+	if (mImageDirty)
 	{
-		/* XXX: Using the visible part of the item to clip the painting.
-		 * But this way we need to repaint on scrolling ... */
-		QRectF clipRec(mViewport.x() / mDocScale, mViewport.y() / mDocScale, mViewport.width() / mDocScale, mViewport.height() / mDocScale);
-		mDoc.drawContents(&p, clipRec);
-	}
-	else
-	{
-		mDoc.drawContents(&p);
-	}
+		if (!mImage)
+			return;
 
-	update();
+		mImage->fill(Qt::transparent);
+		//	mImage->fill(Qt::white);
+
+		QPainter p(mImage.get());
+		//	p.setRenderHint(QPainter::TextAntialiasing);
+
+		/* FIXME: Text scaling seems to be quite inefficient, at least in Linux. */
+		p.scale(mDocScale, mDocScale);
+
+		if (mDocClipRect.isValid())
+		{
+			/* XXX: Using the visible part of the item to clip the painting.
+			 * But this way we need to repaint on scrolling ... */
+			QRectF clipRec(mDocClipRect.x() / mDocScale, mDocClipRect.y() / mDocScale, mDocClipRect.width() / mDocScale,
+			               mDocClipRect.height() / mDocScale);
+			mDoc.drawContents(&p, clipRec);
+		}
+		else
+		{
+			mDoc.drawContents(&p);
+		}
+
+		mImageDirty = false;
+	}
 }
 
 QSGNode* TextPage::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*updatePaintNodeData*/)
 {
 	QSGSimpleTextureNode* node = static_cast<QSGSimpleTextureNode*>(oldNode);
-	if (!node)
+	if (nullptr == node)
 	{
 		node = new QSGSimpleTextureNode();
+		node->setFlag(QSGNode::OwnedByParent);
+
 		node->setFiltering(QSGTexture::Linear);
 		// XXX: For what its worth, when the old texture isn't deleted when another one is set??
 		/*node->setOwnsTexture(true);*/

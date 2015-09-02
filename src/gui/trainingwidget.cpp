@@ -38,31 +38,36 @@ TrainingWidget::TrainingWidget(QQuickItem* parent) :
 	connect(this, &TextPage::titleChanged, this, &TrainingWidget::resetCursor);
 	connect(this, &TextPage::textChanged, this, &TrainingWidget::resetCursor);
 
-	//	connect(&mDoc, &QTextDocument::cursorPositionChanged, this, &TrainingWidget::updateCursorRectangle);
+	/*connect(&mDoc, &QTextDocument::cursorPositionChanged, this, &TrainingWidget::updateCursorRectangle);*/
 }
 
 TrainingWidget::~TrainingWidget()
 {
 }
 
+int TrainingWidget::getActiveLineNumber() const
+{
+	return mCursor->blockNumber() - 1;
+}
+
+int TrainingWidget::getCursorPosition() const
+{
+	return mCursor->positionInBlock();
+}
+
 void TrainingWidget::reset()
 {
-	initializeDoc();
+	resetText();
 	resetCursor();
-	updateImage();
-
-	updateProgress(0);
+	mImageDirty = true;
 }
 
 void TrainingWidget::resetCursor()
 {
 	mCursor = getTextCursor();
 	mDoc.clearUndoRedoStacks();
-}
-
-void TrainingWidget::updateCursorRectangle(const QTextCursor& /*cursor*/)
-{
-	qDebug() << "cursorPositionChanged";
+	emit activeLineNumberChanged();
+	emit cursorPositionChanged();
 }
 
 void TrainingWidget::updateProgress(qreal percent)
@@ -84,7 +89,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 		return;
 	}
 
-	bool dirty = false;
+	bool cursorMoved = false;
 
 	//	qDebug() << "Input: (" << QStringLiteral("0x%1").arg(keyEvent->key(), 8, 16, QChar('0')) << ")" << keyEvent->text();
 
@@ -93,10 +98,17 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 	{
 		if (mDoc.isUndoAvailable())
 		{
+			int lineNumber = mCursor->blockNumber();
+
 			mCursor->clearSelection();
 			mDoc.undo(mCursor.get());
 			mCursor->movePosition(QTextCursor::PreviousCharacter);
-			dirty = true;
+
+			// If block number changed while undo, inform clients
+			if (mCursor->blockNumber() != lineNumber)
+				emit activeLineNumberChanged();
+
+			cursorMoved = true;
 		}
 	}
 	else if (!keyEvent->text().isEmpty())
@@ -122,15 +134,17 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 			// Line break handling
 			if (mCursor->atBlockEnd())
 			{
-				qDebug() << "Line break!";
-				bool lineBreakWithSpace = false;
-				bool lineBreakWithReturn = true;
+				// XXX: Make me configurable!
+				bool lineBreakWithSpace = true;
+				bool lineBreakWithReturn = false;
 
 				if ((lineBreakWithReturn && (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter))
 				        || (lineBreakWithSpace && keyEvent->key() == Qt::Key_Space))
 				{
 					mCursor->movePosition(QTextCursor::NextBlock);
-					dirty = true;
+					emit activeLineNumberChanged();
+
+					cursorMoved = true;
 				}
 				else
 				{
@@ -152,13 +166,15 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 					mCursor->movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
 					// and set format
 					mCursor->insertText(cRef, mCorrectTextCharFormat);
-					dirty = true;
+
+					cursorMoved = true;
 				}
 				else
 				{
 					mCursor->movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
 					mCursor->insertText(cTyped, mFailureTextCharFormat);
-					dirty = true;
+
+					cursorMoved = true;
 				}
 			}
 		} // for-loop
@@ -170,42 +186,64 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 		qDebug() << "Key text empty";
 	}
 
-	if (dirty)
+	if (cursorMoved)
 	{
-		updateImage();
+		emit cursorPositionChanged();
+
 		updateProgress((mCursor->position() - mTitle.size() - 1) / static_cast<qreal>(mText.size()));
+		mImageDirty = true;
+		mCursorDirty = true;
+		update();
 	}
+}
+
+void TrainingWidget::onBeforeSynchronizing()
+{
+	/* Also need to update on dirty image to correct the position of the cursor after resize. */
+	if (mImageDirty || mCursorDirty)
+	{
+		// Get the top left edge of the current text block
+		QPointF blockTopLeft = mDoc.documentLayout()->blockBoundingRect(mCursor->block()).topLeft();
+		// Get the current text line from the text layout of the current block
+		QTextLine textLine = mCursor->block().layout()->lineForTextPosition(mCursor->positionInBlock());
+		// Calculate the unscaled top left position of the cursor
+		QPointF topLeft(blockTopLeft.x() + textLine.cursorToX(mCursor->positionInBlock()), blockTopLeft.y() + textLine.y());
+		// And the bottom right position
+		QPointF bottomRight(topLeft.x() + 1, topLeft.y() + textLine.height());
+
+		// Use the points to span the cursor rectangle
+		mCursorRectangle.setTopLeft(topLeft * mDocScale);
+		mCursorRectangle.setBottomRight(bottomRight * mDocScale);
+
+		if (mCursorDirty)
+			emit cursorRectangleChanged();
+
+		mCursorDirty = false;
+	}
+
+	TextPage::onBeforeSynchronizing();
 }
 
 QSGNode* TrainingWidget::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*updatePaintNodeData*/)
 {
-	QSGNode* rootNode = TextPage::updatePaintNode(oldNode, nullptr);
+	QSGNode* textPageNode = TextPage::updatePaintNode(oldNode, nullptr);
 
-	// Get the top left edge of the current text block
-	QPointF blockTopLeft = mDoc.documentLayout()->blockBoundingRect(mCursor->block()).topLeft();
-	// Get the current text line from the text layout of the current block
-	QTextLine textLine = mCursor->block().layout()->lineForTextPosition(mCursor->positionInBlock());
-	// Calculate the unscaled top left position of the cursor
-	QPointF topLeft(blockTopLeft.x() + textLine.cursorToX(mCursor->positionInBlock()), blockTopLeft.y() + textLine.y());
-	// And the bottom right position
-	QPointF bottomRight(topLeft.x() + 1, topLeft.y() + textLine.height());
-	// Use the points to span the cursor rectangle
-	QRectF cursorRectangle(topLeft * mDocScale, bottomRight * mDocScale);
-
-	QSGSimpleRectNode* cursorNode = static_cast<QSGSimpleRectNode*>(rootNode->firstChild());
-	if (nullptr == cursorNode)
+	if (textPageNode != nullptr)
 	{
-		cursorNode = new QSGSimpleRectNode(cursorRectangle, mCursor->charFormat().foreground().color());
-		rootNode->appendChildNode(cursorNode);
+		QSGSimpleRectNode* cursorNode = static_cast<QSGSimpleRectNode*>(textPageNode->firstChild());
+		if (nullptr == cursorNode)
+		{
+			cursorNode = new QSGSimpleRectNode(mCursorRectangle, mCursor->charFormat().foreground().color());
+			textPageNode->appendChildNode(cursorNode);
+			cursorNode->setFlag(QSGNode::OwnedByParent);
+		}
+		else
+		{
+			cursorNode->setRect(mCursorRectangle);
+			cursorNode->setColor(mCursor->charFormat().foreground().color());
+		}
 	}
-	else
-	{
-		cursorNode = static_cast<QSGSimpleRectNode*>(rootNode->firstChild());
-		cursorNode->setRect(cursorRectangle);
-		cursorNode->setColor(mCursor->charFormat().foreground().color());
-	}
-
-	return rootNode;
+	return textPageNode;
 }
 
 } /* namespace qtouch */

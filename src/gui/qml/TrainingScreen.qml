@@ -71,6 +71,8 @@ FocusScope {
                 focus: true
                 clip: true
 
+                flickableItem.boundsBehavior: Flickable.StopAtBounds
+
                 Rectangle {
                     id: widgetBackground
 
@@ -89,7 +91,7 @@ FocusScope {
                         height: trainingWidget.height
 
                         border {
-                            width: 2
+                            width: 1
                             color: "black"
                         }
 
@@ -101,34 +103,79 @@ FocusScope {
                             // A minimum width is needed for the widget to
                             // be able to scale the font size
                             minWidth: widgetContainer.width - 2 * horizontalSheetMargin
+                            maxWidth: widgetContainer.width - 2 * horizontalSheetMargin
 
                             textMargin: 25
 
-                            //                            viewport: Qt.rect(
-                            //                                          0,
-                            //                                          widgetScroller.flickableItem.contentY
-                            //                                          - verticalSheetMargin,
-                            //                                          widgetScroller.viewport.childrenRect.width,
-                            //                                          widgetScroller.viewport.childrenRect.height)
+//                            docClipRect: Qt.rect(
+//                                          0,
+//                                          widgetScroller.flickableItem.contentY
+//                                          - verticalSheetMargin,
+//                                          widgetScroller.viewport.childrenRect.width,
+//                                          widgetScroller.viewport.childrenRect.height)
 
                             // Note: title and text are set by root item via property alias
                             onEscape: root.quit()
+
+                            onCursorRectangleChanged: {
+                                // When cursor is not fully visible, scroll the flickable.
+                                if (cursorRectangle.y < (widgetScroller.flickableItem.contentY
+                                                         - verticalSheetMargin)
+                                        || (cursorRectangle.y + cursorRectangle.height
+                                            > (widgetScroller.flickableItem.contentY
+                                               - verticalSheetMargin
+                                               + widgetScroller.viewport.childrenRect.height))) {
+                                    scrollAnimation.to = cursorRectangle.y
+                                    scrollAnimation.start()
+                                }
+
+                                //                                if (cursorRectangle.y < (widgetScroller.flickableItem.contentY
+                                //                                                         - verticalSheetMargin)) {
+                                //                                    // Scroll down
+                                //                                    scrollAnimation.to = cursorRectangle.y
+                                //                                    scrollAnimation.start()
+                                //                                } else if (cursorRectangle.y + cursorRectangle.height
+                                //                                           > (widgetScroller.flickableItem.contentY
+                                //                                              - verticalSheetMargin
+                                //                                              + widgetScroller.viewport.childrenRect.height)) {
+                                //                                    // Scroll up
+                                //                                    scrollAnimation.to = cursorRectangle.y + cursorRectangle.height
+                                //                                            - widgetScroller.viewport.childrenRect.height + verticalSheetMargin
+                                //                                    scrollAnimation.start()
+                                //                                }
+                            }
+
+                            onCursorPositionChanged: {
+                                if (0 == cursorPosition
+                                        && 0 == activeLineNumber) {
+                                    scrollAnimation.to = 0
+                                    scrollAnimation.start()
+                                }
+                            }
                         } // trainingWidget
                     } // widgetBorder
-                } // widgetBackground
 
-                //                InnerShadow {
-                //                    width: widgetBorder.width
-                //                    height: widgetBorder.height
-                //                    anchors.centerIn: parent
-                //                    horizontalOffset: -2
-                //                    verticalOffset: 2
-                //                    radius: 0
-                //                    samples: 16
-                //                    color: "black"
-                //                    source: widgetBorder
-                //                }
+                    DropShadow {
+                        anchors.centerIn: parent
+                        width: widgetBorder.width
+                        height: widgetBorder.height
+                        horizontalOffset: 3
+                        verticalOffset: -3
+                        radius: 1
+                        samples: 2
+                        color: widgetBorder.border.color
+                        source: widgetBorder
+                    }
+                } // widgetBackground
             } // widgetScroller
         } // widgetContainer
     } // Column
+
+    NumberAnimation {
+        id: scrollAnimation
+        target: widgetScroller.flickableItem
+        duration: 350
+        property: "contentY"
+        easing.type: Easing.InOutSine
+    }
 } // root
