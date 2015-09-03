@@ -17,8 +17,6 @@
 #include <QTextCursor>
 #include <QStringList>
 
-#include "textformat.hpp"
-
 namespace qtouch
 {
 

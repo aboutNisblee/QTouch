@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 project(QTouch)
 
-find_package(Qt5 REQUIRED COMPONENTS Widgets Qml Quick Test QuickTest Sql Xml XmlPatterns)
+find_package(Qt5 REQUIRED COMPONENTS Widgets Qml Quick Test QuickTest Sql Xml XmlPatterns Svg)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -78,7 +78,7 @@ qt5_add_resources(QRCS
 melp_print_list(QRCS "Resource files" SEPERATOR HALFINDENT)
 
 add_executable(QTouch ${SRCS} ${QRCS})
-target_link_libraries(QTouch Qt5::Widgets Qt5::Qml Qt5::Quick Qt5::Sql Qt5::Xml Qt5::XmlPatterns)
+target_link_libraries(QTouch Qt5::Widgets Qt5::Qml Qt5::Quick Qt5::Sql Qt5::Xml Qt5::XmlPatterns Qt5::Svg)
 
 # Tools creation
 if(QTOUCH_TOOLS_CREATION)

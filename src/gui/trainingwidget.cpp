@@ -13,7 +13,6 @@
 #include <QRectF>
 #include <QAbstractTextDocumentLayout>
 
-#include "textformat.hpp"
 #include "utils/exceptions.hpp"
 
 namespace qtouch

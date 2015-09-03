@@ -19,6 +19,7 @@
 #include "coursemodel.hpp"
 #include "gui/textpage.hpp"
 #include "gui/trainingwidget.hpp"
+#include "gui/svgelementprovider.hpp"
 
 namespace qtouch
 {
@@ -90,6 +91,10 @@ bool MainWindow::init()
 
 	// Register needed types
 	registerQmlTypes();
+
+	// Add image provider
+	mwEngine->addImageProvider(QStringLiteral("svgelement"), new SvgElementProvider(QQmlImageProviderBase::Image,
+	                           QUrl(QStringLiteral("qrc:///images/"))));
 
 	mDataModel = new DataModel(this);
 
