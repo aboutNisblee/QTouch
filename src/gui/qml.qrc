@@ -8,5 +8,6 @@
         <file>qml/TrainingScreen.qml</file>
         <file>qml/items/ListItem.qml</file>
         <file>qml/items/InflatedLabel.qml</file>
+        <file>qml/items/AnalogStopWatch.qml</file>
     </qresource>
 </RCC>

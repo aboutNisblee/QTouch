@@ -3,6 +3,7 @@ import QtQuick.Controls 1.3
 import QtGraphicalEffects 1.0
 
 import de.nisble.qtouch 1.0
+import "items" as Items
 
 FocusScope {
     id: root
@@ -36,9 +37,19 @@ FocusScope {
             }
 
             // XXX: DEBUGGING
-            height: 150
+            height: 200
 
-            color: "red"
+            Items.AnalogStopWatch {
+                id: analogStopWatch
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    bottom: progressIndicator.top
+
+                    margins: 10
+                }
+                width: height
+            }
 
             ProgressBar {
                 id: progressIndicator
@@ -107,12 +118,12 @@ FocusScope {
 
                             textMargin: 25
 
-//                            docClipRect: Qt.rect(
-//                                          0,
-//                                          widgetScroller.flickableItem.contentY
-//                                          - verticalSheetMargin,
-//                                          widgetScroller.viewport.childrenRect.width,
-//                                          widgetScroller.viewport.childrenRect.height)
+                            //                            docClipRect: Qt.rect(
+                            //                                          0,
+                            //                                          widgetScroller.flickableItem.contentY
+                            //                                          - verticalSheetMargin,
+                            //                                          widgetScroller.viewport.childrenRect.width,
+                            //                                          widgetScroller.viewport.childrenRect.height)
 
                             // Note: title and text are set by root item via property alias
                             onEscape: root.quit()
