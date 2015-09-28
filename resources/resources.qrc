@@ -52,7 +52,8 @@
         <file>courses/us.xml</file>
         <file>courses/course.xsd</file>
         <file>icons/32x32/list-add.png</file>
-        <file>images/elapsedtimemeter.svgz</file>
+        <file>images/clock.svgz</file>
+        <file>images/meter.svgz</file>
     </qresource>
     <qresource prefix="/testing">
         <file>courses/testcourse.xml</file>

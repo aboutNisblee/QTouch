@@ -47,37 +47,86 @@ FocusScope {
 
         anchors.fill: root
 
-        Rectangle {
-            id: statsPlaceholder
+        Item {
+            id: statsContainer
+
+            property int tbMargins: 8
+            property int lrMargins: 8
+            property int spacing: 10
+
             anchors {
                 left: columnLayout.left
                 right: columnLayout.right
             }
+            height: 120
 
-            // XXX: DEBUGGING
-            height: 200
-
-            Items.AnalogStopWatch {
-                id: analogStopWatch
+            Items.ElapsedTimeWidget {
+                id: elapsedTime
                 anchors {
-                    left: parent.left
                     top: parent.top
-                    bottom: progressIndicator.top
-
-                    margins: 10
-                }
-                width: height
-            }
-
-            ProgressBar {
-                id: progressIndicator
-                anchors {
-                    left: parent.left
-                    right: parent.right
                     bottom: parent.bottom
+                    left: parent.left
+                    topMargin: statsContainer.tbMargins
+                    bottomMargin: statsContainer.tbMargins
+                    leftMargin: statsContainer.lrMargins
                 }
-                value: trainingWidget.progress
+                width: (parent.width - 2 * statsContainer.lrMargins - 2
+                        * statsContainer.spacing) / 3
+                // TODO
+                currentMillis: 10000
             }
+
+            Items.RateWidget {
+                id: strokeRate
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: elapsedTime.right
+                    right: hitRate.left
+                    topMargin: statsContainer.tbMargins
+                    bottomMargin: statsContainer.tbMargins
+                    leftMargin: statsContainer.spacing
+                    rightMargin: statsContainer.spacing
+                }
+                min: 0
+                max: 240
+                target: 180
+                //                current: target / 60 * timer.secs
+                current: target / 60
+                previous: 230
+                heading: qsTr("Strokes per minute")
+            }
+
+            Items.RateWidget {
+                id: hitRate
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    right: parent.right
+                    topMargin: statsContainer.tbMargins
+                    bottomMargin: statsContainer.tbMargins
+                    rightMargin: statsContainer.lrMargins
+                }
+                width: (parent.width - 2 * statsContainer.lrMargins - 2
+                        * statsContainer.spacing) / 3
+                min: 0
+                max: 100
+                target: 96
+                //                current: target / 60 * timer.secs
+                current: target / 60
+                previous: 94
+                heading: qsTr("Hits rate")
+                postifx: "%"
+            }
+        }
+
+        ProgressBar {
+            id: progressIndicator
+            anchors {
+                left: columnLayout.left
+                right: columnLayout.right
+            }
+            value: trainingWidget.progress
         }
 
         Item {
@@ -87,7 +136,7 @@ FocusScope {
                 left: columnLayout.left
                 right: columnLayout.right
             }
-            height: root.height - statsPlaceholder.height
+            height: root.height - progressIndicator.height - statsContainer.height
 
             ScrollView {
                 id: widgetScroller
