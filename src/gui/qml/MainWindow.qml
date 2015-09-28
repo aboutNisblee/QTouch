@@ -17,23 +17,23 @@
 ** 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 **/
 import QtQuick 2.3
+import QtQuick.Window 2.1
 import QtQuick.Controls 1.3
 
-Rectangle {
+Window {
     id: mainWindow
     width: 1000
     height: 700
-    color: "#00000000"
-    border.width: 0
+//    color: "#00000000"
     visible: true
 
     Flipable {
         id: flipper
 
         anchors {
-            top: mainWindow.top
-            left: mainWindow.left
-            right: mainWindow.right
+            top: parent.top
+            left: parent.left
+            right: parent.right
             bottom: statusBar.top
         }
 
@@ -136,9 +136,9 @@ Rectangle {
     StatusBar {
         id: statusBar
         anchors {
-            right: mainWindow.right
-            left: mainWindow.left
-            bottom: mainWindow.bottom
+            right: parent.right
+            left: parent.left
+            bottom: parent.bottom
         }
 
         Row {

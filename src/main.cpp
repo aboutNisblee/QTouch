@@ -24,27 +24,104 @@
  * \author Moritz Nisblé moritz.nisble@gmx.de
  */
 
-#include <QApplication>
+#include <QGuiApplication>
+#include <QQmlEngine>
+#include <QQmlContext>
+#include <QQmlComponent>
+#include <QQuickWindow>
 #include <QDebug>
 
-#include "mainwindow.hpp"
+#include "utils/exceptions.hpp"
+#include "datamodel.hpp"
+#include "coursemodel.hpp"
+#include "gui/textpage.hpp"
+#include "gui/trainingwidget.hpp"
+#include "gui/svgelementprovider.hpp"
+
+namespace
+{
+
+bool componentError(QQmlComponent* c)
+{
+	if (c->isError())
+	{
+		QList<QQmlError> errorList = c->errors();
+		for(const QQmlError & error: errorList)
+		{
+			QMessageLogger(qPrintable(error.url().toString()), error.line(), 0).warning() << error;
+		}
+		return true;
+	}
+	return false;
+}
+
+void registerQmlTypes()
+{
+	qRegisterMetaType<qtouch::CourseModel*>("CourseModel*");
+	qmlRegisterType<qtouch::CourseModel>("de.nisble.qtouch", 1, 0, "CourseModel");
+
+	qRegisterMetaType<qtouch::LessonModel*>("LessonModel*");
+	//	qmlRegisterType<qtouch::LessonModel>("de.nisble.qtouch", 1, 0, "LessonModel");
+	qmlRegisterType<qtouch::LessonModel>();
+
+	qmlRegisterType<qtouch::TextPage>("de.nisble.qtouch", 1, 0, "TextPage");
+	qmlRegisterType<qtouch::TrainingWidget>("de.nisble.qtouch", 1, 0, "TrainingWidget");
+}
+
+} /* namespace anonymous */
 
 int main(int argc, char* argv[])
 {
-	QApplication app(argc, argv);
+	QGuiApplication app(argc, argv);
 
 	// Use QCommandLineParser to parse arguments (see documentation)
 
-	QScopedPointer<qtouch::MainWindow> mw(new qtouch::MainWindow);
+	QQmlEngine engine;
 
-	if (!mw->init())
+	// Register needed types
+	registerQmlTypes();
+
+	// Add image provider
+	engine.addImageProvider(QStringLiteral("svgelement"), new qtouch::SvgElementProvider(QQmlImageProviderBase::Image,
+	                           QUrl(QStringLiteral("qrc:///images/"))));
+
+	qtouch::DataModel dataModel;
+	try
 	{
-		qCritical() << "Unable to initialize main window controller";
+		dataModel.init();
+	}
+	catch (qtouch::Exception& e)
+	{
+		qCritical() << e.message();
 		return EXIT_FAILURE;
 	}
 
-	// Show ...
-	mw->show();
+	qtouch::CourseModel courseModel(&dataModel);
+	// Embed the course model
+	engine.rootContext()->setContextProperty("$courseModel", &courseModel);
+
+	// Create root component
+	QQmlComponent component(&engine);
+	QQuickWindow::setDefaultAlphaBuffer(true);
+	component.loadUrl(QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")));
+
+	if (componentError(&component))
+		return EXIT_FAILURE;
+
+	if (component.isReady())
+	{
+		component.create();
+		if (componentError(&component))
+			return EXIT_FAILURE;
+	}
+	else
+	{
+		qWarning() << component.errorString();
+		return EXIT_FAILURE;
+	}
+
+	// FIXME: Not nice but fixes initialization problem
+	courseModel.selectCourse(0);
 
 	return app.exec();
 }

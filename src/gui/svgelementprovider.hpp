@@ -29,6 +29,9 @@
 
 #include <QQuickImageProvider>
 
+namespace qtouch
+{
+
 /**
  * \brief QQuickImageProvider that is able to extract elements from Scalable Vector Graphics (SVG).
  * After adding an instance of this class to the QML engine, is is possible to load SVG elements into
@@ -39,20 +42,24 @@
 class SvgElementProvider : public QQuickImageProvider
 {
 public:
-    explicit SvgElementProvider(QQmlImageProviderBase::ImageType type = QQmlImageProviderBase::Image, const QUrl& base = QUrl(QStringLiteral("qrc:///")));
-    virtual ~SvgElementProvider() {}
+	explicit SvgElementProvider(QQmlImageProviderBase::ImageType type = QQmlImageProviderBase::Image,
+	                            const QUrl& base = QUrl(QStringLiteral("qrc:///")));
+	virtual ~SvgElementProvider() {}
 
-    virtual QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
-    virtual QPixmap requestPixmap(const QString& id, QSize* size, const QSize& requestedSize);
+	virtual QImage requestImage(const QString& id, QSize* size, const QSize& requestedSize);
+	virtual QPixmap requestPixmap(const QString& id, QSize* size, const QSize& requestedSize);
 
-    /**
-     * \brief Set the base URL for all images loaded by this provider.
-     * \param base The base URL (should end with an "/")
-     */
-    inline void setBaseUrl(const QUrl& base) { mBaseUrl = base; }
+	/**
+	 * \brief Set the base URL for all images loaded by this provider.
+	 * \param base The base URL (should end with an "/")
+	 */
+	inline void setBaseUrl(const QUrl& base) { mBaseUrl = base; }
 
 private:
-    QUrl mBaseUrl;
+	QUrl mBaseUrl;
 };
+
+} /* namespace qtouch */
+
 
 #endif // SVGELEMENTPROVIDER_HPP
