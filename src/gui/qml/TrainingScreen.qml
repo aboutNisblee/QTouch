@@ -58,7 +58,7 @@ FocusScope {
                 left: columnLayout.left
                 right: columnLayout.right
             }
-            height: 120
+            height: Math.max(root.height / 10, 120)
 
             Items.ElapsedTimeWidget {
                 id: elapsedTime

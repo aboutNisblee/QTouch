@@ -63,8 +63,8 @@ Rectangle {
                     reset()
             }
 
-            title: courseModel.selectedLessonModel.selectedLessonTitle
-            text: courseModel.selectedLessonModel.selectedLessonText
+            title: $courseModel.selectedLessonModel.selectedLessonTitle
+            text: $courseModel.selectedLessonModel.selectedLessonText
 
             onQuit: flipper.state = ""
         } // trainingScreen

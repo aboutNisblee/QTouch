@@ -91,9 +91,9 @@ FocusScope {
                 topMargin: 5
             }
 
-            currentCourseModel: courseModel
+            currentCourseModel: $courseModel
 
-            onSelectedCourseIndexChanged: courseModel.selectCourse(
+            onSelectedCourseIndexChanged: $courseModel.selectCourse(
                                               selectedCourseIndex)
         } // courseSelector
 
@@ -114,7 +114,7 @@ FocusScope {
             }
 
             // Access course model at the currently selected index and get the description
-            text: courseModel.selectedCourseDescription
+            text: $courseModel.selectedCourseDescription
 
             inflated: courseSelector.courseDescriptionBottonChecked
         } // lblCourseDescription
@@ -132,14 +132,14 @@ FocusScope {
             // Fill the column
             height: container.height - courseSelector.height - lblCourseDescription.height
 
-            currentLessonModel: courseModel.selectedLessonModel
-            previewTitle: courseModel.selectedLessonModel.selectedLessonTitle
-            previewText: courseModel.selectedLessonModel.selectedLessonText
+            currentLessonModel: $courseModel.selectedLessonModel
+            previewTitle: $courseModel.selectedLessonModel.selectedLessonTitle
+            previewText: $courseModel.selectedLessonModel.selectedLessonText
 
             // React to output signals
             onSelectedLessonIndexChanged: {
                 // console.debug("lessonSelector.onLessonSelected: " + index)
-                courseModel.selectedLessonModel.selectLesson(
+                $courseModel.selectedLessonModel.selectLesson(
                             selectedLessonIndex)
             }
         } // lessonSelector

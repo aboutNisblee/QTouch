@@ -133,7 +133,7 @@ bool MainWindow::init()
 	mCourseModel = new CourseModel(mDataModel, this);
 
 	// Embed the course model
-	mwEngine->rootContext()->setContextProperty("courseModel", mCourseModel);
+	mwEngine->rootContext()->setContextProperty("$courseModel", mCourseModel);
 
 	// Create root component
 	mwComponent = new QQmlComponent(mwEngine, QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")), this);
