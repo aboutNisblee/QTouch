@@ -23,7 +23,7 @@ TestCase {
     name: "ListItemTests"
 
     property string testText: "TestText"
-    property string testIconSource: "qrc:/icons/64x64/user-identity.png"
+    property string testIconSource: "qrc:/icons/32x32/user-identity.png"
 
     ListItem {
         id: uut

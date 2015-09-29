@@ -64,7 +64,7 @@ Item {
                 }
 
                 text: profile
-                iconSource: "qrc:/icons/64x64/user-identity.png"
+                iconSource: "qrc:/icons/32x32/user-identity.png"
 
                 topMargin: 6
                 bottomMargin: 6

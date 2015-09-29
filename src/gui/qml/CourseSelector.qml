@@ -104,8 +104,9 @@ FocusScope {
                         left: lblCourseName.right
                         leftMargin: root.spacer
                     }
+                    width: height
                     iconName: "dialog-information"
-                    iconSource: "qrc:/icons/64x64/dialog-information.png"
+                    iconSource: "qrc:/icons/16x16/dialog-information.png"
                     checkable: true
                     checked: path.bottonChecked
                     onCheckedChanged: {
@@ -142,7 +143,7 @@ FocusScope {
             rightMargin: root.spacer
         }
         iconName: "arrow-left"
-        iconSource: "qrc:/icons/32x32/arrow-left.png"
+        iconSource: "qrc:/icons/16x16/arrow-left.png"
         onClicked: path.decrementCurrentIndex()
     }
 
@@ -153,7 +154,7 @@ FocusScope {
             rightMargin: root.lrMargins
         }
         iconName: "arrow-right"
-        iconSource: "qrc:/icons/32x32/arrow-right.png"
+        iconSource: "qrc:/icons/16x16/arrow-right.png"
         onClicked: path.incrementCurrentIndex()
     }
 }

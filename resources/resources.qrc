@@ -1,14 +1,20 @@
 <RCC>
     <qresource prefix="/">
-        <file>icons/32x32/configure.png</file>
-        <file>icons/32x32/user-identity.png</file>
         <file>icons/64x64/configure.png</file>
+        <file>icons/32x32/configure.png</file>
         <file>icons/64x64/user-identity.png</file>
-        <file>icons/32x32/dialog-information.png</file>
+        <file>icons/32x32/user-identity.png</file>
         <file>icons/64x64/dialog-information.png</file>
+        <file>icons/32x32/dialog-information.png</file>
+        <file>icons/16x16/dialog-information.png</file>
         <file>icons/32x32/arrow-left.png</file>
+        <file>icons/16x16/arrow-left.png</file>
         <file>icons/32x32/arrow-right.png</file>
+        <file>icons/16x16/arrow-right.png</file>
         <file>icons/32x32/object-locked.png</file>
+        <file>icons/32x32/list-add.png</file>
+        <file>images/clock.svgz</file>
+        <file>images/meter.svgz</file>
         <file>courses/ara.xml</file>
         <file>courses/bg1.xml</file>
         <file>courses/bg2.xml</file>
@@ -51,9 +57,6 @@
         <file>courses/us.workman.xml</file>
         <file>courses/us.xml</file>
         <file>courses/course.xsd</file>
-        <file>icons/32x32/list-add.png</file>
-        <file>images/clock.svgz</file>
-        <file>images/meter.svgz</file>
     </qresource>
     <qresource prefix="/testing">
         <file>courses/testcourse.xml</file>

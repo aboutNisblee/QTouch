@@ -52,7 +52,7 @@ FocusScope {
                 verticalCenter: parent.verticalCenter
                 leftMargin: 10
             }
-            iconSource: "qrc:/icons/64x64/user-identity.png"
+            iconSource: "qrc:/icons/32x32/user-identity.png"
             iconName: "user-identity"
             checkable: true
             //                    onCheckedChanged: home.state = (checked) ? "PROFILE" : ""
@@ -65,7 +65,7 @@ FocusScope {
                 verticalCenter: parent.verticalCenter
                 rightMargin: 10
             }
-            iconSource: "qrc:/icons/64x64/configure.png"
+            iconSource: "qrc:/icons/32x32/configure.png"
             iconName: "configure"
         } // btConfig
     } // toolBar

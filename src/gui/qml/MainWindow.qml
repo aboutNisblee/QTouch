@@ -21,10 +21,11 @@ import QtQuick.Window 2.1
 import QtQuick.Controls 1.3
 
 Window {
-    id: mainWindow
+    //    id: mainWindow
     width: 1000
     height: 700
 //    color: "#00000000"
+//    color: "#E1E1E1"
     visible: true
 
     Flipable {
