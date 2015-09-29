@@ -155,6 +155,7 @@ FocusScope {
         }
 
         height: 0
+        enabled: !!height
         active: false
 
         sourceComponent: ProfileScreen {

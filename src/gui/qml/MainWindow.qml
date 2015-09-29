@@ -24,9 +24,15 @@ Window {
     //    id: mainWindow
     width: 1000
     height: 700
-//    color: "#00000000"
-//    color: "#E1E1E1"
+    //    color: "#00000000"
+    //    color: "#E1E1E1"
     visible: true
+
+    onActiveFocusItemChanged: console.debug(
+                                  "Active focus given to: " + activeFocusItem)
+
+    minimumWidth: trainingScreen.implicitWidth
+    minimumHeight: 500
 
     Flipable {
         id: flipper

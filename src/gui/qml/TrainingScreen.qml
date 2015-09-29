@@ -42,6 +42,8 @@ FocusScope {
         trainingWidget.reset()
     }
 
+    implicitWidth: statsContainer.implicitWidth
+
     Column {
         id: columnLayout
 
@@ -54,11 +56,14 @@ FocusScope {
             property int lrMargins: 8
             property int spacing: 10
 
+            implicitWidth: elapsedTime.implicitWidth + strokeRate.implicitWidth
+                           + hitRate.implicitWidth + 2 * lrMargins + 2 * spacing
+
             anchors {
                 left: columnLayout.left
                 right: columnLayout.right
             }
-            height: Math.max(root.height / 10, 120)
+            height: Math.max(root.height / 10, 100)
 
             Items.ElapsedTimeWidget {
                 id: elapsedTime
@@ -185,13 +190,6 @@ FocusScope {
 
                             textMargin: 25
 
-                            //                            docClipRect: Qt.rect(
-                            //                                          0,
-                            //                                          widgetScroller.flickableItem.contentY
-                            //                                          - verticalSheetMargin,
-                            //                                          widgetScroller.viewport.childrenRect.width,
-                            //                                          widgetScroller.viewport.childrenRect.height)
-
                             // Note: title and text are set by root item via property alias
                             onEscape: root.quit()
 
@@ -206,21 +204,6 @@ FocusScope {
                                     scrollAnimation.to = cursorRectangle.y
                                     scrollAnimation.start()
                                 }
-
-                                //                                if (cursorRectangle.y < (widgetScroller.flickableItem.contentY
-                                //                                                         - verticalSheetMargin)) {
-                                //                                    // Scroll down
-                                //                                    scrollAnimation.to = cursorRectangle.y
-                                //                                    scrollAnimation.start()
-                                //                                } else if (cursorRectangle.y + cursorRectangle.height
-                                //                                           > (widgetScroller.flickableItem.contentY
-                                //                                              - verticalSheetMargin
-                                //                                              + widgetScroller.viewport.childrenRect.height)) {
-                                //                                    // Scroll up
-                                //                                    scrollAnimation.to = cursorRectangle.y + cursorRectangle.height
-                                //                                            - widgetScroller.viewport.childrenRect.height + verticalSheetMargin
-                                //                                    scrollAnimation.start()
-                                //                                }
                             }
 
                             onCursorPositionChanged: {
