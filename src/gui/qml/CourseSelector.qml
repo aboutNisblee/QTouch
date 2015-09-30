@@ -39,8 +39,8 @@ FocusScope {
     property int itemCount: 1
 
     // Input property interface
-    // Set current course model
-    property alias currentCourseModel: path.model
+    // Set course model
+    property alias courseModel: path.model
 
     // Output property interface
     // The index of the currently selected course

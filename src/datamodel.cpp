@@ -134,6 +134,8 @@ void DataModel::init()
 
 	// Create the course map
 	mCourseMap = make_map(mCourses);
+
+	mDbHelper->getProfiles(std::inserter(mProfiles, mProfiles.begin()));
 }
 
 QString DataModel::getCourseTitle(const QUuid& courseId) const
@@ -210,5 +212,13 @@ QString DataModel::getLessonText(const QUuid& courseId, const QUuid& lessonId) c
 	else
 		return QString();
 }
+
+bool DataModel::isValidProfile(const QString& name) const
+{
+	return std::count_if(mProfiles.begin(), mProfiles.end(), [&](const Profile& p){
+		return p.getName() == name;
+	});
+}
+
 
 } /* namespace qtouch */

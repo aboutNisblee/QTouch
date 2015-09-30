@@ -91,7 +91,7 @@ FocusScope {
                 topMargin: 5
             }
 
-            currentCourseModel: $courseModel
+            courseModel: $courseModel
 
             onSelectedCourseIndexChanged: $courseModel.selectCourse(
                                               selectedCourseIndex)
@@ -163,6 +163,8 @@ FocusScope {
 
             height: profileScreenLoader.height
             width: profileScreenLoader.width
+
+            profileModel: $profileModel
         } // profileScreen
 
         onLoaded: console.debug("profileScreenLoader loaded")

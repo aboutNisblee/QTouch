@@ -3,4 +3,5 @@ melp_add_sources(SRCS
 	mainwindow.cpp
 	datamodel.cpp
 	coursemodel.cpp
+	profilemodel.cpp
 )

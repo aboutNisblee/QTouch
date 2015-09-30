@@ -34,6 +34,7 @@
 #include "utils/exceptions.hpp"
 #include "datamodel.hpp"
 #include "coursemodel.hpp"
+#include "profilemodel.hpp"
 #include "gui/textpage.hpp"
 #include "gui/trainingwidget.hpp"
 #include "gui/svgelementprovider.hpp"
@@ -61,8 +62,10 @@ void registerQmlTypes()
 	qmlRegisterType<qtouch::CourseModel>("de.nisble.qtouch", 1, 0, "CourseModel");
 
 	qRegisterMetaType<qtouch::LessonModel*>("LessonModel*");
-	//	qmlRegisterType<qtouch::LessonModel>("de.nisble.qtouch", 1, 0, "LessonModel");
 	qmlRegisterType<qtouch::LessonModel>();
+
+	qRegisterMetaType<qtouch::ProfileModel*>("ProfileModel*");
+	qmlRegisterType<qtouch::ProfileModel>();
 
 	qmlRegisterType<qtouch::TextPage>("de.nisble.qtouch", 1, 0, "TextPage");
 	qmlRegisterType<qtouch::TrainingWidget>("de.nisble.qtouch", 1, 0, "TrainingWidget");
@@ -97,8 +100,10 @@ int main(int argc, char* argv[])
 	}
 
 	qtouch::CourseModel courseModel(&dataModel);
-	// Embed the course model
+	qtouch::ProfileModel profileModel(&dataModel);
+	// Embed view models
 	engine.rootContext()->setContextProperty("$courseModel", &courseModel);
+	engine.rootContext()->setContextProperty("$profileModel", &profileModel);
 
 	// Create root component
 	QQmlComponent component(&engine);

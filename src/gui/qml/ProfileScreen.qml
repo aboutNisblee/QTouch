@@ -24,6 +24,14 @@ import "items" as Items
 Item {
     id: root
 
+    // Input property interface
+    // Set current course model
+    property alias profileModel: list.model
+
+    // Output property interface
+    // The index of the currently selected course
+    property int selectedProfileIndex: 0
+
     Row {
         anchors.fill: parent
 
@@ -37,25 +45,6 @@ Item {
             }
             width: parent.width / 2
 
-            model: ListModel {
-                id: testModel
-                ListElement {
-                    profile: "MrMoe"
-                }
-                ListElement {
-                    profile: "Mone"
-                }
-                ListElement {
-                    profile: "Moritz"
-                }
-                ListElement {
-                    profile: "TestUser1"
-                }
-                ListElement {
-                    profile: "Default"
-                }
-            }
-
             delegate: Items.ListItem {
                 anchors {
                     left: parent.left
@@ -63,7 +52,7 @@ Item {
                     margins: 20
                 }
 
-                text: profile
+                text: name
                 iconSource: "qrc:/icons/32x32/user-identity.png"
 
                 topMargin: 6

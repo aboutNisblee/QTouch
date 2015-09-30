@@ -105,12 +105,34 @@ public:
 	bool isLessonBuiltin(const QUuid& courseId, const QUuid& lessonId) const;
 	QString getLessonText(const QUuid& courseId, const QUuid& lessonId) const;
 
+	// Profile
+	int getProfileCount() const { return mProfiles.size(); }
+	inline bool isValidProfileIndex(int index) const
+	{
+		if (index >= 0 && index < static_cast<int>(mProfiles.size()))
+			return true;
+		else
+			return false;
+	}
+	inline QString getProfileName(int index) const
+	{
+		if (!isValidProfileIndex(index)) return QString();
+		else return mProfiles.at(index).getName();
+	}
+	bool isValidProfile(const QString& name) const;
+	inline Profile::SkillLevel getProfileSkill(int index) const
+	{
+		if (!isValidProfileIndex(index)) return Profile::Beginner;
+		else return mProfiles.at(index).getSkillLevel();
+	}
+
 private:
 	std::shared_ptr<DbInterface> mDb;
 	std::unique_ptr<DbHelper> mDbHelper;
 
 	std::vector<std::shared_ptr<Course>> mCourses;
 	std::map<QUuid, std::shared_ptr<Course>> mCourseMap;
+	std::vector<Profile> mProfiles;
 };
 
 } /* namespace qtouch */
