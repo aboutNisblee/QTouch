@@ -29,14 +29,9 @@ FocusScope {
         lessonSelector.onLessonStarted.connect(lessonStarted)
     }
 
-    states: State {
-        name: "PROFILE"
-        when: btProfile.checked
-    }
-
     // Forward keys to the selectors as long as the ProfileScreen isn't enabled
     Keys.forwardTo: [courseSelector, lessonSelector]
-    Keys.enabled: !profileScreenLoader.enabled
+    Keys.enabled: !profileScreen.enabled
 
     ToolBar {
         id: toolBar
@@ -148,81 +143,19 @@ FocusScope {
         } // lessonSelector
     } // container
 
-    Loader {
-        id: profileScreenLoader
+    ProfileScreen {
+        id: profileScreen
 
         anchors {
             top: toolBar.bottom
             right: root.right
             left: root.left
+            bottom: root.bottom
         }
 
-        height: 0
-        enabled: !!height
-        focus: enabled
-        active: false
+        focus: open
+        open: btProfile.checked
 
-        sourceComponent: ProfileScreen {
-            id: profileScreen
-
-            height: profileScreenLoader.height
-            width: profileScreenLoader.width
-
-            // Controlled by loader focus
-            focus: true
-
-            profileModel: $profileModel
-        } // profileScreen
-
-        onLoaded: console.debug("profileScreenLoader loaded")
-    } // profileScreenLoader
-
-    transitions: [
-        Transition {
-            to: "PROFILE"
-            SequentialAnimation {
-                // Ensure profileScreen is loaded
-                ScriptAction {
-                    script: profileScreenLoader.active = true
-                }
-                // Dim homeScreen
-                PropertyAnimation {
-                    target: container
-                    property: "opacity"
-                    to: 0
-                    easing.type: Easing.Linear
-                    duration: 150
-                }
-                // Inflate profileScreen
-                PropertyAnimation {
-                    target: profileScreenLoader
-                    property: "height"
-                    to: root.height - toolBar.height
-                    easing.type: Easing.Linear
-                    duration: 250
-                }
-            }
-        },
-        Transition {
-            from: "PROFILE"
-            SequentialAnimation {
-                // Roll profileScreen in
-                PropertyAnimation {
-                    target: profileScreenLoader
-                    property: "height"
-                    to: 0
-                    easing.type: Easing.Linear
-                    duration: 250
-                }
-                // Show homeScreen
-                PropertyAnimation {
-                    target: container
-                    property: "opacity"
-                    to: 1
-                    easing.type: Easing.Linear
-                    duration: 350
-                }
-            }
-        }
-    ] // transitions
+        profileModel: $profileModel
+    } // profileScreen
 } // Item

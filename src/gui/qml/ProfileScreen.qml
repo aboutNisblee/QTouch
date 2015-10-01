@@ -25,111 +25,177 @@ FocusScope {
     id: root
 
     // Input property interface
-    // Set current course model
+    // Enable to open
+    property bool open: false
+    // Set current profile model
     property alias profileModel: list.model
 
     // Output property interface
     // The index of the currently selected course
     property int selectedProfileIndex: 0
 
-    onActiveFocusChanged: console.log("ProfileScreen.activeFocus: " + activeFocus)
+    enabled: open
+    visible: (background.height === -height) ? false : true
+    clip: true
 
-    Row {
-        anchors.fill: parent
+    states: State {
+        name: "OPEN"
+        when: open
+        PropertyChanges {
+            target: background
+            y: 0
+        }
+    } // states
 
-        ListView {
-            id: list
+    Rectangle {
+        id: background
+        width: parent.width
+        height: parent.height
+        y: -parent.height
 
-            anchors {
-                top: parent.top
-                bottom: parent.bottom
-                margins: 20
-            }
-            width: parent.width / 2
+        Row {
+            anchors.fill: parent
 
-            focus: root.focus
-
-            delegate: Items.ListItem {
+            ListView {
+                id: list
                 anchors {
-                    left: parent.left
-                    right: parent.right
+                    top: parent.top
+                    bottom: parent.bottom
                     margins: 20
                 }
+                width: parent.width / 2
 
-                text: name
-                iconSource: "qrc:/icons/32x32/user-identity.png"
+                focus: true
 
-                topMargin: 6
-                bottomMargin: 6
-                hoverable: true
-                bgRadius: 5
-                bgBorderWidth: 1
-                bgBorderColor: "black"
-                bgMaxOpacity: 0
-
-                isCurrentItem: ListView.isCurrentItem
-
-                onClicked: {
-                    ListView.view.currentIndex = index
-                    console.debug("Profile changed!")
-                }
-            } // delegate
-
-            highlight: Component {
-                Rectangle {
+                delegate: Items.ListItem {
                     anchors {
                         left: parent.left
                         right: parent.right
                         margins: 20
                     }
 
-                    height: list.currentItem.height
-                    width: list.currentItem.width
-                    visible: list.height > 0
+                    text: name
+                    iconSource: "qrc:/icons/32x32/user-identity.png"
 
-                    border.width: list.currentItem.bgBorderWidth
-                    border.color: list.currentItem.bgBorderColor
-                    radius: list.currentItem.bgRadius
+                    topMargin: 6
+                    bottomMargin: 6
+                    hoverable: true
+                    bgRadius: 5
+                    bgBorderWidth: 1
+                    bgBorderColor: "black"
+                    bgMaxOpacity: 0
 
-                    x: list.currentItem.x
-                    y: list.currentItem.y
-                    Behavior on y {
-                        SpringAnimation {
-                            spring: 10
-                            damping: 0.8
+                    isCurrentItem: ListView.isCurrentItem
+
+                    onClicked: {
+                        ListView.view.currentIndex = index
+                        console.debug("Profile changed!")
+                    }
+                } // delegate
+
+                highlight: Component {
+                    Rectangle {
+                        anchors {
+                            left: parent.left
+                            right: parent.right
+                            margins: 20
+                        }
+
+                        height: list.currentItem.height
+                        width: list.currentItem.width
+
+                        border.width: list.currentItem.bgBorderWidth
+                        border.color: list.currentItem.bgBorderColor
+                        radius: list.currentItem.bgRadius
+
+                        x: list.currentItem.x
+                        y: list.currentItem.y
+                        Behavior on y {
+                            SpringAnimation {
+                                spring: 10
+                                damping: 0.8
+                            }
                         }
                     }
-                }
-            } // highlight
+                } // highlight
 
-            footer: Items.ListItem {
+                footer: Items.ListItem {
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        margins: 20
+                    }
+
+                    topMargin: 12
+
+                    text: qsTr("New profile")
+                    iconSource: "qrc:/icons/32x32/list-add.png"
+
+                    onClicked: {
+                        console.debug("New Profile!")
+                    }
+                } // footer
+            } // profileSelectorView
+
+            Rectangle {
+                id: rhsBackground
                 anchors {
-                    left: parent.left
-                    right: parent.right
-                    margins: 20
+                    top: parent.top
+                    bottom: parent.bottom
                 }
 
-                visible: list.height > 0
+                width: parent.width / 2
+                color: "beige"
 
-                topMargin: 12
+                Item {
+                    id: newProfileContainer
 
-                text: qsTr("New profile")
-                iconSource: "qrc:/icons/32x32/list-add.png"
+                    anchors {
+                        fill: parent
+                        bottomMargin: parent.height / 4
+                        topMargin: parent.height / 4
+                        leftMargin: 10
+                        rightMargin: 10
+                    }
 
-                onClicked: {
-                    console.debug("New Profile!")
+                    TextField {
+                        id: txtProfileName
+                        anchors {
+                            top: parent.top
+                            right: parent.right
+                            left: parent.left
+                        }
+                        placeholderText: qsTr("Text Field")
+                    }
+
+                    GroupBox {
+                        id: gbSkillLevel
+                        anchors {
+                            top: txtProfileName.bottom
+                            right: parent.right
+                            left: parent.left
+                        }
+                        height: 200
+                        title: qsTr("Group Box")
+                    }
+
+                    Button {
+                        id: btCreateProfile
+                        anchors {
+                            top: gbSkillLevel.bottom
+                            horizontalCenter: parent.horizontalCenter
+                        }
+                        text: qsTr("Create Profile")
+                    }
                 }
-            } // footer
-        } // profileSelectorView
+            } // rhsBackground
+        } // Row
 
-        Rectangle {
-            id: container
-            anchors {
-                top: parent.top
-                bottom: parent.bottom
+        Behavior on y {
+            PropertyAnimation {
+                easing.type: Easing.InOutQuad
+                duration: 350
             }
-            width: parent.width / 2
-            color: "beige"
         }
-    } // Row
+    } // background
 } // root
