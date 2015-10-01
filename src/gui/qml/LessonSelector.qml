@@ -137,7 +137,7 @@ FocusScope {
                 // Implicitly anchored to ScrollView
 
                 // Settings
-                focus: root.focus
+                focus: true
                 highlightFollowsCurrentItem: false
 
                 Keys.onUpPressed: decrementCurrentIndex()

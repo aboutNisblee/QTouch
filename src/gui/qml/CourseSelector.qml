@@ -71,7 +71,7 @@ FocusScope {
             rightMargin: root.spacer
         }
 
-        focus: root.focus
+        focus: true
         Keys.onLeftPressed: decrementCurrentIndex()
         Keys.onRightPressed: incrementCurrentIndex()
 

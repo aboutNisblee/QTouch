@@ -31,7 +31,7 @@ FocusScope {
 
     // Forward keys to the selectors as long as the ProfileScreen isn't enabled
     Keys.forwardTo: [courseSelector, lessonSelector]
-    Keys.enabled: !profileScreen.enabled
+    Keys.enabled: !profileScreen.open
 
     ToolBar {
         id: toolBar
@@ -51,7 +51,6 @@ FocusScope {
             iconSource: "qrc:/icons/32x32/user-identity.png"
             iconName: "user-identity"
             checkable: true
-            //                    onCheckedChanged: home.state = (checked) ? "PROFILE" : ""
         } // btProfile
 
         ToolButton {
@@ -87,7 +86,7 @@ FocusScope {
                 topMargin: 5
             }
 
-            focus: true
+            focus: !profileScreen.open
 
             courseModel: $courseModel
 
@@ -136,7 +135,6 @@ FocusScope {
 
             // React to output signals
             onSelectedLessonIndexChanged: {
-                // console.debug("lessonSelector.onLessonSelected: " + index)
                 $courseModel.selectedLessonModel.selectLesson(
                             selectedLessonIndex)
             }
@@ -153,7 +151,7 @@ FocusScope {
             bottom: root.bottom
         }
 
-        focus: open
+        focus: btProfile.checked
         open: btProfile.checked
 
         profileModel: $profileModel
