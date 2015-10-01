@@ -34,8 +34,9 @@ FocusScope {
         when: btProfile.checked
     }
 
-    // Forward keys to children
+    // Forward keys to the selectors as long as the ProfileScreen isn't enabled
     Keys.forwardTo: [courseSelector, lessonSelector]
+    Keys.enabled: !profileScreenLoader.enabled
 
     ToolBar {
         id: toolBar
@@ -90,6 +91,8 @@ FocusScope {
 
                 topMargin: 5
             }
+
+            focus: true
 
             courseModel: $courseModel
 
@@ -156,6 +159,7 @@ FocusScope {
 
         height: 0
         enabled: !!height
+        focus: enabled
         active: false
 
         sourceComponent: ProfileScreen {
@@ -163,6 +167,9 @@ FocusScope {
 
             height: profileScreenLoader.height
             width: profileScreenLoader.width
+
+            // Controlled by loader focus
+            focus: true
 
             profileModel: $profileModel
         } // profileScreen

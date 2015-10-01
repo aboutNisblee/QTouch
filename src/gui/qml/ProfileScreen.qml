@@ -21,7 +21,7 @@ import QtQuick.Controls 1.3
 
 import "items" as Items
 
-Item {
+FocusScope {
     id: root
 
     // Input property interface
@@ -31,6 +31,8 @@ Item {
     // Output property interface
     // The index of the currently selected course
     property int selectedProfileIndex: 0
+
+    onActiveFocusChanged: console.log("ProfileScreen.activeFocus: " + activeFocus)
 
     Row {
         anchors.fill: parent
@@ -44,6 +46,8 @@ Item {
                 margins: 20
             }
             width: parent.width / 2
+
+            focus: root.focus
 
             delegate: Items.ListItem {
                 anchors {
@@ -119,6 +123,7 @@ Item {
         } // profileSelectorView
 
         Rectangle {
+            id: container
             anchors {
                 top: parent.top
                 bottom: parent.bottom
