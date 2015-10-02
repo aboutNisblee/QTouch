@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS tblProfile (
 -- Table that holds the lessons.
 -- Each lesson has a UUID taken from Ktouch, stored as text and used as PK.
 -- The builtin flag is used to destinguish between user defined/created lessons and those delivered with the binary.
--- Lessons that are not attached to any Course are NOT allowed.
+-- Lessons that are not attached to any Course can be found with the help of vDanglingLessons.
 CREATE TABLE IF NOT EXISTS tblLesson (
 	pkLessonUuid		TEXT NOT NULL PRIMARY KEY,
 	cLessonTitle		TEXT NOT NULL,
@@ -47,7 +47,6 @@ CREATE TABLE IF NOT EXISTS tblLesson (
 -- Courses without any Lessons are allowed.
 -- The right order of the lessons is ensured by the LessonList table.
 -- Each course holds a reference to its first lesson list entry.
--- TODO: Add a ON DELETE trigger, that checks whether linked lessons have any parents.
 CREATE TABLE IF NOT EXISTS tblCourse (
 	pkCourseUuid		TEXT NOT NULL PRIMARY KEY,
 	cCourseTitle		TEXT NOT NULL,
@@ -57,13 +56,13 @@ CREATE TABLE IF NOT EXISTS tblCourse (
 
 -- For the user to be able to create custom courses from existing lessons a resolution table is needed (m:n).
 -- This is implemented as a list, to be able to store the order of the lessons.
+-- When either the course or the lesson is deleted, the corresponding entry in the list is also deleted.
+--  The trigger LessonListBeforeDelete ensures correct list pointers on deletion in the middle of the list.
 -- Using a artificial index for the recursion instead of the long UUIDs.
 -- For the user to be able to ommit the CourseUUID on subsequent inserts, fkCourseUuid is not forced to be not null.
---	The handling is done in a trigger.
--- FIXME: It is possible to make tree from the list by passing a parentID that differs from the ID of the last entry of a list.
---	For the moment the software must ensure that the right parentID is passed.
+--  The handling is done in a trigger.
 -- The unique constraint forbids adding the same lesson twice to one course list. That would make things much more
---  complecated since the application would have to be aware of the pkLessonListId to distinguish between the lessons.
+--  complicated since the application would have to be aware of the pkLessonListId to distinguish between the lessons.
 --  Furthermore it makes no sense to add a lesson twice, since the user could simply replay the same lesson.
 --  HINT: The GUI should make such a constallation impossible by using e.g. a drag and drop system.
 CREATE TABLE IF NOT EXISTS tblLessonList (
@@ -138,6 +137,7 @@ END;
 CREATE VIEW IF NOT EXISTS vDanglingLessons AS
 SELECT pkLessonUuid FROM tblLesson WHERE pkLessonUuid NOT IN  (SELECT fkLessonUuid FROM tblLessonList);
 
+-- Recursive scanning of the LessonList
 CREATE VIEW IF NOT EXISTS vLessonListForward AS
 WITH RECURSIVE LessonListForward(pkLessonListId, fkCourseUuid, fkLessonUuid, fkParentId, fkChildId) AS
 (
@@ -150,6 +150,7 @@ WITH RECURSIVE LessonListForward(pkLessonListId, fkCourseUuid, fkLessonUuid, fkP
 )
 SELECT * FROM LessonListForward;
 
+-- Combine Courses and its Lessons in the correct order
 CREATE VIEW IF NOT EXISTS vLessons AS
 SELECT pkCourseUuid,
 	cCourseTitle,
@@ -167,24 +168,24 @@ FROM (
 JOIN tblCourse ON pkCourseUuid = fkCourseUuid;
 
 -- Table for statistics of passed lessons.
--- Has a composite PK the lesson UUID and the profile name.
+-- Has a composite PK of the lesson UUID, the profile name and the start date.
 -- DateTimes are stored in ISO format (e.g. 2015-07-01T14:44:52+0200 or higher precision).
 -- The stats does not depend on the LessonList entries anymore. That has the advantage that LessonList entries
 --	can be deleted and stored in another order without invalidating the stats.
 -- When the profile or the lesson is deleted, the stats are deleted too.
 CREATE TABLE IF NOT EXISTS tblStats (
-	pkfkLessonUuid		TEXT NOT NULL REFERENCES tblLesson(pkLessonUuid) ON UPDATE CASCADE ON DELETE CASCADE,
+	pkfkLessonListId	INTEGER NOT NULL REFERENCES tblLessonList(pkLessonListId) ON UPDATE CASCADE ON DELETE CASCADE,
 	pkfkProfileName		TEXT NOT NULL REFERENCES tblProfile(pkProfileName) ON UPDATE CASCADE ON DELETE CASCADE,
-	cStartDateTime		TEXT NOT NULL,
+	pkStartDateTime		TEXT NOT NULL,
 	cEndDateTime		TEXT NOT NULL,
 	cCharCount			INTEGER NOT NULL,
 	cErrorCount			INTEGER,
-	PRIMARY KEY(pkfkLessonUuid, pkfkProfileName)
+	PRIMARY KEY(pkfkLessonListId, pkfkProfileName, pkStartDateTime)
 ) WITHOUT ROWID;
 
 -- Check that Stats.end_datetime is bigger that Stats.start_datetime
 CREATE TRIGGER IF NOT EXISTS StatsDateTimeCheck BEFORE INSERT ON tblStats
-WHEN strftime('%s',NEW.cStartDateTime) > strftime('%s',NEW.cEndDateTime)
+WHEN strftime('%s',NEW.pkStartDateTime) > strftime('%s',NEW.cEndDateTime)
 BEGIN
 	SELECT RAISE(ABORT, 'Datetime constraint failed: Start bigger than end time');
 END;
@@ -290,15 +291,32 @@ ROLLBACK;
 
 -- Let the user practice
 INSERT INTO tblStats VALUES (
-	'L1',
+	(SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L1'),
 	'TestUser1',
 	strftime('%Y-%m-%dT%H:%M:%f','now'),
-	strftime('%Y-%m-%dT%H:%M:%f','now','+5 minutes'),
-	100,
+	strftime('%Y-%m-%dT%H:%M:%f','now','+1 minutes'),
+	220,
 	10
+), (
+	(SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L1'),
+	'TestUser1',
+	strftime('%Y-%m-%dT%H:%M:%f','now','+1 minutes'),
+	strftime('%Y-%m-%dT%H:%M:%f','now','+2 minutes'),
+	240,
+	12
+), (
+	(SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2'),
+	'TestUser1',
+	strftime('%Y-%m-%dT%H:%M:%f','now','+2 minutes'),
+	strftime('%Y-%m-%dT%H:%M:%f','now','+3 minutes'),
+	210,
+	16
 );
 SELECT 'Stats: Wrong row count'
-	WHERE (SELECT count(*) FROM tblStats) != 1;
+	WHERE (SELECT count(*) FROM tblStats) != 3;
+
+-- HINT: Get stats with course and lesson titles
+--SELECT * FROM tblStats JOIN vLessons ON pkLessonListId = pkfkLessonListId WHERE pkfkProfileName = 'TestUser1';
 
 -- Delete a course and check the delete cascades
 BEGIN TRANSACTION;
@@ -307,12 +325,14 @@ SELECT 'Course: Wrong row count'
 	WHERE (SELECT count(*) FROM tblCourse) != 2;
 SELECT 'LessonList: Wrong row count'
 	WHERE (SELECT count(*) FROM tblLessonList) != 2;
+SELECT 'Stats: Wrong row count'
+	WHERE (SELECT count(*) FROM tblStats) != 1;
 -- Delete dangling Lessons
 DELETE FROM tblLesson WHERE pkLessonUuid IN (SELECT pkLessonUuid FROM vDanglingLessons);
 SELECT 'Lesson: Wrong row count'
 	WHERE (SELECT count(*) FROM tblLesson) != 2;
 SELECT 'Stats: Wrong row count'
-	WHERE (SELECT count(*) FROM tblStats) != 0;
+	WHERE (SELECT count(*) FROM tblStats) != 1;
 ROLLBACK;
 
 -- Check updates
