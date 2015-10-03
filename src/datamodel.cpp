@@ -38,21 +38,6 @@
 namespace qtouch
 {
 
-namespace
-{
-
-std::map<QUuid, std::shared_ptr<Course>> make_map(const std::vector<std::shared_ptr<Course>>& list)
-{
-	std::map<QUuid, std::shared_ptr<Course>> map;
-	for (const auto& c : list)
-	{
-		map.insert(std::make_pair(c->getId(), c));
-	}
-	return map;
-}
-
-} /* namespace anonymous */
-
 DataModel::DataModel(QObject* parent) :
 	QObject(parent)
 {
@@ -109,7 +94,7 @@ void DataModel::init()
 	mDbHelper = std::unique_ptr<DbHelper>(new DbHelper(mDb, QStringLiteral("QTouch.sqlite")));
 
 	// Check database schema version
-	if(mDbHelper->getShemaVersion() != 1)
+	if (mDbHelper->getShemaVersion() != 1)
 	{
 		// FIXME: Drop and recreate for now
 		mDb->dropSchema();
@@ -132,93 +117,79 @@ void DataModel::init()
 
 	mCourses = parsedCourses;
 
-	// Create the course map
-	mCourseMap = make_map(mCourses);
-
+	// Read profiles from Db; Stats are loaded on demand
 	mDbHelper->getProfiles(std::inserter(mProfiles, mProfiles.begin()));
 }
 
-QString DataModel::getCourseTitle(const QUuid& courseId) const
+bool DataModel::isValidCourseIndex(int index) const
 {
-	if (isValidCourse(courseId))
-		return mCourseMap.at(courseId)->getTitle();
-	else
-		return QString();
+	return (index >= 0 && index < static_cast<int>(mCourses.size())) ? true : false;
 }
 
-QString DataModel::getCourseDescription(const QUuid& courseId) const
+std::shared_ptr<Course> DataModel::getCourse(int index) const
 {
-	if (isValidCourse(courseId))
-		return mCourseMap.at(courseId)->getDescription();
-	else
-		return QString();
+	return isValidCourseIndex(index) ? mCourses.at(index) : std::shared_ptr<Course>();
 }
 
-bool DataModel::isCourseBuiltin(const QUuid& courseId) const
+int DataModel::getLessonCount(int courseIndex) const
 {
-	if (isValidCourse(courseId))
-		return mCourseMap.at(courseId)->isBuiltin();
-	else
-		return false;
+	return isValidCourseIndex(courseIndex) ? mCourses.at(courseIndex)->size() : 0;
 }
 
-std::shared_ptr<Course> DataModel::getCourseCopy(const QUuid& courseId) const
+bool DataModel::isValidLessonIndex(int courseIndex, int lessonIndex) const
 {
-	std::shared_ptr<Course> copy;
-	if (isValidCourse(courseId))
-	{
-		copy = Course::clone(*mCourseMap.at(courseId));
-	}
-
-	return copy;
+	return (isValidCourseIndex(courseIndex) && lessonIndex >= 0
+	        && lessonIndex < mCourses.at(courseIndex)->size()) ? true : false;
 }
 
-int DataModel::getLessonCount(const QUuid& courseId) const
+std::shared_ptr<const Lesson> DataModel::getLesson(int courseIndex, int lessonIndex) const
 {
-	if (isValidCourse(courseId))
-		return mCourseMap.at(courseId)->size();
-	else
-		return 0;
+	return isValidLessonIndex(courseIndex,
+	                          lessonIndex) ? mCourses.at(courseIndex)->at(lessonIndex) : std::shared_ptr<const Lesson>();
 }
 
-QString DataModel::getLessonTitle(const QUuid& courseId, const QUuid& lessonId) const
+bool DataModel::isValidProfileIndex(int index) const
 {
-	if (isValidLesson(courseId, lessonId))
-		return mCourseMap.at(courseId)->get(lessonId)->getTitle();
-	else
-		return QString();
-}
-
-QString DataModel::getLessonNewChars(const QUuid& courseId, const QUuid& lessonId) const
-{
-	if (isValidLesson(courseId, lessonId))
-		return mCourseMap.at(courseId)->get(lessonId)->getNewChars();
-	else
-		return QString();
-}
-
-bool DataModel::isLessonBuiltin(const QUuid& courseId, const QUuid& lessonId) const
-{
-	if (isValidLesson(courseId, lessonId))
-		return mCourseMap.at(courseId)->get(lessonId)->isBuiltin();
-	else
-		return false;
-}
-
-QString DataModel::getLessonText(const QUuid& courseId, const QUuid& lessonId) const
-{
-	if (isValidLesson(courseId, lessonId))
-		return mCourseMap.at(courseId)->get(lessonId)->getText();
-	else
-		return QString();
+	return (index >= 0 && index < static_cast<int>(mProfiles.size())) ? true : false;
 }
 
 bool DataModel::isValidProfile(const QString& name) const
 {
-	return std::count_if(mProfiles.begin(), mProfiles.end(), [&](const Profile& p){
+	if (name.isEmpty())
+		return false;
+
+	return std::count_if(mProfiles.begin(), mProfiles.end(), [&](const Profile & p)
+	{
 		return p.getName() == name;
 	});
 }
 
+bool DataModel::insertProfile(const Profile& profile)
+{
+	bool result = false;
+	if (!profile.getName().isEmpty() && !isValidProfile(profile.getName()) && mDbHelper->insert(profile))
+	{
+		result = true;
+		mProfiles.push_back(profile);
+	}
+	return result;
+}
+
+Profile DataModel::getProfile(int index, bool selectStats)
+{
+	if (isValidProfileIndex(index))
+	{
+		// Lazy load stats
+		if (selectStats)
+		{
+			mProfiles.at(index).clear();
+			mDbHelper->getStats(mProfiles.at(index).getName(),
+			                    std::inserter(mProfiles.at(index), mProfiles.at(index).begin()));
+		}
+		return mProfiles.at(index);
+	}
+	else
+		return Profile(QString());
+}
 
 } /* namespace qtouch */

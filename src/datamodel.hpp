@@ -32,7 +32,6 @@
 
 #include "entities/course.hpp"
 #include "entities/profile.hpp"
-#include "entities/stats.hpp"
 
 namespace qtouch
 {
@@ -52,79 +51,23 @@ public:
 
 	// Course
 
-	int getCourseCount() const { return mCourses.size(); }
-	inline bool isValidCourseIndex(int index) const
-	{
-		if (index >= 0 && index < static_cast<int>(mCourses.size()))
-			return true;
-		else
-			return false;
-	}
-
-	inline QUuid getCourseId(int index) const
-	{
-		if (!isValidCourseIndex(index))	return QUuid();
-		else return mCourses.at(index)->getId();
-	}
-
-	inline bool isValidCourse(const QUuid& courseId) const
-	{
-		if (mCourseMap.count(courseId)) return true;
-		else return false;
-	}
-
-	QString getCourseTitle(const QUuid& courseId) const;
-	QString getCourseDescription(const QUuid& courseId) const;
-	bool isCourseBuiltin(const QUuid& courseId) const;
-
-	std::shared_ptr<Course> getCourseCopy(const QUuid& courseId) const;
+	inline int getCourseCount() const { return mCourses.size(); }
+	bool isValidCourseIndex(int index) const;
+	std::shared_ptr<Course> getCourse(int index) const;
 
 	// Lesson
 
-	int getLessonCount(const QUuid& courseId) const;
-	inline bool isValidLessonIndex(const QUuid& courseId, int index) const
-	{
-		if (isValidCourse(courseId) && index >= 0 && index < mCourseMap.at(courseId)->size()) return true;
-		else return false;
-	}
-
-	inline QUuid getLessonId(const QUuid& courseId, int index) const
-	{
-		if (isValidLessonIndex(courseId, index)) return mCourseMap.at(courseId)->at(index)->getId();
-		else return QUuid();
-	}
-
-	inline bool isValidLesson(const QUuid& courseId, const QUuid& lessonId) const
-	{
-		if (isValidCourse(courseId) && mCourseMap.at(courseId)->contains(lessonId))	return true;
-		else return false;
-	}
-
-	QString getLessonTitle(const QUuid& courseId, const QUuid& lessonId) const;
-	QString getLessonNewChars(const QUuid& courseId, const QUuid& lessonId) const;
-	bool isLessonBuiltin(const QUuid& courseId, const QUuid& lessonId) const;
-	QString getLessonText(const QUuid& courseId, const QUuid& lessonId) const;
+	int getLessonCount(int courseIndex) const;
+	bool isValidLessonIndex(int courseIndex, int lessonIndex) const;
+	std::shared_ptr<const Lesson> getLesson(int courseIndex, int lessonIndex) const;
 
 	// Profile
-	int getProfileCount() const { return mProfiles.size(); }
-	inline bool isValidProfileIndex(int index) const
-	{
-		if (index >= 0 && index < static_cast<int>(mProfiles.size()))
-			return true;
-		else
-			return false;
-	}
-	inline QString getProfileName(int index) const
-	{
-		if (!isValidProfileIndex(index)) return QString();
-		else return mProfiles.at(index).getName();
-	}
+
+	inline int getProfileCount() const { return mProfiles.size(); }
+	bool isValidProfileIndex(int index) const;
 	bool isValidProfile(const QString& name) const;
-	inline Profile::SkillLevel getProfileSkill(int index) const
-	{
-		if (!isValidProfileIndex(index)) return Profile::Beginner;
-		else return mProfiles.at(index).getSkillLevel();
-	}
+	Profile getProfile(int index, bool selectStats = false);
+	bool insertProfile(const Profile& profile);
 
 private:
 	std::shared_ptr<DbInterface> mDb;
