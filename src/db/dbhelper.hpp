@@ -124,12 +124,12 @@ inline bool qtouch::DbHelper::getStats(const QString& profileName, OutputIter ou
 		if (!mDb->isOpen())
 			mDb->open(mPath);
 
-		// pkfkLessonUuid, cStartDateTime, cEndDateTime, cCharCount, cErrorCount
+		// pkfkLessonUuid, pkStartDateTime, cEndDateTime, cCharCount, cErrorCount
 		auto query = mDb->selectStats(profileName);
 
 		while (query.next())
 		{
-			Stats stats(query.value("pkfkLessonUuid").toUuid(), profileName, query.value("cStartDateTime").toDateTime());
+			Stats stats(query.value("pkCourseUuid").toUuid(), query.value("pkLessonUuid").toUuid(), profileName, query.value("pkStartDateTime").toDateTime());
 			stats.setEnd(query.value("cEndDateTime").toDateTime());
 			stats.setCharCount(query.value("cCharCount").toUInt());
 			stats.setErrorCount(query.value("cErrorCount").toUInt());

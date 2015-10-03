@@ -30,7 +30,6 @@
 #include <QSqlQuery>
 
 #include "entities/profile.hpp"
-#include "entities/stats.hpp"
 #include "entities/course.hpp"
 #include "dbexception.hpp"
 

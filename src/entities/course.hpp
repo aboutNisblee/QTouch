@@ -86,7 +86,7 @@ public:
 
 	std::shared_ptr<Course> getCourse() const;
 
-	virtual QDataStream& serialize(QDataStream& out) const;
+	virtual QDataStream& serialize(QDataStream& out) const Q_DECL_OVERRIDE;
 
 private:
 	/* Store the back pointer to the owning object. */
@@ -146,7 +146,7 @@ public:
 	inline const_iterator begin() const {return mLessons.begin(); }
 	inline const_iterator end() const { return mLessons.end(); }
 
-	virtual QDataStream& serialize(QDataStream& out) const;
+	virtual QDataStream& serialize(QDataStream& out) const Q_DECL_OVERRIDE;
 
 private:
 	// TODO: Disable move-ctor and assignment operator!

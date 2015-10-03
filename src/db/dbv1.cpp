@@ -163,18 +163,18 @@ const QString create_vLessons = QStringLiteral("CREATE VIEW IF NOT EXISTS vLesso
                                 "JOIN tblCourse ON pkCourseUuid = fkCourseUuid;");
 
 const QString create_tblStats = QStringLiteral("CREATE TABLE IF NOT EXISTS tblStats (\n"
-                                "	pkfkLessonUuid		TEXT NOT NULL REFERENCES tblLesson(pkLessonUuid) ON UPDATE CASCADE ON DELETE CASCADE,\n"
+                                "	pkfkLessonListId	INTEGER NOT NULL REFERENCES tblLessonList(pkLessonListId) ON UPDATE CASCADE ON DELETE CASCADE,\n"
                                 "	pkfkProfileName		TEXT NOT NULL REFERENCES tblProfile(pkProfileName) ON UPDATE CASCADE ON DELETE CASCADE,\n"
-                                "	cStartDateTime		TEXT NOT NULL,\n"
+                                "	pkStartDateTime		TEXT NOT NULL,\n"
                                 "	cEndDateTime		TEXT NOT NULL,\n"
                                 "	cCharCount			INTEGER NOT NULL,\n"
                                 "	cErrorCount			INTEGER,\n"
-                                "	PRIMARY KEY(pkfkLessonUuid, pkfkProfileName)\n"
+                                "	PRIMARY KEY(pkfkLessonListId, pkfkProfileName, pkStartDateTime)\n"
                                 ") WITHOUT ROWID;");
 
 const QString create_StatsDateTimeCheck =
     QStringLiteral("CREATE TRIGGER IF NOT EXISTS StatsDateTimeCheck BEFORE INSERT ON tblStats\n"
-                   "WHEN strftime(\'%s\',NEW.cStartDateTime) > strftime(\'%s\',NEW.cEndDateTime)\n"
+                   "WHEN strftime(\'%s\',NEW.pkStartDateTime) > strftime(\'%s\',NEW.cEndDateTime)\n"
                    "BEGIN\n"
                    "	SELECT RAISE(ABORT, \'Datetime constraint failed: Start bigger than end time\');\n"
                    "END;");
@@ -229,10 +229,7 @@ void DbV1::open(const QString& path)
 
 	// Check existence of the directory to the database file
 	if (!QDir(QFileInfo(path).absoluteDir()).exists())
-	{
-		throw
-		DbException(QStringLiteral("Invalid path to database: ") % path);
-	}
+		throw DbException(QStringLiteral("Invalid path to database: ") % path);
 
 	// Else open or create the database file
 	db->setDatabaseName(path);
@@ -244,6 +241,11 @@ void DbV1::open(const QString& path)
 	{
 		qDebug() << "Opened database at:" << QFileInfo(path).absolutePath();
 	}
+
+	// TODO: Check if this is still needed!
+	QSqlQuery q(*db);
+	q.setForwardOnly(true);
+	exec_query_string(q, QStringLiteral("PRAGMA foreign_keys = true"));
 }
 
 void DbV1::close()
@@ -397,6 +399,10 @@ void DbV1::rollback()
 		db->rollback();
 }
 
+/**
+ * Insert a profile object.
+ * @param profile A profile object.
+ */
 void DbV1::insert(const Profile& profile)
 {
 	checkOpen();
@@ -411,6 +417,10 @@ void DbV1::insert(const Profile& profile)
 	exec_query(q);
 }
 
+/**
+ * Insert a status object.
+ * @param stats A status object.
+ */
 void DbV1::insert(const Stats& stats)
 {
 	checkOpen();
@@ -418,7 +428,8 @@ void DbV1::insert(const Stats& stats)
 	QSqlQuery q(*db);
 	q.setForwardOnly(true);
 
-	q.prepare(QStringLiteral("INSERT INTO tblStats VALUES (:lesson, :profile, :start, :end, :chars, :errors)"));
+	q.prepare(QStringLiteral("INSERT INTO tblStats VALUES ((SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = :course AND fkLessonUuid = :lesson), :profile, :start, :end, :chars, :errors)"));
+	q.bindValue(":course", stats.getCourseId());
 	q.bindValue(":lesson", stats.getLessonId());
 	q.bindValue(":profile", stats.getProfileName());
 	q.bindValue(":start", stats.getStart());
@@ -429,6 +440,10 @@ void DbV1::insert(const Stats& stats)
 	exec_query(q);
 }
 
+/**
+ * Insert a course object.
+ * @param course A course object.
+ */
 void DbV1::insert(const Course& course)
 {
 	checkOpen();
@@ -445,6 +460,10 @@ void DbV1::insert(const Course& course)
 	exec_query(q);
 }
 
+/**
+ * Insert a lesson object.
+ * @param lesson A lesson object.
+ */
 void DbV1::insert(const Lesson& lesson)
 {
 	checkOpen();
@@ -508,7 +527,7 @@ void DbV1::update(const Stats& /*stats*/)
 {
 	checkOpen();
 
-	// TODO: Implement me!
+	// TODO: Implement me! Or not? Update of stats makes no sense.
 	qWarning() << "To be implemented!";
 }
 
@@ -566,7 +585,7 @@ QSqlQuery DbV1::selectProfiles()
 
 /**
  * Select the Stats for a given ProfileName
- * Valid columns: pkfkLessonUuid, cStartDateTime, cEndDateTime, cCharCount, cErrorCount
+ * Valid columns: pkCourseUuid, pkLessonUuid, pkStartDateTime, cEndDateTime, cCharCount, cErrorCount
  * @param profileName A ProfileName
  * @return The query.
  */
@@ -578,7 +597,7 @@ QSqlQuery DbV1::selectStats(const QString& profileName)
 	q.setForwardOnly(true);
 
 	q.prepare(
-	    QStringLiteral("SELECT pkfkLessonUuid,cStartDateTime,cEndDateTime,cCharCount,cErrorCount FROM tblStats WHERE pkfkProfileName = :profileName"));
+	    QStringLiteral("SELECT pkCourseUuid,pkLessonUuid,pkStartDateTime,cEndDateTime,cCharCount,cErrorCount FROM tblStats JOIN vLessons ON pkLessonListId = pkfkLessonListId WHERE pkfkProfileName = :profileName ORDER BY pkStartDateTime"));
 	q.bindValue(":profileName", profileName);
 
 	exec_query(q);

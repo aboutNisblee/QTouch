@@ -28,11 +28,4 @@
 
 namespace qtouch
 {
-
-void Profile::push_back(const Stats& stats)
-{
-	auto ptr = std::make_shared<const Stats>(stats);
-	mStats.push_back(ptr);
-}
-
 } /* namespace qtouch */

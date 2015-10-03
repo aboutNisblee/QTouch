@@ -423,7 +423,7 @@ void DbV1Test::insertStatsTest()
 
 		/* Take the first lesson and create a stats object
 		with the lessonId from the Db */
-		Stats stats(QUuid(cL.value("pkLessonUuid").toString()), cP.value("pkProfileName").toString(), start);
+		Stats stats(QUuid(cC.value("pkCourseUuid").toString()), QUuid(cL.value("pkLessonUuid").toString()), cP.value("pkProfileName").toString(), start);
 		stats.setEnd(end);
 		stats.setCharCount(chars);
 		stats.setErrorCount(errors);
@@ -432,12 +432,13 @@ void DbV1Test::insertStatsTest()
 		db->insert(stats);
 
 		// Read it back
-		// pkfkLessonUuid, cStartDateTime, cEndDateTime, cCharCount, cErrorCount
+		// pkCourseUuid, pkLessonUuid, pkStartDateTime, cEndDateTime, cCharCount, cErrorCount
 		auto cS = db->selectStats(cP.value("pkProfileName").toString());
 		QVERIFY(cS.next() != false);
 
-		QCOMPARE(QUuid(cS.value("pkfkLessonUuid").toString()), QUuid(cL.value("pkLessonUuid").toString()));
-		QCOMPARE(cS.value("cStartDateTime").toDateTime(), start);
+		QCOMPARE(QUuid(cS.value("pkCourseUuid").toString()), QUuid(cC.value("pkCourseUuid").toString()));
+		QCOMPARE(QUuid(cS.value("pkLessonUuid").toString()), QUuid(cL.value("pkLessonUuid").toString()));
+		QCOMPARE(cS.value("pkStartDateTime").toDateTime(), start);
 		QCOMPARE(cS.value("cEndDateTime").toDateTime(), end);
 		QCOMPARE(cS.value("cCharCount").toUInt(), chars);
 		QCOMPARE(cS.value("cErrorCount").toUInt(), errors);

@@ -29,17 +29,53 @@
 
 #include <memory>
 #include <vector>
+#include <QDateTime>
 #include <QString>
-
-#include "stats.hpp"
+#include <QUuid>
 
 namespace qtouch
 {
 
+class Stats
+{
+public:
+	Stats(const QUuid& courseId, const QUuid& lessonId, const QString& profileName,
+	      const QDateTime& start = QDateTime::currentDateTime()) :
+		mCourseId(courseId), mLessonId(lessonId), mProfileName(profileName), mStart(start), mCharCount(0), mErrorCount(0) {}
+	virtual ~Stats() {}
+
+	inline const QUuid& getCourseId() const { return mCourseId; }
+	inline const QUuid& getLessonId() const { return mLessonId; }
+	inline const QString& getProfileName() const { return mProfileName; }
+	inline const QDateTime& getStart() const {	return mStart; }
+
+	inline const QDateTime& getEnd() const { return mEnd; }
+	virtual void setEnd(const QDateTime& end) { mEnd = end; }
+
+	inline quint32 getCharCount() const { return mCharCount; }
+	virtual void setCharCount(quint32 charCount) { mCharCount = charCount; }
+
+	inline quint32 getErrorCount() const { return mErrorCount;	}
+	virtual void setErrorCount(quint32 errorCount) { mErrorCount = errorCount; }
+
+protected:
+	QUuid mCourseId;
+	QUuid mLessonId;
+	QString mProfileName;
+	QDateTime mStart;
+
+	QDateTime mEnd;
+	quint32 mCharCount;
+	quint32 mErrorCount;
+};
+
 class Profile
 {
 public:
-	typedef std::vector<std::shared_ptr<const Stats>>::const_iterator const_iterator;
+	typedef std::vector<Stats>::value_type value_type;
+	typedef std::vector<Stats>::size_type size_type;
+	typedef std::vector<Stats>::iterator iterator;
+	typedef std::vector<Stats>::const_iterator const_iterator;
 
 	/** SkillLevel */
 	enum SkillLevel
@@ -56,20 +92,26 @@ public:
 	inline SkillLevel getSkillLevel() const { return mSkillLevel; }
 	inline void setSkillLevel(SkillLevel skillLevel) { mSkillLevel = skillLevel; }
 
-	void push_back(const Stats& stats);
+	inline void push_back(const Stats& stats) { mStats.push_back(stats); }
 	inline void clear() { mStats.clear(); }
-	inline void replace(std::vector<std::shared_ptr<const Stats>> stats) { mStats.swap(stats); }
-	inline int size() const { return mStats.size(); }
+	inline void replace(std::vector<Stats> stats) { mStats.swap(stats); }
+	inline size_type size() const { return mStats.size(); }
+
+	template<typename InputIt>
+	iterator insert(const_iterator pos, InputIt first, InputIt last) { return mStats.insert(pos, first, last); }
+	inline iterator insert(const_iterator position, const value_type& val) { return mStats.insert(position, val); }
+	inline iterator insert(const_iterator position, value_type&& val) { return mStats.insert(position, val); }
 
 	inline const_iterator begin() const { return mStats.begin(); }
 	inline const_iterator end() const { return mStats.end(); }
+	inline iterator begin() { return mStats.begin(); }
+	inline iterator end() { return mStats.end(); }
 
-private:
+protected:
 	QString mName;
 	SkillLevel mSkillLevel;
 
-	// Note: No deep copy needed. Manipulation impossible.
-	std::vector<std::shared_ptr<const Stats>> mStats;
+	std::vector<Stats> mStats;
 };
 
 } /* namespace qtouch */

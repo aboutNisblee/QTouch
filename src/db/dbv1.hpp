@@ -44,51 +44,51 @@ public:
 	virtual ~DbV1();
 
 	/* Connection handling */
-	void open(QString const& path);
-	void close();
-	inline bool isOpen() { return (db) ? db->isOpen() : false; }
+	void open(QString const& path) Q_DECL_OVERRIDE;
+	void close() Q_DECL_OVERRIDE;
+	inline bool isOpen() Q_DECL_OVERRIDE { return (db) ? db->isOpen() : false; }
 
 	/* Schema */
-	void createSchema();
-	void dropSchema();
+	void createSchema() Q_DECL_OVERRIDE;
+	void dropSchema() Q_DECL_OVERRIDE;
 
 	/* MetaTable */
-	void setMeta(const QString& key, const QVariant& value);
-	QVariant getMeta(const QString& key);
+	void setMeta(const QString& key, const QVariant& value) Q_DECL_OVERRIDE;
+	QVariant getMeta(const QString& key) Q_DECL_OVERRIDE;
 
 	/* TRANSACTION */
-	void begin_transaction();
-	void end_transaction();
-	void rollback();
+	void begin_transaction() Q_DECL_OVERRIDE;
+	void end_transaction() Q_DECL_OVERRIDE;
+	void rollback() Q_DECL_OVERRIDE;
 
 	/* INSERT */
-	void insert(const Profile& profile);
-	void insert(const Stats& stats);
-	void insert(const Course& course);
-	void insert(const Lesson& lesson);
-	int insert(const QUuid& courseId, const QUuid& lessonId, int parentId = 0);
+	void insert(const Profile& profile) Q_DECL_OVERRIDE;
+	void insert(const Stats& stats) Q_DECL_OVERRIDE;
+	void insert(const Course& course) Q_DECL_OVERRIDE;
+	void insert(const Lesson& lesson) Q_DECL_OVERRIDE;
+	int insert(const QUuid& courseId, const QUuid& lessonId, int parentId = 0) Q_DECL_OVERRIDE;
 
 	/* UPDATE */
-	void update(const Profile& profile);
-	void update(const Stats& stats);
-	void update(const Course& course);
-	void update(const Lesson& lesson);
+	void update(const Profile& profile) Q_DECL_OVERRIDE;
+	void update(const Stats& stats) Q_DECL_OVERRIDE;
+	void update(const Course& course) Q_DECL_OVERRIDE;
+	void update(const Lesson& lesson) Q_DECL_OVERRIDE;
 
 	/* SELECT */
-	QSqlQuery selectProfiles();
-	QSqlQuery selectStats(const QString& profileName);
-	QSqlQuery selectCourses(Db::CourseType type);
-	QSqlQuery selectCourse(const QUuid& courseId);
-	QSqlQuery selectLesson(const QUuid& lessonId);
-	QSqlQuery selectLessonList(const QUuid& courseId);
-	QSqlQuery selectDanglingLesson();
+	QSqlQuery selectProfiles() Q_DECL_OVERRIDE;
+	QSqlQuery selectStats(const QString& profileName) Q_DECL_OVERRIDE;
+	QSqlQuery selectCourses(Db::CourseType type) Q_DECL_OVERRIDE;
+	QSqlQuery selectCourse(const QUuid& courseId) Q_DECL_OVERRIDE;
+	QSqlQuery selectLesson(const QUuid& lessonId) Q_DECL_OVERRIDE;
+	QSqlQuery selectLessonList(const QUuid& courseId) Q_DECL_OVERRIDE;
+	QSqlQuery selectDanglingLesson() Q_DECL_OVERRIDE;
 
 	/* DELETE */
-	void deleteProfile(const QString& profileName);
-	void deleteStats(const QString& profileName);
-	void deleteCourse(const QUuid& courseId);
-	void deleteLesson(const QUuid& lessonId);
-	void deleteLessonList(const QUuid& courseId);
+	void deleteProfile(const QString& profileName) Q_DECL_OVERRIDE;
+	void deleteStats(const QString& profileName) Q_DECL_OVERRIDE;
+	void deleteCourse(const QUuid& courseId) Q_DECL_OVERRIDE;
+	void deleteLesson(const QUuid& lessonId) Q_DECL_OVERRIDE;
+	void deleteLessonList(const QUuid& courseId) Q_DECL_OVERRIDE;
 
 private:
 	DbV1() {}
