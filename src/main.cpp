@@ -35,6 +35,7 @@
 #include "datamodel.hpp"
 #include "coursemodel.hpp"
 #include "profilemodel.hpp"
+#include "wrapper/qmlprofile.hpp"
 #include "gui/textpage.hpp"
 #include "gui/trainingwidget.hpp"
 #include "gui/svgelementprovider.hpp"
@@ -63,6 +64,11 @@ void registerQmlTypes()
 
 	qRegisterMetaType<qtouch::LessonModel*>("LessonModel*");
 	qmlRegisterType<qtouch::LessonModel>();
+
+	qRegisterMetaType<qtouch::QmlProfile*>("QmlProfile*");
+	qmlRegisterType<qtouch::QmlProfile>("de.nisble.qtouch", 1, 0, "Profile");
+	qRegisterMetaType<qtouch::QmlStats*>("QmlStats*");
+	qmlRegisterType<qtouch::QmlStats>("de.nisble.qtouch", 1, 0, "Stats");
 
 	qRegisterMetaType<qtouch::ProfileModel*>("ProfileModel*");
 	qmlRegisterType<qtouch::ProfileModel>();

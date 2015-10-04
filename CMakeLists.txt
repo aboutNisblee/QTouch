@@ -69,6 +69,7 @@ add_subdirectory(src/entities)
 add_subdirectory(src/xml)
 add_subdirectory(src/db)
 add_subdirectory(src/gui)
+add_subdirectory(src/wrapper)
 melp_print_list(SRCS "Source files" SEPERATOR HALFINDENT)
 
 qt5_add_resources(QRCS
