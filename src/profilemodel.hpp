@@ -28,6 +28,9 @@
 #define PROFILEMODEL_HPP_
 
 #include <QAbstractListModel>
+#include <QQmlListProperty>
+
+#include "wrapper/qmlprofile.hpp"
 
 namespace qtouch
 {
@@ -38,42 +41,46 @@ class ProfileModel: public QAbstractListModel
 {
 	Q_OBJECT
 
-	Q_PROPERTY(int selectedProfileIndex READ getSelectedProfileIndex NOTIFY selectedProfileIndexChanged)
-
-	Q_PROPERTY(QString selectedProfileName READ getSelectedProfileName NOTIFY selectedProfileNameChanged)
-	Q_PROPERTY(QString selectedProfileSkillLevel READ getSelectedProfileSkillLevel NOTIFY selectedProfileSkillLevelChanged)
+	Q_ENUMS(qtouch::QmlProfile::SkillLevel)
+	Q_PROPERTY(int index READ getSlectedIndex WRITE selectProfile NOTIFY selectedProfileIndexChanged)
+	Q_PROPERTY(QmlProfile* profile READ getSelectedProfile NOTIFY selectedProfileChanged)
 
 public:
 	/** ProfileModelRoles */
 	enum ProfileModelRoles
 	{
 		NameRole = Qt::UserRole + 1,//!< NameRole pName
-		SkillRole                  	//!< SkillRole pSkill
+		SkillRole                  //!< SkillRole pSkill
 	};
 
 	explicit ProfileModel(QObject* parent = 0);
 	explicit ProfileModel(DataModel* model, QObject* parent = 0);
 	virtual ~ProfileModel();
 
-	int rowCount(const QModelIndex& parent = QModelIndex()) const;
-	QVariant data(const QModelIndex& index, int role) const;
+	int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
+	QVariant data(const QModelIndex& index, int role) const Q_DECL_OVERRIDE;
 
 	Q_INVOKABLE QVariantMap get(int index);
 
-	Q_INVOKABLE void selectProfile(int index);
+	inline int getSlectedIndex() const { return mSelected; }
+	void selectProfile(int index);
 
-	inline int getSelectedProfileIndex() const { return mSelected; }
-	inline QString getSelectedProfileName() const { return index(mSelected).data(NameRole).toString(); }
-	inline int getSelectedProfileSkillLevel() const { return index(mSelected).data(SkillRole).toInt(); }
+	/* Objects not-created by QML have CppOwnership by default.
+	 * The exception to this are objects returned from C++ method calls;
+	 * their ownership will be set to JavaScriptOwnership.
+	 * This applies only to explicit invocations of Q_INVOKABLE methods or slots,
+	 * but not to property getter invocations. */
+	QmlProfile* getSelectedProfile() const;
+
+	Q_INVOKABLE bool addProfile(const QString& name, qtouch::QmlProfile::SkillLevel skill);
+	Q_INVOKABLE bool addProfile(QmlProfile* profile);
 
 signals:
 	void selectedProfileIndexChanged();
-
-	void selectedProfileNameChanged();
-	void selectedProfileSkillLevelChanged();
+	void selectedProfileChanged();
 
 protected:
-	QHash<int, QByteArray> roleNames() const;
+	virtual QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 
 private:
 	DataModel* mDm;
@@ -82,5 +89,7 @@ private:
 };
 
 } /* namespace qtouch */
+
+Q_DECLARE_METATYPE(qtouch::QmlProfile::SkillLevel)
 
 #endif /* PROFILEMODEL_HPP_ */

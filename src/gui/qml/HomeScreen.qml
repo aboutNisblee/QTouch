@@ -19,6 +19,8 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.3
 
+import de.nisble.qtouch 1.0
+
 import "items" as Items
 
 FocusScope {
@@ -155,5 +157,26 @@ FocusScope {
         open: btProfile.checked
 
         profileModel: $profileModel
+
+        // React to output signals
+        onCreateProfile: {
+            console.log("Creating profile: " + name + " (" + skilllevel + ")")
+            $profileModel.addProfile(name, skilllevel)
+        }
     } // profileScreen
+
+    Connections {
+        target: $profileModel
+        onSelectedProfileChanged: {
+            for (var i = 0; i < $profileModel.profile.stats.length; i++)
+                console.log("Status:", i,
+                            $profileModel.profile.stats[i].course,
+                            $profileModel.profile.stats[i].lesson,
+                            $profileModel.profile.stats[i].profile,
+                            $profileModel.profile.stats[i].start,
+                            $profileModel.profile.stats[i].end,
+                            $profileModel.profile.stats[i].chars,
+                            $profileModel.profile.stats[i].errors)
+        }
+    }
 } // Item

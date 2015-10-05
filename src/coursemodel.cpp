@@ -36,12 +36,12 @@ namespace qtouch
 {
 
 LessonModel::LessonModel(QObject* parent):
-	QAbstractListModel(parent), mDm(nullptr), mSelected(-1)
+	QAbstractListModel(parent), mDm(nullptr), mCourseIndex(-1), mSelected(-1)
 {
 }
 
 LessonModel::LessonModel(DataModel* model, QObject* parent) :
-	QAbstractListModel(parent), mDm(model), mSelected(-1)
+	QAbstractListModel(parent), mDm(model), mCourseIndex(-1), mSelected(-1)
 {
 }
 
@@ -52,8 +52,8 @@ LessonModel::~LessonModel()
 int LessonModel::rowCount(const QModelIndex& parent) const
 {
 	Q_UNUSED(parent)
-	if (mDm->isValidCourse(mCourseId))
-		return mDm->getLessonCount(mCourseId);
+	if (mDm->isValidCourseIndex(mCourseIndex))
+		return mDm->getLessonCount(mCourseIndex);
 	else
 		return 0;
 }
@@ -63,28 +63,26 @@ QVariant LessonModel::data(const QModelIndex& index, int role) const
 	if (!index.isValid())
 		return QVariant();
 
-	if (!mDm->isValidLessonIndex(mCourseId, index.row()))
+	if (!mDm->isValidLessonIndex(mCourseIndex, index.row()))
 		return QVariant();
-
-	QUuid lessonId = mDm->getLessonId(mCourseId, index.row());
 
 	switch (role)
 	{
 	// TODO: Handle t roles
 	case UuidRole:
-		return mDm->getLessonId(mCourseId, index.row());
+		return mDm->getLesson(mCourseIndex, index.row())->getId();
 		break;
 	case TitleRole:
-		return mDm->getLessonTitle(mCourseId, lessonId);
+		return mDm->getLesson(mCourseIndex, index.row())->getTitle();
 		break;
 	case NewCharsRole:
-		return mDm->getLessonNewChars(mCourseId, lessonId);
+		return mDm->getLesson(mCourseIndex, index.row())->getNewChars();
 		break;
 	case BuiltinRole:
-		return mDm->isLessonBuiltin(mCourseId, lessonId);
+		return mDm->getLesson(mCourseIndex, index.row())->isBuiltin();
 		break;
 	case TextRole:
-		return mDm->getLessonText(mCourseId, lessonId);
+		return mDm->getLesson(mCourseIndex, index.row())->getText();
 		break;
 	default:
 		return QVariant();
@@ -123,7 +121,7 @@ QVariantMap LessonModel::get(int row)
 
 void LessonModel::selectLesson(int index)
 {
-	if (!mDm->isValidLessonIndex(mCourseId, index))
+	if (!mDm->isValidLessonIndex(mCourseIndex, index))
 	{
 		qWarning() << this << "Invalid index:" << index;
 		mSelected = -1;
@@ -188,16 +186,16 @@ QVariant CourseModel::data(const QModelIndex& index, int role) const
 	{
 	// TODO: Handle default roles
 	case UuidRole:
-		return mDm->getCourseId(index.row());
+		return mDm->getCourse(index.row())->getId();
 		break;
 	case TitleRole:
-		return mDm->getCourseTitle(mDm->getCourseId(index.row()));
+		return mDm->getCourse(index.row())->getTitle();
 		break;
 	case DescriptionRole:
-		return mDm->getCourseDescription(mDm->getCourseId(index.row()));
+		return mDm->getCourse(index.row())->getDescription();
 		break;
 	case BuiltinRole:
-		return mDm->isCourseBuiltin(mDm->getCourseId(index.row()));
+		return mDm->getCourse(index.row())->isBuiltin();
 		break;
 	default:
 		return QVariant();
@@ -246,7 +244,7 @@ void CourseModel::selectCourse(int index)
 		mSelected = index;
 
 		// Change the model before firing index changed!
-		mLessonModel->setCourse(mDm->getCourseId(index));
+		mLessonModel->setCourse(index);
 		emit selectedLessonModelChanged();
 		emit selectedCourseIndexChanged();
 

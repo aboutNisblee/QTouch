@@ -63,8 +63,8 @@ public:
 	explicit LessonModel(DataModel* model, QObject* parent = 0);
 	virtual ~LessonModel();
 
-	int rowCount(const QModelIndex& parent = QModelIndex()) const;
-	QVariant data(const QModelIndex& index, int role) const;
+	int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
+	QVariant data(const QModelIndex& index, int role) const Q_DECL_OVERRIDE;
 
 	Q_INVOKABLE QVariantMap get(int index);
 
@@ -87,15 +87,15 @@ signals:
 	void selectedLessonTextChanged();
 
 protected:
-	QHash<int, QByteArray> roleNames() const;
+	virtual QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 
 private:
 	friend class CourseModel;
-	inline void setCourse(const QUuid& courseId) { mCourseId = courseId; }
+	inline void setCourse(int index) { mCourseIndex = index; }
 
 	DataModel* mDm;
 
-	QUuid mCourseId;
+	int mCourseIndex;
 	int mSelected;
 };
 
@@ -134,8 +134,8 @@ public:
 
 	// TODO: Add flags to control enabled items! E.g. different language, never used, ...
 
-	int rowCount(const QModelIndex& parent = QModelIndex()) const;
-	QVariant data(const QModelIndex& index, int role) const;
+	int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
+	QVariant data(const QModelIndex& index, int role) const Q_DECL_OVERRIDE;
 
 	Q_INVOKABLE QVariantMap get(int index);
 
@@ -161,7 +161,7 @@ signals:
 	void selectedCourseBuiltinChanged();
 
 protected:
-	QHash<int, QByteArray> roleNames() const;
+	virtual QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 
 private:
 	DataModel* mDm;

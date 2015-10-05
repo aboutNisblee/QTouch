@@ -28,6 +28,7 @@
 
 #include <algorithm>
 
+#include <QQmlEngine>
 #include <QDebug>
 
 #include "datamodel.hpp"
@@ -49,9 +50,8 @@ ProfileModel::~ProfileModel()
 {
 }
 
-int ProfileModel::rowCount(const QModelIndex& parent) const
+int ProfileModel::rowCount(const QModelIndex& /*parent*/) const
 {
-	Q_UNUSED(parent)
 	return mDm->getProfileCount();
 }
 
@@ -67,10 +67,10 @@ QVariant ProfileModel::data(const QModelIndex& index, int role) const
 	{
 	// TODO: Handle default roles
 	case NameRole:
-		return mDm->getProfileName(index.row());
+		return mDm->getProfile(index.row()).getName();
 		break;
 	case SkillRole:
-		return mDm->getProfileSkill(index.row());
+		return static_cast<qtouch::QmlProfile::SkillLevel>(mDm->getProfile(index.row()).getSkillLevel());
 		break;
 	default:
 		return QVariant();
@@ -104,22 +104,46 @@ void ProfileModel::selectProfile(int index)
 		mSelected = -1;
 	}
 	else /* Do net check for index changes. Simply update and fire! */
-		//	else if(mSelected != index)
 	{
 		mSelected = index;
 		emit selectedProfileIndexChanged();
-
-		emit selectedProfileNameChanged();
-		emit selectedProfileSkillLevelChanged();
+		emit selectedProfileChanged();
 	}
+}
+
+QmlProfile* ProfileModel::getSelectedProfile() const
+{
+	QmlProfile* p = new QmlProfile(mDm->getProfile(mSelected, true));
+	QQmlEngine::setObjectOwnership(p, QQmlEngine::JavaScriptOwnership);
+	return p;
 }
 
 QHash<int, QByteArray> ProfileModel::roleNames() const
 {
 	QHash<int, QByteArray> roles;
-	roles[NameRole] = "name";
-	roles[SkillRole] = "skill";
+	roles[NameRole] = "pName";
+	roles[SkillRole] = "pSkill";
 	return roles;
+}
+
+bool ProfileModel::addProfile(const QString& name, qtouch::QmlProfile::SkillLevel skill)
+{
+	bool result = false;
+	beginInsertRows(QModelIndex(), mDm->getProfileCount(), mDm->getProfileCount());
+	if (mDm->insertProfile(Profile(name, static_cast<Profile::SkillLevel>(skill))))
+		result = true;
+	endInsertRows();
+	return result;
+}
+
+bool ProfileModel::addProfile(QmlProfile* profile)
+{
+	bool result = false;
+	beginInsertRows(QModelIndex(), mDm->getProfileCount(), mDm->getProfileCount());
+	if (mDm->insertProfile(*static_cast<Profile*>(profile)))
+		result = true;
+	endInsertRows();
+	return result;
 }
 
 } /* namespace qtouch */

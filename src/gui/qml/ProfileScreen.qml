@@ -18,6 +18,7 @@
 **/
 import QtQuick 2.3
 import QtQuick.Controls 1.3
+import de.nisble.qtouch 1.0
 
 import "items" as Items
 
@@ -32,7 +33,9 @@ FocusScope {
 
     // Output property interface
     // The index of the currently selected course
-    property int selectedProfileIndex: 0
+//    property int selectedProfileIndex: 0
+
+    signal createProfile(string name, int skilllevel)
 
     enabled: open
     visible: (background.height === -height) ? false : true
@@ -74,7 +77,7 @@ FocusScope {
                         margins: 20
                     }
 
-                    text: name
+                    text: pName
                     iconSource: "qrc:/icons/32x32/user-identity.png"
 
                     topMargin: 6
@@ -88,10 +91,12 @@ FocusScope {
                     isCurrentItem: ListView.isCurrentItem
 
                     onClicked: {
+                        profileStatsContainer.visible = true
                         ListView.view.currentIndex = index
-                        console.debug("Profile changed!")
                     }
                 } // delegate
+
+                onCurrentIndexChanged: model.index = currentIndex
 
                 highlight: Component {
                     Rectangle {
@@ -132,7 +137,7 @@ FocusScope {
                     iconSource: "qrc:/icons/32x32/list-add.png"
 
                     onClicked: {
-                        console.debug("New Profile!")
+                        profileStatsContainer.visible = false
                     }
                 } // footer
             } // profileSelectorView
@@ -148,6 +153,28 @@ FocusScope {
                 color: "beige"
 
                 Item {
+                    id: profileStatsContainer
+
+                    anchors {
+                        fill: parent
+                        bottomMargin: parent.height / 4
+                        topMargin: parent.height / 4
+                        leftMargin: 10
+                        rightMargin: 10
+                    }
+
+                    visible: true
+                    enabled: visible
+
+                    TextArea {
+                        id: profileStats
+                        anchors.fill: parent
+                        readOnly: true
+                        //                        text: list.model.profile.stats
+                    }
+                }
+
+                Item {
                     id: newProfileContainer
 
                     anchors {
@@ -158,6 +185,9 @@ FocusScope {
                         rightMargin: 10
                     }
 
+                    visible: !profileStatsContainer.visible
+                    enabled: visible
+
                     TextField {
                         id: txtProfileName
                         anchors {
@@ -165,7 +195,7 @@ FocusScope {
                             right: parent.right
                             left: parent.left
                         }
-                        placeholderText: qsTr("Text Field")
+                        placeholderText: qsTr("Please input profile name")
                     }
 
                     GroupBox {
@@ -176,7 +206,7 @@ FocusScope {
                             left: parent.left
                         }
                         height: 200
-                        title: qsTr("Group Box")
+                        title: qsTr("TODO: Group Box")
                     }
 
                     Button {
@@ -186,6 +216,9 @@ FocusScope {
                             horizontalCenter: parent.horizontalCenter
                         }
                         text: qsTr("Create Profile")
+                        onClicked: {
+                            createProfile(txtProfileName.text, 0)
+                        }
                     }
                 }
             } // rhsBackground
