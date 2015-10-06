@@ -91,9 +91,6 @@ FocusScope {
             focus: !profileScreen.open
 
             courseModel: $courseModel
-
-            onSelectedCourseIndexChanged: $courseModel.selectCourse(
-                                              selectedCourseIndex)
         } // courseSelector
 
         // Label that is inflated the button that is placed
@@ -112,8 +109,7 @@ FocusScope {
                 bottomMargin: 10
             }
 
-            // Access course model at the currently selected index and get the description
-            text: $courseModel.selectedCourseDescription
+            text: $courseModel.course.description
 
             inflated: courseSelector.courseDescriptionBottonChecked
         } // lblCourseDescription
@@ -131,15 +127,9 @@ FocusScope {
             // Fill the column
             height: container.height - courseSelector.height - lblCourseDescription.height
 
-            currentLessonModel: $courseModel.selectedLessonModel
-            previewTitle: $courseModel.selectedLessonModel.selectedLessonTitle
-            previewText: $courseModel.selectedLessonModel.selectedLessonText
-
-            // React to output signals
-            onSelectedLessonIndexChanged: {
-                $courseModel.selectedLessonModel.selectLesson(
-                            selectedLessonIndex)
-            }
+            currentLessonModel: $courseModel.lessonModel
+            previewTitle: $courseModel.lessonModel.lesson.title
+            previewText: $courseModel.lessonModel.lesson.text
         } // lessonSelector
     } // container
 
@@ -167,16 +157,13 @@ FocusScope {
 
     Connections {
         target: $profileModel
-        onSelectedProfileChanged: {
-            for (var i = 0; i < $profileModel.profile.stats.length; i++)
-                console.log("Status:", i,
-                            $profileModel.profile.stats[i].course,
-                            $profileModel.profile.stats[i].lesson,
-                            $profileModel.profile.stats[i].profile,
-                            $profileModel.profile.stats[i].start,
-                            $profileModel.profile.stats[i].end,
-                            $profileModel.profile.stats[i].chars,
-                            $profileModel.profile.stats[i].errors)
+        onProfileChanged: {
+            for (var i = 0; i < $profileModel.profile.stats.length; i++) {
+                var stats = $profileModel.profile.stats[i]
+                console.log("Status:", i, stats.course, stats.lesson,
+                            stats.profile, stats.start, stats.end, stats.chars,
+                            stats.errors)
+            }
         }
     }
 } // Item

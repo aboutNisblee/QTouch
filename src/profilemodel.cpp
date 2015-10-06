@@ -106,12 +106,12 @@ void ProfileModel::selectProfile(int index)
 	else /* Do net check for index changes. Simply update and fire! */
 	{
 		mSelected = index;
-		emit selectedProfileIndexChanged();
-		emit selectedProfileChanged();
+		emit profileIndexChanged();
+		emit profileChanged();
 	}
 }
 
-QmlProfile* ProfileModel::getSelectedProfile() const
+QmlProfile* ProfileModel::getProfile() const
 {
 	QmlProfile* p = new QmlProfile(mDm->getProfile(mSelected, true));
 	QQmlEngine::setObjectOwnership(p, QQmlEngine::JavaScriptOwnership);

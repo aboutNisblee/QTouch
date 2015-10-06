@@ -42,8 +42,8 @@ class ProfileModel: public QAbstractListModel
 	Q_OBJECT
 
 	Q_ENUMS(qtouch::QmlProfile::SkillLevel)
-	Q_PROPERTY(int index READ getSlectedIndex WRITE selectProfile NOTIFY selectedProfileIndexChanged)
-	Q_PROPERTY(QmlProfile* profile READ getSelectedProfile NOTIFY selectedProfileChanged)
+	Q_PROPERTY(int index READ getIndex WRITE selectProfile NOTIFY profileIndexChanged)
+	Q_PROPERTY(QmlProfile* profile READ getProfile NOTIFY profileChanged)
 
 public:
 	/** ProfileModelRoles */
@@ -62,7 +62,7 @@ public:
 
 	Q_INVOKABLE QVariantMap get(int index);
 
-	inline int getSlectedIndex() const { return mSelected; }
+	inline int getIndex() const { return mSelected; }
 	void selectProfile(int index);
 
 	/* Objects not-created by QML have CppOwnership by default.
@@ -70,14 +70,14 @@ public:
 	 * their ownership will be set to JavaScriptOwnership.
 	 * This applies only to explicit invocations of Q_INVOKABLE methods or slots,
 	 * but not to property getter invocations. */
-	QmlProfile* getSelectedProfile() const;
+	QmlProfile* getProfile() const;
 
 	Q_INVOKABLE bool addProfile(const QString& name, qtouch::QmlProfile::SkillLevel skill);
 	Q_INVOKABLE bool addProfile(QmlProfile* profile);
 
 signals:
-	void selectedProfileIndexChanged();
-	void selectedProfileChanged();
+	void profileIndexChanged();
+	void profileChanged();
 
 protected:
 	virtual QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;

@@ -51,10 +51,6 @@ FocusScope {
     // Text for the preview panel
     property alias previewText: txtPreview.text
 
-    // Output property interface
-    // The index of the currently selected lesson
-    property int selectedLessonIndex: 0
-
     signal lessonStarted
 
     // Control selection by keys when focus is disabled (Keys.forwardTo)
@@ -163,7 +159,7 @@ FocusScope {
                     }
                 } // highlight
 
-                onCurrentIndexChanged: selectedLessonIndex = currentIndex
+                onCurrentIndexChanged: delegateModel.model.index = currentIndex
             } // list
         } //ScrollView
 

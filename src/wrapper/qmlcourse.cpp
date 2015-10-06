@@ -29,15 +29,80 @@
 namespace qtouch
 {
 
+QmlLesson::QmlLesson()
+{
+	setId(QUuid());
+	setBuiltin(false);
+}
+
+QmlLesson::QmlLesson(const Lesson& rhs) :
+	Lesson(rhs)
+{
+}
+
+QmlLesson::~QmlLesson()
+{
+}
+
+void QmlLesson::setTitle(const QString& title)
+{
+	if (title == mTitle)
+		return;
+
+	mTitle = title;
+	emit titleChanged();
+}
+
+void QmlLesson::setNewChars(const QString& newChars)
+{
+	if (newChars == mNewChars)
+		return;
+
+	mNewChars = newChars;
+	emit newCharsChanged();
+}
+
+void QmlLesson::setText(const QString& text)
+{
+	if (text == mText)
+		return;
+
+	mText = text;
+	emit textChanged();
+}
+
 QmlCourse::QmlCourse()
 {
-	// TODO Auto-generated constructor stub
+	mCourse = Course::create();
+	mCourse->setId(QUuid());
+	mCourse->setBuiltin(false);
+}
 
+QmlCourse::QmlCourse(std::shared_ptr<Course> rhs)
+{
+	mCourse = rhs;
 }
 
 QmlCourse::~QmlCourse()
 {
-	// TODO Auto-generated destructor stub
+}
+
+void QmlCourse::setTitle(const QString& title)
+{
+	if (title == mCourse->getTitle())
+		return;
+
+	mCourse->setTitle(title);
+	emit titleChanged();
+}
+
+void QmlCourse::setDescription(const QString& description)
+{
+	if (description == mCourse->getDescription())
+		return;
+
+	mCourse->setDescription(description);
+	emit descriptionChanged();
 }
 
 } /* namespace qtouch */

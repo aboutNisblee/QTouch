@@ -35,6 +35,7 @@
 #include "datamodel.hpp"
 #include "coursemodel.hpp"
 #include "profilemodel.hpp"
+#include "wrapper/qmlcourse.hpp"
 #include "wrapper/qmlprofile.hpp"
 #include "gui/textpage.hpp"
 #include "gui/trainingwidget.hpp"
@@ -59,9 +60,13 @@ bool componentError(QQmlComponent* c)
 
 void registerQmlTypes()
 {
+	qRegisterMetaType<qtouch::QmlLesson*>("QmlLesson*");
+	qmlRegisterType<qtouch::QmlLesson>("de.nisble.qtouch", 1, 0, "Lesson");
+	qRegisterMetaType<qtouch::QmlCourse*>("QmlCourse*");
+	qmlRegisterType<qtouch::QmlCourse>("de.nisble.qtouch", 1, 0, "Course");
+
 	qRegisterMetaType<qtouch::CourseModel*>("CourseModel*");
 	qmlRegisterType<qtouch::CourseModel>("de.nisble.qtouch", 1, 0, "CourseModel");
-
 	qRegisterMetaType<qtouch::LessonModel*>("LessonModel*");
 	qmlRegisterType<qtouch::LessonModel>();
 

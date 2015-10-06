@@ -32,8 +32,6 @@ FocusScope {
     property alias profileModel: list.model
 
     // Output property interface
-    // The index of the currently selected course
-//    property int selectedProfileIndex: 0
 
     signal createProfile(string name, int skilllevel)
 

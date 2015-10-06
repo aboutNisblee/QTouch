@@ -79,16 +79,16 @@ public:
 	virtual ~Lesson() {}
 
 	inline const QString& getNewChars() const { return mNewChars; }
-	inline void setNewChars(const QString& newChars) { mNewChars = newChars; }
+	virtual void setNewChars(const QString& newChars) { mNewChars = newChars; }
 
 	inline const QString& getText() const { return mText; }
-	inline void setText(const QString& text) { mText = text; }
+	virtual void setText(const QString& text) { mText = text; }
 
 	std::shared_ptr<Course> getCourse() const;
 
 	virtual QDataStream& serialize(QDataStream& out) const Q_DECL_OVERRIDE;
 
-private:
+protected:
 	/* Store the back pointer to the owning object. */
 	inline void setCourse(std::shared_ptr<Course>& parent) { mCourse = parent; }
 

@@ -62,6 +62,7 @@ Window {
             anchors.fill: parent
             // will be enabled in transition and controls focus
             visible: false
+            enabled: visible
 
             focus: visible
 
@@ -70,8 +71,8 @@ Window {
                     reset()
             }
 
-            title: $courseModel.selectedLessonModel.selectedLessonTitle
-            text: $courseModel.selectedLessonModel.selectedLessonText
+            title: $courseModel.lessonModel.lesson.title
+            text: $courseModel.lessonModel.lesson.text
 
             onQuit: flipper.state = ""
         } // trainingScreen

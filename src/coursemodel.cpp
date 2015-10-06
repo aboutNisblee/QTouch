@@ -28,6 +28,7 @@
 
 #include <algorithm>
 
+#include <QQmlEngine>
 #include <QDebug>
 
 #include "datamodel.hpp"
@@ -130,15 +131,16 @@ void LessonModel::selectLesson(int index)
 		//	else if(mSelected != index)
 	{
 		mSelected = index;
+		emit indexChanged();
+		emit lessonChanged();
 	}
+}
 
-	emit selectedLessonIndexChanged();
-
-	emit selectedLessonIdChanged();
-	emit selectedLessonTitleChanged();
-	emit selectedLessonNewCharsChanged();
-	emit selectedLessonBuiltinChanged();
-	emit selectedLessonTextChanged();
+QmlLesson* LessonModel::getLesson() const
+{
+	QmlLesson* l = new QmlLesson(*mDm->getLesson(mCourseIndex, mSelected));
+	QQmlEngine::setObjectOwnership(l, QQmlEngine::JavaScriptOwnership);
+	return l;
 }
 
 QHash<int, QByteArray> LessonModel::roleNames() const
@@ -245,17 +247,20 @@ void CourseModel::selectCourse(int index)
 
 		// Change the model before firing index changed!
 		mLessonModel->setCourse(index);
-		emit selectedLessonModelChanged();
-		emit selectedCourseIndexChanged();
-
-		emit selectedCourseIdChanged();
-		emit selectedCourseTitleChanged();
-		emit selectedCourseDescriptionChanged();
-		emit selectedCourseBuiltinChanged();
+		emit lessonModelChanged();
+		emit indexChanged();
+		emit courseChanged();
 
 		// This fires selectedLessonIndexChanged
 		mLessonModel->selectLesson(0);
 	}
+}
+
+QmlCourse* CourseModel::getCourse() const
+{
+	QmlCourse* c = new QmlCourse(mDm->getCourse(mSelected));
+	QQmlEngine::setObjectOwnership(c, QQmlEngine::JavaScriptOwnership);
+	return c;
 }
 
 /**
@@ -285,4 +290,3 @@ QHash<int, QByteArray> CourseModel::roleNames() const
 }
 
 } /* namespace qtouch */
-

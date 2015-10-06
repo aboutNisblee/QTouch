@@ -43,8 +43,6 @@ FocusScope {
     property alias courseModel: path.model
 
     // Output property interface
-    // The index of the currently selected course
-    property int selectedCourseIndex: 0
     // Propagates whether course details should be displayed or not
     property bool courseDescriptionBottonChecked: path.bottonChecked
 
@@ -131,7 +129,7 @@ FocusScope {
             // FIXME: Workaround (see above)
             if (currentIndex != lastIndex) {
                 lastIndex = currentIndex
-                selectedCourseIndex = currentIndex
+                model.index = currentIndex
             }
         }
     } // path
