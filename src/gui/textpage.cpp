@@ -193,7 +193,7 @@ void TextPage::resize()
 	// height is defined by document
 	qreal itemHeight = mDoc.size().height();
 
-	if ((idealWidth * mDocScale) != width() || (itemHeight * mDocScale) != height())
+	if (isVisible() && ((idealWidth * mDocScale) != width() || (itemHeight * mDocScale) != height()))
 	{
 		/*qDebug() << "New TextPage size:" <<
 		         "\n\tidealWidth:" << idealWidth << "*" << mDocScale << "=" << (idealWidth * mDocScale) <<
@@ -221,6 +221,8 @@ void TextPage::onBeforeSynchronizing()
 {
 	if (mDocDirty)
 	{
+//		qDebug() << this << "Updating image: Visible:" << isVisible();
+
 		mImage.reset(new QImage(width(), height(), QImage::Format_ARGB32_Premultiplied));
 		mImage->fill(Qt::transparent);
 		//	mImage->fill(Qt::white);
@@ -260,6 +262,8 @@ QSGNode* TextPage::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*upda
 
 	if (mImage)
 	{
+//		qDebug() << this << "Updating texture: Visible:" << isVisible();
+
 		mTexture.reset(window()->createTextureFromImage(*mImage));
 		if (mTexture)
 		{

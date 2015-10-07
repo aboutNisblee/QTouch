@@ -50,7 +50,9 @@ Window {
 
             anchors.fill: parent
 
-            // Switch focus between front and back
+            // Controlled by transition
+            visible: true
+            enabled: visible
             focus: !trainingScreen.focus
 
             onLessonStarted: flipper.state = "TRAINING"
@@ -60,10 +62,10 @@ Window {
             id: trainingScreen
 
             anchors.fill: parent
-            // will be enabled in transition and controls focus
+
+            // Controlled by transition
             visible: false
             enabled: visible
-
             focus: visible
 
             onVisibleChanged: {
