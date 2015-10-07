@@ -68,10 +68,10 @@ signals:
 	void cursorPositionChanged();
 
 protected:
-	virtual void keyPressEvent(QKeyEvent*) override;
+	virtual void keyPressEvent(QKeyEvent*) Q_DECL_OVERRIDE;
 
-	virtual void onBeforeSynchronizing() override;
-	virtual QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* updatePaintNodeData) override;
+	virtual void onBeforeSynchronizing() Q_DECL_OVERRIDE;
+	virtual QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* updatePaintNodeData) Q_DECL_OVERRIDE;
 
 private:
 	void resetCursor();

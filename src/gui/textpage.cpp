@@ -127,7 +127,7 @@ void TextPage::setDocClipRect(QRectF docClipRect)
 	{
 		mDocClipRect = docClipRect;
 		/*qDebug() << "mDocClipRect" << mDocClipRect;*/
-		mImageDirty = true;
+		mDocDirty = true;
 		update();
 		emit docClipRectChanged();
 	}
@@ -202,9 +202,7 @@ void TextPage::resize()
 		setWidth(idealWidth * mDocScale);
 		setHeight(itemHeight * mDocScale);
 
-		mImage.reset(new QImage(width(), height(), QImage::Format_ARGB32_Premultiplied));
-
-		mImageDirty = true;
+		mDocDirty = true;
 	}
 }
 
@@ -221,11 +219,9 @@ void TextPage::onWindowChanged(QQuickWindow* window)
  */
 void TextPage::onBeforeSynchronizing()
 {
-	if (mImageDirty)
+	if (mDocDirty)
 	{
-		if (!mImage)
-			return;
-
+		mImage.reset(new QImage(width(), height(), QImage::Format_ARGB32_Premultiplied));
 		mImage->fill(Qt::transparent);
 		//	mImage->fill(Qt::white);
 
@@ -248,7 +244,7 @@ void TextPage::onBeforeSynchronizing()
 			mDoc.drawContents(&p);
 		}
 
-		mImageDirty = false;
+		mDocDirty = false;
 	}
 }
 
@@ -259,26 +255,22 @@ QSGNode* TextPage::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*upda
 	{
 		node = new QSGSimpleTextureNode();
 		node->setFlag(QSGNode::OwnedByParent);
-
 		node->setFiltering(QSGTexture::Linear);
-		// XXX: For what its worth, when the old texture isn't deleted when another one is set??
-		/*node->setOwnsTexture(true);*/
 	}
 
-	if (node->texture() != nullptr)
-		delete node->texture();
-	QSGTexture* newTexture = window()->createTextureFromImage(*mImage);
-	if (newTexture != nullptr)
+	if (mImage)
 	{
-		//	qDebug() << "Updating texture to width:" << mImage->width() << "height:" << mImage->height();
-		node->setRect(QRectF(0, 0, mImage->width(), mImage->height()));
-		node->setTexture(newTexture);
+		mTexture.reset(window()->createTextureFromImage(*mImage));
+		if (mTexture)
+		{
+			node->setTexture(mTexture.data());
+			node->setRect(QRectF(0, 0, mImage->width(), mImage->height()));
+		}
+		else
+		{
+			qCritical() << this << "Unable to create texture";
+		}
 	}
-	else
-	{
-		qCritical() << "Unable to create texture";
-	}
-
 	return node;
 }
 

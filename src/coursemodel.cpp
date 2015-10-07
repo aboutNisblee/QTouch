@@ -138,9 +138,17 @@ void LessonModel::selectLesson(int index)
 
 QmlLesson* LessonModel::getLesson() const
 {
-	QmlLesson* l = new QmlLesson(*mDm->getLesson(mCourseIndex, mSelected));
-	QQmlEngine::setObjectOwnership(l, QQmlEngine::JavaScriptOwnership);
-	return l;
+	QmlLesson* result = nullptr;
+	std::shared_ptr<const Lesson> lesson = mDm->getLesson(mCourseIndex, mSelected);
+	if (lesson)
+	{
+		/* TODO: This makes a copy of the Lesson
+		 * Maybe better use an object wrapper instead of a class wrapper for Lesson?!
+		 * See: QmlCourse! */
+		result = new QmlLesson(*lesson);
+		QQmlEngine::setObjectOwnership(result, QQmlEngine::JavaScriptOwnership);
+	}
+	return result;
 }
 
 QHash<int, QByteArray> LessonModel::roleNames() const
@@ -247,20 +255,24 @@ void CourseModel::selectCourse(int index)
 
 		// Change the model before firing index changed!
 		mLessonModel->setCourse(index);
+		// This fires lessonChanged
+		mLessonModel->selectLesson(0);
 		emit lessonModelChanged();
 		emit indexChanged();
 		emit courseChanged();
-
-		// This fires selectedLessonIndexChanged
-		mLessonModel->selectLesson(0);
 	}
 }
 
 QmlCourse* CourseModel::getCourse() const
 {
-	QmlCourse* c = new QmlCourse(mDm->getCourse(mSelected));
-	QQmlEngine::setObjectOwnership(c, QQmlEngine::JavaScriptOwnership);
-	return c;
+	QmlCourse* result = nullptr;
+	std::shared_ptr<Course> course = mDm->getCourse(mSelected);
+	if (course)
+	{
+		result = new QmlCourse(course);
+		QQmlEngine::setObjectOwnership(result, QQmlEngine::JavaScriptOwnership);
+	}
+	return result;
 }
 
 /**

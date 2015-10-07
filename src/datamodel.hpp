@@ -74,7 +74,7 @@ private:
 	std::unique_ptr<DbHelper> mDbHelper;
 
 	std::vector<std::shared_ptr<Course>> mCourses;
-	std::map<QUuid, std::shared_ptr<Course>> mCourseMap;
+	// TODO: Maybe better store as pointer!?
 	std::vector<Profile> mProfiles;
 };
 

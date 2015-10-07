@@ -77,7 +77,7 @@ void TrainingWidget::reset()
 {
 	resetText();
 	resetCursor();
-	mImageDirty = true;
+	mDocDirty = true;
 }
 
 void TrainingWidget::resetCursor()
@@ -209,7 +209,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 		emit cursorPositionChanged();
 
 		updateProgress((mCursor->position() - mTitle.size() - 1) / static_cast<qreal>(mText.size()));
-		mImageDirty = true;
+		mDocDirty = true;
 		mCursorDirty = true;
 		update();
 	}
@@ -218,7 +218,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 void TrainingWidget::onBeforeSynchronizing()
 {
 	/* Also need to update on dirty image to correct the position of the cursor after resize. */
-	if (mImageDirty || mCursorDirty)
+	if (mDocDirty || mCursorDirty)
 	{
 		// Get the top left edge of the current text block
 		QPointF blockTopLeft = mDoc.documentLayout()->blockBoundingRect(mCursor->block()).topLeft();

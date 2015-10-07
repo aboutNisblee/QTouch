@@ -35,6 +35,7 @@
 #include <QTextCharFormat>
 
 class QImage;
+class QSGTexture;
 
 namespace qtouch
 {
@@ -109,9 +110,9 @@ protected:
 
 	void onWindowChanged(QQuickWindow*);
 	virtual void onBeforeSynchronizing();
-	virtual QSGNode* updatePaintNode(QSGNode*, UpdatePaintNodeData*) override;
+	virtual QSGNode* updatePaintNode(QSGNode*, UpdatePaintNodeData*) Q_DECL_OVERRIDE;
 
-	bool mImageDirty = false;
+	bool mDocDirty = false;
 
 	QString mTitle;
 	QString mText;
@@ -129,6 +130,8 @@ protected:
 	QTextCharFormat mTextCharFormat;
 	QTextBlockFormat mTitleBlockFormat;
 	QTextCharFormat mTitleCharFormat;
+
+	QScopedPointer<QSGTexture> mTexture;
 };
 
 } /* namespace qtouch */
