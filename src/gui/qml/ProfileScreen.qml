@@ -31,21 +31,14 @@ FocusScope {
     // Set current profile model
     property alias profileModel: list.model
 
-    // Output property interface
-
     signal createProfile(string name, int skilllevel)
 
     enabled: open
-    visible: (background.height === -height) ? false : true
     clip: true
 
     states: State {
         name: "OPEN"
         when: open
-        PropertyChanges {
-            target: background
-            y: 0
-        }
     } // states
 
     Rectangle {
@@ -221,12 +214,42 @@ FocusScope {
                 }
             } // rhsBackground
         } // Row
+    } // background
 
-        Behavior on y {
-            PropertyAnimation {
-                easing.type: Easing.InOutQuad
-                duration: 350
+    transitions: [
+        Transition {
+            to: "OPEN"
+            SequentialAnimation {
+                PropertyAction {
+                    target: root
+                    property: "visible"
+                    value: true
+                }
+                PropertyAnimation {
+                    target: background
+                    property: "y"
+                    to: 0
+                    easing.type: Easing.InOutQuad
+                    duration: 350
+                }
+            }
+        },
+        Transition {
+            from: "OPEN"
+            SequentialAnimation {
+                PropertyAnimation {
+                    target: background
+                    property: "y"
+                    to: -root.height
+                    easing.type: Easing.InOutQuad
+                    duration: 350
+                }
+                PropertyAction {
+                    target: root
+                    property: "visible"
+                    value: false
+                }
             }
         }
-    } // background
+    ]
 } // root
