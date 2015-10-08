@@ -18,92 +18,81 @@
  */
 
 /**
- * \file textpage.cpp
+ * \file textview.cpp
  *
  * \date 06.08.2015
  * \author Moritz Nisblé moritz.nisble@gmx.de
  */
 
-#include "textpage.hpp"
-
+#include <gui/textview.hpp>
 #include <QImage>
-#include <QPainter>
 #include <QtMath>
 #include <QSGSimpleTextureNode>
 #include <QQuickWindow>
-
-#include <QTextBlock>
-#include <QTextCursor>
-#include <QStringList>
+#include <QPainter>
 
 namespace qtouch
 {
 
-TextPage::TextPage(QQuickItem* parent):
+TextView::TextView(QQuickItem* parent):
 	QQuickItem(parent)
 {
 	setFlag(ItemHasContents, true);
 
-	QTextOption textOption;
-	textOption.setAlignment(Qt::AlignJustify);
-	textOption.setWrapMode(QTextOption::WordWrap);
-	mDoc.setDefaultTextOption(textOption);
+	mDoc = new Document(this);
+	connect(mDoc, &Document::contentsChanged, this, &TextView::resize);
 
-	//	mDoc.setUseDesignMetrics(true);
-
-	mTextBlockFormat.setLineHeight(200, QTextBlockFormat::ProportionalHeight);
-	mTextBlockFormat.setAlignment(Qt::AlignJustify);
-
-	// TODO: Let the user choose it via Theme or get it from the system!
-	// See: qthelp://org.qt-project.qtgui.542/qtgui/qtextcharformat.html#setFontStyleHint
-	mTextCharFormat.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-	mTextCharFormat.setFontPointSize(14);
-	mTextCharFormat.setForeground(QColor("black"));
-	//	mTextCharFormat.setBackground(Qt::transparent);
-	//	mTextCharFormat.setFontHintingPreference(QFont::PreferVerticalHinting);
-
-	mTitleBlockFormat.setLineHeight(200, QTextBlockFormat::ProportionalHeight);
-	mTitleBlockFormat.setLeftMargin(10);
-	mTitleBlockFormat.setBottomMargin(10);
-
-	mTitleCharFormat.setFont(QFontDatabase::systemFont(QFontDatabase::TitleFont));
-	mTitleCharFormat.setFontPointSize(mTextCharFormat.fontPointSize() * 1.5);
-
-	connect(this, &QQuickItem::windowChanged, this, &TextPage::onWindowChanged);
+	connect(this, &QQuickItem::windowChanged, this, &TextView::onWindowChanged);
 }
 
-TextPage::~TextPage()
+TextView::~TextView()
 {
 }
 
-void TextPage::setTitle(const QString& title)
+/**
+ * Set a new document.
+ * If the given document has a parent, the ownsDoc flag has no influence.
+ * This should be the case, when document is set from QML.
+ * If the document has no parent and the ownsDoc flag is set, the lifetime
+ * of the document is managed by the instance of this class.
+ * @param doc A document.
+ */
+void TextView::setDocument(Document* doc)
 {
-	// Remove line breaks; prevent creation of multiple blocks
-	mTitle = title.simplified();
-	resetText();
+	if (nullptr == doc)
+		return;
 
-	emit titleChanged();
+	if (doc != mDoc)
+	{
+		// Take ownership
+		if (nullptr == doc->parent() && mOwnsDoc)
+			doc->setParent(this);
+
+		disconnect(mDoc, &Document::contentsChanged, this, &TextView::resize);
+		if (this == mDoc->parent())
+			delete mDoc;
+
+		mDoc = doc;
+		connect(mDoc, &Document::contentsChanged, this, &TextView::resize);
+
+		emit documentChanged();
+	}
 }
 
-void TextPage::setText(const QString& text)
+void TextView::setOwnsDocument(bool ownsDoc)
 {
-	/* TODO: Should we remove duplicated spaces from the given text? */
-	mText = text;
-	resetText();
-
-	emit textChanged();
+	if (ownsDoc != mOwnsDoc)
+	{
+		mOwnsDoc = ownsDoc;
+		// Take ownership
+		if (nullptr == mDoc->parent() && mOwnsDoc)
+			mDoc->setParent(this);
+	}
 }
 
-void TextPage::setTextMargin(qreal textMargin)
+void TextView::setMaxWidth(qreal maxWidth)
 {
-	mDoc.setDocumentMargin(textMargin);
-	resize();
-	emit textMarginChanged();
-}
-
-void TextPage::setMaxWidth(qreal maxWidth)
-{
-	if (maxWidth > 0)
+	if (maxWidth > 0 && !qFuzzyCompare(maxWidth, mMaxWidth))
 	{
 		mMaxWidth = maxWidth;
 		resize();
@@ -111,9 +100,9 @@ void TextPage::setMaxWidth(qreal maxWidth)
 	}
 }
 
-void TextPage::setMinWidth(qreal minWidth)
+void TextView::setMinWidth(qreal minWidth)
 {
-	if (minWidth > 0)
+	if (minWidth > 0 && !qFuzzyCompare(minWidth, mMinWidth))
 	{
 		mMinWidth = minWidth;
 		resize();
@@ -121,7 +110,7 @@ void TextPage::setMinWidth(qreal minWidth)
 	}
 }
 
-void TextPage::setDocClipRect(QRectF docClipRect)
+void TextView::setDocClipRect(QRectF docClipRect)
 {
 	if (docClipRect.isValid())
 	{
@@ -133,49 +122,10 @@ void TextPage::setDocClipRect(QRectF docClipRect)
 	}
 }
 
-/**
- * Returns a QTextCursor that points to the first text block
- * (i.e. skipping the title block).
- * @return A pointer to the newly allocated cursor.
- */
-std::unique_ptr<QTextCursor> TextPage::getTextCursor()
+void TextView::resize()
 {
-	std::unique_ptr<QTextCursor> c(new QTextCursor(&mDoc));
-	c->movePosition(QTextCursor::NextBlock);
-	return c;
-}
-
-QTextBlock TextPage::getFirstTextBlock()
-{
-	QTextCursor c(&mDoc);
-	c.movePosition(QTextCursor::NextBlock);
-	return c.block();
-}
-
-void TextPage::resetText()
-{
-	mDoc.clear();
-	QTextCursor c(&mDoc);
-
-	c.setBlockFormat(mTitleBlockFormat);
-	c.insertText(mTitle, mTitleCharFormat);
-
-	c.insertBlock();
-
-	c.setBlockFormat(mTextBlockFormat);
-	c.insertText(mText, mTextCharFormat);
-
-	Q_ASSERT(mDoc.blockCount() >= 2);
-
-	resize();
-}
-
-void TextPage::resize()
-{
-	mDoc.setTextWidth(-1);
-
 	// IdealWith is defined by the longest line plus margins
-	qreal idealWidth = mDoc.idealWidth();
+	qreal idealWidth = mDoc->getIdealWidth();
 
 	// Calculate scale
 	if (mMaxWidth > 0 && idealWidth > mMaxWidth) // Scale down
@@ -188,12 +138,12 @@ void TextPage::resize()
 	emit docScaleChanged();
 
 	// Note: Its crucial to define the TextWidth before accessing the size().height()
-	mDoc.setTextWidth(idealWidth);
+	mDoc->setTextWidth(idealWidth);
 
 	// height is defined by document
-	qreal itemHeight = mDoc.size().height();
+	qreal itemHeight = mDoc->size().height();
 
-	if (isVisible() && ((idealWidth * mDocScale) != width() || (itemHeight * mDocScale) != height()))
+	if (isVisible())
 	{
 		/*qDebug() << "New TextPage size:" <<
 		         "\n\tidealWidth:" << idealWidth << "*" << mDocScale << "=" << (idealWidth * mDocScale) <<
@@ -203,13 +153,14 @@ void TextPage::resize()
 		setHeight(itemHeight * mDocScale);
 
 		mDocDirty = true;
+		update();
 	}
 }
 
-void TextPage::onWindowChanged(QQuickWindow* window)
+void TextView::onWindowChanged(QQuickWindow* window)
 {
 	if (window)
-		connect(window, &QQuickWindow::beforeSynchronizing, this, &TextPage::onBeforeSynchronizing, Qt::DirectConnection);
+		connect(window, &QQuickWindow::beforeSynchronizing, this, &TextView::onBeforeSynchronizing, Qt::DirectConnection);
 }
 
 /**
@@ -217,11 +168,11 @@ void TextPage::onWindowChanged(QQuickWindow* window)
  * Despite this function is called in render thread it is safe to access members, because the GUI thread
  * is already blocked.
  */
-void TextPage::onBeforeSynchronizing()
+void TextView::onBeforeSynchronizing()
 {
 	if (mDocDirty)
 	{
-//		qDebug() << this << "Updating image: Visible:" << isVisible();
+		//		qDebug() << this << "Updating image: Visible:" << isVisible();
 
 		mImage.reset(new QImage(width(), height(), QImage::Format_ARGB32_Premultiplied));
 		mImage->fill(Qt::transparent);
@@ -239,18 +190,18 @@ void TextPage::onBeforeSynchronizing()
 			 * But this way we need to repaint on scrolling ... */
 			QRectF clipRec(mDocClipRect.x() / mDocScale, mDocClipRect.y() / mDocScale, mDocClipRect.width() / mDocScale,
 			               mDocClipRect.height() / mDocScale);
-			mDoc.drawContents(&p, clipRec);
+			mDoc->drawContents(&p, clipRec);
 		}
 		else
 		{
-			mDoc.drawContents(&p);
+			mDoc->drawContents(&p);
 		}
 
 		mDocDirty = false;
 	}
 }
 
-QSGNode* TextPage::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*updatePaintNodeData*/)
+QSGNode* TextView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*updatePaintNodeData*/)
 {
 	QSGSimpleTextureNode* node = static_cast<QSGSimpleTextureNode*>(oldNode);
 	if (nullptr == node)
@@ -262,7 +213,7 @@ QSGNode* TextPage::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*upda
 
 	if (mImage)
 	{
-//		qDebug() << this << "Updating texture: Visible:" << isVisible();
+		//		qDebug() << this << "Updating texture: Visible:" << isVisible();
 
 		mTexture.reset(window()->createTextureFromImage(*mImage));
 		if (mTexture)

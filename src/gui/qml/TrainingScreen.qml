@@ -31,10 +31,7 @@ FocusScope {
     property int verticalSheetMargin: 60
 
     // Input property interface
-    // Lesson title
-    property alias title: trainingWidget.title
-    // Lesson text
-    property alias text: trainingWidget.text
+    property alias document: trainingWidget.document
 
     signal quit
 
@@ -188,7 +185,7 @@ FocusScope {
                             minWidth: widgetContainer.width - 2 * horizontalSheetMargin
                             maxWidth: widgetContainer.width - 2 * horizontalSheetMargin
 
-                            textMargin: 25
+//                            textMargin: 25
 
                             // Note: title and text are set by root item via property alias
                             onEscape: root.quit()
@@ -213,7 +210,7 @@ FocusScope {
                                     scrollAnimation.start()
                                 }
                             }
-                        } // trainingWidget
+                        } // trainingView
                     } // widgetBorder
 
                     DropShadow {

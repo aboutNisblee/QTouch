@@ -24,6 +24,7 @@
  * \author Moritz Nisblé moritz.nisble@gmx.de
  */
 
+#include <gui/trainingwidget.hpp>
 #include <QGuiApplication>
 #include <QQmlEngine>
 #include <QQmlContext>
@@ -37,9 +38,9 @@
 #include "profilemodel.hpp"
 #include "wrapper/qmlcourse.hpp"
 #include "wrapper/qmlprofile.hpp"
-#include "gui/textpage.hpp"
-#include "gui/trainingwidget.hpp"
+#include "document.hpp"
 #include "gui/svgelementprovider.hpp"
+#include "gui/textview.hpp"
 
 namespace
 {
@@ -78,7 +79,10 @@ void registerQmlTypes()
 	qRegisterMetaType<qtouch::ProfileModel*>("ProfileModel*");
 	qmlRegisterType<qtouch::ProfileModel>();
 
-	qmlRegisterType<qtouch::TextPage>("de.nisble.qtouch", 1, 0, "TextPage");
+	qRegisterMetaType<qtouch::Document*>("Document*");
+	qmlRegisterType<qtouch::Document>("de.nisble.qtouch", 1, 0, "Document");
+
+	qmlRegisterType<qtouch::TextView>("de.nisble.qtouch", 1, 0, "TextView");
 	qmlRegisterType<qtouch::TrainingWidget>("de.nisble.qtouch", 1, 0, "TrainingWidget");
 }
 
@@ -110,11 +114,11 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	qtouch::CourseModel courseModel(&dataModel);
-	qtouch::ProfileModel profileModel(&dataModel);
+	qtouch::CourseModel* courseModel = new qtouch::CourseModel(&dataModel, &app);
+	qtouch::ProfileModel* profileModel = new qtouch::ProfileModel(&dataModel, &app);
 	// Embed view models
-	engine.rootContext()->setContextProperty("$courseModel", &courseModel);
-	engine.rootContext()->setContextProperty("$profileModel", &profileModel);
+	engine.rootContext()->setContextProperty("$courseModel", courseModel);
+	engine.rootContext()->setContextProperty("$profileModel", profileModel);
 
 	// Create root component
 	QQmlComponent component(&engine);
@@ -137,7 +141,7 @@ int main(int argc, char* argv[])
 	}
 
 	// FIXME: Not nice but fixes initialization problem
-	courseModel.selectCourse(0);
+	courseModel->selectCourse(0);
 
 	return app.exec();
 }

@@ -29,12 +29,12 @@
 
 #include <QTextCursor>
 
-#include "textpage.hpp"
+#include "textview.hpp"
 
 namespace qtouch
 {
 
-class TrainingWidget: public TextPage
+class TrainingWidget: public TextView
 {
 	Q_OBJECT
 
@@ -74,6 +74,8 @@ protected:
 	virtual QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* updatePaintNodeData) Q_DECL_OVERRIDE;
 
 private:
+	void connectToDocument();
+	void configureTextFormat();
 	void resetCursor();
 	void updateProgress(qreal percent);
 

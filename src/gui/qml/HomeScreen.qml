@@ -19,12 +19,14 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.3
 
-import de.nisble.qtouch 1.0
-
 import "items" as Items
 
 FocusScope {
     id: root
+
+    property var courseModel
+    property var profileModel
+    property alias document: lessonSelector.document
 
     signal lessonStarted
     Component.onCompleted: {
@@ -90,7 +92,7 @@ FocusScope {
 
             focus: !profileScreen.open
 
-            courseModel: $courseModel
+            courseModel: root.courseModel
         } // courseSelector
 
         // Label that is inflated the button that is placed
@@ -109,7 +111,7 @@ FocusScope {
                 bottomMargin: 10
             }
 
-            text: $courseModel.course.description
+            text: root.courseModel.course.description
 
             inflated: courseSelector.courseDescriptionBottonChecked
         } // lblCourseDescription
@@ -127,9 +129,7 @@ FocusScope {
             // Fill the column
             height: container.height - courseSelector.height - lblCourseDescription.height
 
-            currentLessonModel: $courseModel.lessonModel
-            previewTitle: $courseModel.lessonModel.lesson.title
-            previewText: $courseModel.lessonModel.lesson.text
+            lessonModel: root.courseModel.lessonModel
         } // lessonSelector
     } // container
 
@@ -146,20 +146,20 @@ FocusScope {
         focus: btProfile.checked
         open: btProfile.checked
 
-        profileModel: $profileModel
+        profileModel: root.profileModel
 
         // React to output signals
         onCreateProfile: {
             console.log("Creating profile: " + name + " (" + skilllevel + ")")
-            $profileModel.addProfile(name, skilllevel)
+            root.profileModel.addProfile(name, skilllevel)
         }
     } // profileScreen
 
     Connections {
-        target: $profileModel
+        target: root.profileModel
         onProfileChanged: {
-            for (var i = 0; i < $profileModel.profile.stats.length; i++) {
-                var stats = $profileModel.profile.stats[i]
+            for (var i = 0; i < root.profileModel.profile.stats.length; i++) {
+                var stats = root.profileModel.profile.stats[i]
                 console.log("Status:", i, stats.course, stats.lesson,
                             stats.profile, stats.start, stats.end, stats.chars,
                             stats.errors)

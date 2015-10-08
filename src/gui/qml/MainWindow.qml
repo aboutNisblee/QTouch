@@ -20,6 +20,8 @@ import QtQuick 2.3
 import QtQuick.Window 2.1
 import QtQuick.Controls 1.3
 
+import de.nisble.qtouch 1.0
+
 Window {
     //    id: mainWindow
     width: 1000
@@ -55,6 +57,14 @@ Window {
             enabled: visible
             focus: !trainingScreen.focus
 
+            courseModel: $courseModel
+            profileModel: $profileModel
+            document: Document {
+                title: $courseModel.lessonModel.lesson.title
+                text: $courseModel.lessonModel.lesson.text
+                documentMargin: 30
+            }
+
             onLessonStarted: flipper.state = "TRAINING"
         } // homeScreen
 
@@ -68,13 +78,13 @@ Window {
             enabled: visible
             focus: visible
 
-            onVisibleChanged: {
-                if (visible)
-                    reset()
-            }
+            onVisibleChanged: reset()
 
-            title: $courseModel.lessonModel.lesson.title
-            text: $courseModel.lessonModel.lesson.text
+            document: Document {
+                title: $courseModel.lessonModel.lesson.title
+                text: $courseModel.lessonModel.lesson.text
+                documentMargin: 40
+            }
 
             onQuit: flipper.state = ""
         } // trainingScreen

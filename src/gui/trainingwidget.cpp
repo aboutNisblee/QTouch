@@ -24,8 +24,7 @@
  * \author Moritz Nisblé moritz.nisble@gmx.de
  */
 
-#include "trainingwidget.hpp"
-
+#include <gui/trainingwidget.hpp>
 #include <QTextBlock>
 #include <QSGSimpleRectNode>
 #include <QPointF>
@@ -38,23 +37,15 @@ namespace qtouch
 {
 
 TrainingWidget::TrainingWidget(QQuickItem* parent) :
-	TextPage(parent)
+	TextView(parent)
 {
-	mCursor = std::unique_ptr<QTextCursor>(new QTextCursor(&mDoc));
+	connectToDocument();
+	configureTextFormat();
 
-	// Use standard char format for correctly typed chars
-	mCorrectTextCharFormat.merge(mTextCharFormat);
+	mCursor = mDoc->getTextCursor();
 
-	// Copy and modify standard char format for failures
-	mFailureTextCharFormat.merge(mTextCharFormat);
-	mFailureTextCharFormat.setFontUnderline(true);
-	mFailureTextCharFormat.setUnderlineColor(QColor("red"));
-
-	// Modify standard char format for unwritten text
-	mTextCharFormat.setForeground(QColor("gray"));
-
-	connect(this, &TextPage::titleChanged, this, &TrainingWidget::resetCursor);
-	connect(this, &TextPage::textChanged, this, &TrainingWidget::resetCursor);
+	connect(this, &TextView::documentChanged, this, &TrainingWidget::connectToDocument);
+	connect(this, &TextView::documentChanged, this, &TrainingWidget::configureTextFormat);
 
 	/*connect(&mDoc, &QTextDocument::cursorPositionChanged, this, &TrainingWidget::updateCursorRectangle);*/
 }
@@ -75,15 +66,37 @@ int TrainingWidget::getCursorPosition() const
 
 void TrainingWidget::reset()
 {
-	resetText();
+	mDoc->resetText();
 	resetCursor();
 	mDocDirty = true;
 }
 
+void TrainingWidget::connectToDocument()
+{
+	connect(mDoc, &Document::titleChanged, this, &TrainingWidget::resetCursor);
+	connect(mDoc, &Document::textChanged, this, &TrainingWidget::resetCursor);
+}
+
+void TrainingWidget::configureTextFormat()
+{
+	// Use standard char format for correctly typed chars
+	mCorrectTextCharFormat.merge(mDoc->getTextCharFormat());
+
+	// Copy and modify standard char format for failures
+	mFailureTextCharFormat.merge(mDoc->getTextCharFormat());
+	mFailureTextCharFormat.setFontUnderline(true);
+	mFailureTextCharFormat.setUnderlineColor(QColor("red"));
+
+	// Modify standard char format for unwritten text
+	QTextCharFormat standardFormat = mDoc->getTextCharFormat();
+	standardFormat.setForeground(QColor("gray"));
+	mDoc->setTextCharFormat(standardFormat);
+}
+
 void TrainingWidget::resetCursor()
 {
-	mCursor = getTextCursor();
-	mDoc.clearUndoRedoStacks();
+	mCursor = mDoc->getTextCursor();
+	mDoc->clearUndoRedoStacks();
 	emit activeLineNumberChanged();
 	emit cursorPositionChanged();
 }
@@ -114,12 +127,12 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 	// Catch backspace
 	if (keyEvent->key() == Qt::Key_Backspace)
 	{
-		if (mDoc.isUndoAvailable())
+		if (mDoc->isUndoAvailable())
 		{
 			int lineNumber = mCursor->blockNumber();
 
 			mCursor->clearSelection();
-			mDoc.undo(mCursor.get());
+			mDoc->undo(mCursor.get());
 			mCursor->movePosition(QTextCursor::PreviousCharacter);
 
 			// If block number changed while undo, inform clients
@@ -132,8 +145,8 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 	else if (!keyEvent->text().isEmpty())
 	{
 		// Extract reference text from mText variable
-		int refStart = mCursor->position() - mTitle.size() - 1;
-		QString refText = mText.mid(refStart, keyEvent->text().size());
+		int refStart = mCursor->position() - mDoc->getTitle().size() - 1;
+		QString refText = mDoc->getText().mid(refStart, keyEvent->text().size());
 
 		// If no text left, end is reached.
 		if (refText.isEmpty())
@@ -208,7 +221,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 	{
 		emit cursorPositionChanged();
 
-		updateProgress((mCursor->position() - mTitle.size() - 1) / static_cast<qreal>(mText.size()));
+		updateProgress((mCursor->position() - mDoc->getTitle().size() - 1) / static_cast<qreal>(mDoc->getText().size()));
 		mDocDirty = true;
 		mCursorDirty = true;
 		update();
@@ -221,7 +234,7 @@ void TrainingWidget::onBeforeSynchronizing()
 	if (mDocDirty || mCursorDirty)
 	{
 		// Get the top left edge of the current text block
-		QPointF blockTopLeft = mDoc.documentLayout()->blockBoundingRect(mCursor->block()).topLeft();
+		QPointF blockTopLeft = mDoc->documentLayout()->blockBoundingRect(mCursor->block()).topLeft();
 		// Get the current text line from the text layout of the current block
 		QTextLine textLine = mCursor->block().layout()->lineForTextPosition(mCursor->positionInBlock());
 		// Calculate the unscaled top left position of the cursor
@@ -239,12 +252,12 @@ void TrainingWidget::onBeforeSynchronizing()
 		mCursorDirty = false;
 	}
 
-	TextPage::onBeforeSynchronizing();
+	TextView::onBeforeSynchronizing();
 }
 
 QSGNode* TrainingWidget::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*updatePaintNodeData*/)
 {
-	QSGNode* textPageNode = TextPage::updatePaintNode(oldNode, nullptr);
+	QSGNode* textPageNode = TextView::updatePaintNode(oldNode, nullptr);
 
 	if (textPageNode != nullptr)
 	{

@@ -24,6 +24,8 @@
  * \author Moritz Nisblé moritz.nisble@gmx.de
  */
 
+#include <gui/textview.hpp>
+#include <gui/trainingwidget.hpp>
 #include "mainwindow.hpp"
 
 #include <QQmlEngine>
@@ -36,8 +38,6 @@
 
 #include "utils/exceptions.hpp"
 #include "coursemodel.hpp"
-#include "gui/textpage.hpp"
-#include "gui/trainingwidget.hpp"
 #include "gui/svgelementprovider.hpp"
 
 namespace qtouch
@@ -69,7 +69,7 @@ void registerQmlTypes()
 	//	qmlRegisterType<LessonModel>("de.nisble.qtouch", 1, 0, "LessonModel");
 	qmlRegisterType<LessonModel>();
 
-	qmlRegisterType<TextPage>("de.nisble.qtouch", 1, 0, "TextPage");
+	qmlRegisterType<TextView>("de.nisble.qtouch", 1, 0, "TextPage");
 	qmlRegisterType<TrainingWidget>("de.nisble.qtouch", 1, 0, "TrainingWidget");
 }
 

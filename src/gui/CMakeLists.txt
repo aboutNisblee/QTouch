@@ -5,9 +5,9 @@ file(GLOB_RECURSE QMLSRCS *.qml *.js)
 melp_add_sources(SRCS ${QMLSRCS})
 
 melp_add_sources(SRCS
-	textpage.cpp
-	trainingwidget.cpp
 	svgelementprovider.cpp
+	textview.cpp
+	trainingwidget.cpp
 )
 
 ## QML Tests

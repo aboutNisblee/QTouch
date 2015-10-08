@@ -45,11 +45,9 @@ FocusScope {
 
     // Input property interface
     // The lesson model of the currently selected course
-    property alias currentLessonModel: delegateModel.model
-    // Title for the preview panel
-    property alias previewTitle: txtPreview.title
-    // Text for the preview panel
-    property alias previewText: txtPreview.text
+    property alias lessonModel: delegateModel.model
+    // Preview document
+    property alias document: txtPreview.document
 
     signal lessonStarted
 
@@ -215,15 +213,11 @@ FocusScope {
                             color: "#000"
                         }
 
-                        TextPage {
+                        TextView {
                             id: txtPreview
                             anchors.centerIn: parent
 
-                            textMargin: 20
-
                             maxWidth: previewContainer.width
-
-                            // Note: title and text are set by root item via property alias
                         } // txtPreview
                     } // previewBorder
 

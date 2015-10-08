@@ -18,7 +18,6 @@
 **/
 import QtQuick 2.3
 import QtQuick.Controls 1.3
-import de.nisble.qtouch 1.0
 
 import "items" as Items
 
@@ -28,8 +27,8 @@ FocusScope {
     // Input property interface
     // Enable to open
     property bool open: false
-    // Set current profile model
-    property alias profileModel: list.model
+    // Set profile model
+    property alias profileModel: profileList.model
 
     signal createProfile(string name, int skilllevel)
 
@@ -51,7 +50,7 @@ FocusScope {
             anchors.fill: parent
 
             ListView {
-                id: list
+                id: profileList
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -97,15 +96,15 @@ FocusScope {
                             margins: 20
                         }
 
-                        height: list.currentItem.height
-                        width: list.currentItem.width
+                        height: profileList.currentItem.height
+                        width: profileList.currentItem.width
 
-                        border.width: list.currentItem.bgBorderWidth
-                        border.color: list.currentItem.bgBorderColor
-                        radius: list.currentItem.bgRadius
+                        border.width: profileList.currentItem.bgBorderWidth
+                        border.color: profileList.currentItem.bgBorderColor
+                        radius: profileList.currentItem.bgRadius
 
-                        x: list.currentItem.x
-                        y: list.currentItem.y
+                        x: profileList.currentItem.x
+                        y: profileList.currentItem.y
                         Behavior on y {
                             SpringAnimation {
                                 spring: 10

@@ -18,21 +18,20 @@
  */
 
 /**
- * \file textpage.hpp
+ * \file textview.hpp
  *
  * \date 06.08.2015
  * \author Moritz Nisblé moritz.nisble@gmx.de
  */
 
-#ifndef TEXTPAGE_HPP_
-#define TEXTPAGE_HPP_
+#ifndef TEXTVIEW_HPP_
+#define TEXTVIEW_HPP_
 
 #include <memory>
 #include <QQuickItem>
 #include <QRectF>
-#include <QTextDocument>
-#include <QTextBlockFormat>
-#include <QTextCharFormat>
+
+#include "document.hpp"
 
 class QImage;
 class QSGTexture;
@@ -55,30 +54,24 @@ class TextFormat;
  * The height of the whole document depends on the count of lines and the calculated
  * scale (use a Flickable/ScrollView).
  */
-class TextPage: public QQuickItem
+class TextView: public QQuickItem
 {
 	Q_OBJECT
 
-	Q_PROPERTY(QString title READ getTitle WRITE setTitle NOTIFY titleChanged)
-	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY textChanged)
-	Q_PROPERTY(qreal textMargin READ getTextMargin WRITE setTextMargin NOTIFY textMarginChanged)
+	Q_PROPERTY(Document* document READ getDocument WRITE setDocument NOTIFY documentChanged)
 	Q_PROPERTY(qreal maxWidth READ getMaxWidth WRITE setMaxWidth NOTIFY maxWidthChanged)
 	Q_PROPERTY(qreal minWidth READ getMinWidth WRITE setMinWidth NOTIFY minWidthChanged)
 	Q_PROPERTY(qreal docScale READ getDocScale NOTIFY docScaleChanged)
 	Q_PROPERTY(QRectF docClipRect READ getDocClipRect WRITE setDocClipRect NOTIFY docClipRectChanged)
 
 public:
-	TextPage(QQuickItem* parent = 0);
-	virtual ~TextPage();
+	TextView(QQuickItem* parent = 0);
+	virtual ~TextView();
 
-	inline QString getTitle() const { return mTitle; }
-	void setTitle(const QString& title);
+	inline Document* getDocument() const { return mDoc; }
+	void setDocument(Document* doc);
 
-	inline QString getText() const { return mText; }
-	void setText(const QString& text);
-
-	inline qreal getTextMargin() const { return mDoc.documentMargin(); }
-	void setTextMargin(qreal textMargin);
+	void setOwnsDocument(bool ownsDoc);
 
 	inline qreal getMaxWidth() const { return mMaxWidth; }
 	void setMaxWidth(qreal maxWidth);
@@ -92,32 +85,25 @@ public:
 	void setDocClipRect(QRectF docClipRect);
 
 signals:
-	void titleChanged();
-	void textChanged();
-	void autoWrapChanged();
-	void textMarginChanged();
+	void documentChanged();
 	void maxWidthChanged();
 	void minWidthChanged();
 	void docScaleChanged();
 	void docClipRectChanged();
 
 protected:
-	std::unique_ptr<QTextCursor> getTextCursor();
-	QTextBlock getFirstTextBlock();
-
-	virtual void resetText();
 	virtual void resize();
 
 	void onWindowChanged(QQuickWindow*);
 	virtual void onBeforeSynchronizing();
 	virtual QSGNode* updatePaintNode(QSGNode*, UpdatePaintNodeData*) Q_DECL_OVERRIDE;
 
+	Document* mDoc;
+
+	bool mOwnsDoc = true;
+
 	bool mDocDirty = false;
 
-	QString mTitle;
-	QString mText;
-
-	QTextDocument mDoc;
 	qreal mDocScale = 1;
 	std::unique_ptr<QImage> mImage;
 
@@ -126,14 +112,9 @@ protected:
 
 	QRectF mDocClipRect;
 
-	QTextBlockFormat mTextBlockFormat;
-	QTextCharFormat mTextCharFormat;
-	QTextBlockFormat mTitleBlockFormat;
-	QTextCharFormat mTitleCharFormat;
-
 	QScopedPointer<QSGTexture> mTexture;
 };
 
 } /* namespace qtouch */
 
-#endif /* TEXTPAGE_HPP_ */
+#endif /* TEXTVIEW_HPP_ */
