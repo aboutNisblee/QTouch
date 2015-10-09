@@ -51,10 +51,7 @@ TextView::~TextView()
 
 /**
  * Set a new document.
- * If the given document has a parent, the ownsDoc flag has no influence.
- * This should be the case, when document is set from QML.
- * If the document has no parent and the ownsDoc flag is set, the lifetime
- * of the document is managed by the instance of this class.
+ * If the passed document has no parent, ownership is taken.
  * @param doc A document.
  */
 void TextView::setDocument(Document* doc)
@@ -65,28 +62,17 @@ void TextView::setDocument(Document* doc)
 	if (doc != mDoc)
 	{
 		// Take ownership
-		if (nullptr == doc->parent() && mOwnsDoc)
+		if (nullptr == doc->parent())
 			doc->setParent(this);
 
 		disconnect(mDoc, &Document::contentsChanged, this, &TextView::resize);
-		if (this == mDoc->parent())
+		if (this == mDoc->parent()) // mDoc cannot be null
 			delete mDoc;
 
 		mDoc = doc;
 		connect(mDoc, &Document::contentsChanged, this, &TextView::resize);
 
 		emit documentChanged();
-	}
-}
-
-void TextView::setOwnsDocument(bool ownsDoc)
-{
-	if (ownsDoc != mOwnsDoc)
-	{
-		mOwnsDoc = ownsDoc;
-		// Take ownership
-		if (nullptr == mDoc->parent() && mOwnsDoc)
-			mDoc->setParent(this);
 	}
 }
 

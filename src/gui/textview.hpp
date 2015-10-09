@@ -71,8 +71,6 @@ public:
 	inline Document* getDocument() const { return mDoc; }
 	void setDocument(Document* doc);
 
-	void setOwnsDocument(bool ownsDoc);
-
 	inline qreal getMaxWidth() const { return mMaxWidth; }
 	void setMaxWidth(qreal maxWidth);
 
@@ -99,8 +97,6 @@ protected:
 	virtual QSGNode* updatePaintNode(QSGNode*, UpdatePaintNodeData*) Q_DECL_OVERRIDE;
 
 	Document* mDoc;
-
-	bool mOwnsDoc = true;
 
 	bool mDocDirty = false;
 
