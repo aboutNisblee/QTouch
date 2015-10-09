@@ -31,8 +31,8 @@
 namespace qtouch
 {
 
-QmlStats::QmlStats() :
-	Stats(QUuid(), QUuid(), "")
+QmlStats::QmlStats(QObject* parent) :
+	QObject(parent), Stats(QUuid(), QUuid(), "")
 {
 }
 

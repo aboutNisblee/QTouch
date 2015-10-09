@@ -48,7 +48,7 @@ class QmlStats: public QObject, public Stats
 	Q_PROPERTY(quint32 errors READ getErrorCount WRITE setErrorCount NOTIFY errorCountChanged)
 
 public:
-	QmlStats();
+	QmlStats(QObject* parent = 0);
 	explicit QmlStats(const Stats& rhs);
 	virtual ~QmlStats() {}
 

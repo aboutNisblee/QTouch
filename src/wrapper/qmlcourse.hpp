@@ -46,7 +46,7 @@ class QmlLesson: public QObject, public Lesson
 	Q_PROPERTY(bool builtin READ isBuiltin)
 
 public:
-	QmlLesson();
+	QmlLesson(QObject* parent = 0);
 	explicit QmlLesson(const Lesson& rhs);
 	virtual ~QmlLesson();
 
@@ -70,7 +70,7 @@ class QmlCourse: public QObject
 	Q_PROPERTY(bool builtin READ isBuiltin)
 
 public:
-	QmlCourse();
+	QmlCourse(QObject* parent = 0);
 	explicit QmlCourse(std::shared_ptr<Course> rhs);
 	virtual ~QmlCourse();
 

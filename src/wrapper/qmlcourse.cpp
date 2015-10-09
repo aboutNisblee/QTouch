@@ -29,7 +29,8 @@
 namespace qtouch
 {
 
-QmlLesson::QmlLesson()
+QmlLesson::QmlLesson(QObject* parent) :
+	QObject(parent)
 {
 	setId(QUuid());
 	setBuiltin(false);
@@ -71,7 +72,8 @@ void QmlLesson::setText(const QString& text)
 	emit textChanged();
 }
 
-QmlCourse::QmlCourse()
+QmlCourse::QmlCourse(QObject* parent) :
+	QObject(parent)
 {
 	mCourse = Course::create();
 	mCourse->setId(QUuid());
