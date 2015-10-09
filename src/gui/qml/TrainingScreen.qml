@@ -41,6 +41,14 @@ FocusScope {
 
     implicitWidth: statsContainer.implicitWidth
 
+    Stats {
+        id: stats
+    }
+
+    Recorder {
+        id: recorder
+    }
+
     Column {
         id: columnLayout
 
@@ -75,7 +83,7 @@ FocusScope {
                 width: (parent.width - 2 * statsContainer.lrMargins - 2
                         * statsContainer.spacing) / 3
                 // TODO
-                currentMillis: 10000
+                currentMillis: recorder.elapsed
             }
 
             Items.RateWidget {
@@ -92,9 +100,10 @@ FocusScope {
                 }
                 min: 0
                 max: 240
+                // TODO: Set target from config
                 target: 180
-                //                current: target / 60 * timer.secs
-                current: target / 60
+                current: (recorder.elapsed > 0) ? recorder.hits / (recorder.elapsed / 1000 / 60) : 0
+                // TODO: Set previous from last stats
                 previous: 230
                 heading: qsTr("Strokes per minute")
             }
@@ -113,9 +122,11 @@ FocusScope {
                         * statsContainer.spacing) / 3
                 min: 0
                 max: 100
+                // TODO: Set target from config
                 target: 96
-                //                current: target / 60 * timer.secs
-                current: target / 60
+                current: (recorder.misses) ? recorder.hits / (recorder.hits
+                                                              + recorder.misses) * 100 : 100
+                // TODO: Set previous from last stats
                 previous: 94
                 heading: qsTr("Hits rate")
                 postifx: "%"
@@ -185,7 +196,7 @@ FocusScope {
                             minWidth: widgetContainer.width - 2 * horizontalSheetMargin
                             maxWidth: widgetContainer.width - 2 * horizontalSheetMargin
 
-//                            textMargin: 25
+                            recoder: recorder
 
                             // Note: title and text are set by root item via property alias
                             onEscape: root.quit()

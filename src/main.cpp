@@ -39,6 +39,7 @@
 #include "wrapper/qmlcourse.hpp"
 #include "wrapper/qmlprofile.hpp"
 #include "document.hpp"
+#include "recorder.hpp"
 #include "gui/svgelementprovider.hpp"
 #include "gui/textview.hpp"
 
@@ -81,6 +82,9 @@ void registerQmlTypes()
 
 	qRegisterMetaType<qtouch::Document*>("Document*");
 	qmlRegisterType<qtouch::Document>("de.nisble.qtouch", 1, 0, "Document");
+
+	qRegisterMetaType<qtouch::Recorder*>("Recorder*");
+	qmlRegisterType<qtouch::Recorder>("de.nisble.qtouch", 1, 0, "Recorder");
 
 	qmlRegisterType<qtouch::TextView>("de.nisble.qtouch", 1, 0, "TextView");
 	qmlRegisterType<qtouch::TrainingWidget>("de.nisble.qtouch", 1, 0, "TrainingWidget");

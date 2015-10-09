@@ -4,4 +4,5 @@ melp_add_sources(SRCS
 	coursemodel.cpp
 	profilemodel.cpp
 	document.cpp
+	recorder.cpp
 )

@@ -54,6 +54,33 @@ TrainingWidget::~TrainingWidget()
 {
 }
 
+/**
+ * Set type recorder.
+ * If passed object hasn't a parent, the ownership is taken.
+ * @param recorder A Recorder.
+ */
+void TrainingWidget::setRecoder(Recorder* recorder)
+{
+	if(nullptr == recorder)
+		return;
+
+	if(recorder != mRecorder)
+	{
+		// Take ownership
+		if (nullptr == recorder->parent())
+			recorder->setParent(this);
+
+//		disconnect(mTC, &Document::contentsChanged, this, &TextView::resize);
+		if (mRecorder && this == mRecorder->parent())
+			delete mRecorder;
+
+		mRecorder = recorder;
+//		connect(mRecorder, &Recorder::show, this, &TextView::resize);
+
+		emit recorderChanged();
+	}
+}
+
 int TrainingWidget::getActiveLineNumber() const
 {
 	return mCursor->blockNumber() - 1;
@@ -68,7 +95,19 @@ void TrainingWidget::reset()
 {
 	mDoc->resetText();
 	resetCursor();
+	if(mRecorder)
+		mRecorder->reset();
 	mDocDirty = true;
+}
+
+void TrainingWidget::showHint()
+{
+	qDebug() << "Show hint";
+}
+
+void TrainingWidget::hideHint()
+{
+	qDebug() << "Hide hint";
 }
 
 void TrainingWidget::connectToDocument()
@@ -131,9 +170,24 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 		{
 			int lineNumber = mCursor->blockNumber();
 
-			mCursor->clearSelection();
-			mDoc->undo(mCursor.get());
+			// FIXME: This is all crap!!
+
+			mCursor->movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
+			QString deleted = mCursor->selectedText();
 			mCursor->movePosition(QTextCursor::PreviousCharacter);
+
+			mDoc->undo(mCursor.get());
+			mCursor->movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
+			QString ref = mCursor->selectedText();
+			mCursor->clearSelection();
+
+			if(mRecorder)
+			{
+				if(deleted == ref)
+					mRecorder->unhit();
+				else
+					mRecorder->unmiss();
+			}
 
 			// If block number changed while undo, inform clients
 			if (mCursor->blockNumber() != lineNumber)
@@ -167,7 +221,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 			{
 				// XXX: Make me configurable!
 				bool lineBreakWithSpace = true;
-				bool lineBreakWithReturn = false;
+				bool lineBreakWithReturn = true;
 
 				if ((lineBreakWithReturn && (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter))
 				        || (lineBreakWithSpace && keyEvent->key() == Qt::Key_Space))
@@ -175,11 +229,16 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 					mCursor->movePosition(QTextCursor::NextBlock);
 					emit activeLineNumberChanged();
 
+					if(mRecorder)
+						mRecorder->hit();
+
 					cursorMoved = true;
 				}
 				else
 				{
 					qDebug() << "Action needed";
+					if(mRecorder)
+						mRecorder->miss();
 				}
 			}
 			else
@@ -190,6 +249,8 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 				if (!cTyped.isPrint()) // Filter unprintable characters
 				{
 					qDebug() << "Unprintable character";
+					if(mRecorder)
+						mRecorder->miss();
 				}
 				else if (cTyped == cRef)
 				{
@@ -199,6 +260,8 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 					mCursor->insertText(cRef, mCorrectTextCharFormat);
 
 					cursorMoved = true;
+					if(mRecorder)
+						mRecorder->hit();
 				}
 				else
 				{
@@ -206,6 +269,8 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 					mCursor->insertText(cTyped, mFailureTextCharFormat);
 
 					cursorMoved = true;
+					if(mRecorder)
+						mRecorder->miss();
 				}
 			}
 		} // for-loop

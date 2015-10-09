@@ -29,7 +29,10 @@
 
 #include <QTextCursor>
 
-#include "textview.hpp"
+#include "recorder.hpp"
+#include "gui/textview.hpp"
+
+class QTimer;
 
 namespace qtouch
 {
@@ -37,6 +40,8 @@ namespace qtouch
 class TrainingWidget: public TextView
 {
 	Q_OBJECT
+
+	Q_PROPERTY(Recorder* recoder READ getRecoder WRITE setRecoder NOTIFY recorderChanged)
 
 	Q_PROPERTY(Qt::Key escapeKey MEMBER mEscKey NOTIFY escapeKeyChanged)
 	Q_PROPERTY(qreal progress READ getProgress NOTIFY progressChanged)
@@ -51,6 +56,9 @@ public:
 	TrainingWidget(QQuickItem* parent = 0);
 	virtual ~TrainingWidget();
 
+	Recorder* getRecoder() const { return mRecorder; }
+	void setRecoder(Recorder* recorder);
+
 	inline qreal getProgress() const { return mProgress; }
 	inline QRectF getCursorRectangle() const { return mCursorRectangle; }
 	int getActiveLineNumber() const;
@@ -58,8 +66,11 @@ public:
 
 public slots:
 	void reset();
+	void showHint();
+	void hideHint();
 
 signals:
+	void recorderChanged();
 	void escape();
 	void escapeKeyChanged();
 	void progressChanged();
@@ -78,6 +89,8 @@ private:
 	void configureTextFormat();
 	void resetCursor();
 	void updateProgress(qreal percent);
+
+	Recorder* mRecorder;
 
 	Qt::Key mEscKey = Qt::Key_Escape;
 	std::unique_ptr<QTextCursor> mCursor;
