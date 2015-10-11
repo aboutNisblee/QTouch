@@ -40,9 +40,9 @@ TextView::TextView(QQuickItem* parent):
 	mDoc = new Document(this);
 	connect(mDoc, &Document::contentsChanged, this, &TextView::resize);
 
-	//	connect(this, &QQuickItem::windowChanged, this, &TextView::onWindowChanged);
-
-	//	setRenderTarget(QQuickPaintedItem::FramebufferObject);
+	setRenderTarget(QQuickPaintedItem::FramebufferObject);
+	setPerformanceHint(QQuickPaintedItem::FastFBOResizing);
+	setAntialiasing(true);
 }
 
 TextView::~TextView()
@@ -135,7 +135,6 @@ void TextView::paint(QPainter* painter)
 	//	qDebug() << "contentsSize:" << contentsSize();
 	//	qDebug() << "contentsScale:" << contentsScale();
 	//	qDebug() << "contentsBoundingRect:" << contentsBoundingRect();
-
 	mDoc->drawContents(painter);
 }
 

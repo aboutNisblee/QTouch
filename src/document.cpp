@@ -18,11 +18,6 @@ namespace qtouch
 Document::Document(QObject* parent) :
 	QTextDocument(parent)
 {
-	QTextOption textOption;
-	textOption.setAlignment(Qt::AlignJustify);
-	textOption.setWrapMode(QTextOption::WordWrap);
-	setDefaultTextOption(textOption);
-
 	//	setUseDesignMetrics(true);
 
 	mTextBlockFormat.setLineHeight(200, QTextBlockFormat::ProportionalHeight);
@@ -33,8 +28,7 @@ Document::Document(QObject* parent) :
 	mTextCharFormat.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 	mTextCharFormat.setFontPointSize(14);
 	mTextCharFormat.setForeground(QColor("black"));
-	//	mTextCharFormat.setBackground(Qt::transparent);
-	//	mTextCharFormat.setFontHintingPreference(QFont::PreferVerticalHinting);
+	mTextCharFormat.setBackground(Qt::transparent);
 
 	mTitleBlockFormat.setLineHeight(200, QTextBlockFormat::ProportionalHeight);
 	mTitleBlockFormat.setLeftMargin(10);
@@ -42,6 +36,8 @@ Document::Document(QObject* parent) :
 
 	mTitleCharFormat.setFont(QFontDatabase::systemFont(QFontDatabase::TitleFont));
 	mTitleCharFormat.setFontPointSize(mTextCharFormat.fontPointSize() * 1.5);
+	mTitleCharFormat.setForeground(QColor("black"));
+	mTitleCharFormat.setBackground(Qt::transparent);
 }
 
 Document::~Document()
