@@ -25,11 +25,14 @@
  */
 
 #include <gui/trainingwidget.hpp>
+
+#include <QTextCursor>
 #include <QTextBlock>
-#include <QSGSimpleRectNode>
 #include <QPointF>
 #include <QRectF>
+#include <QPainter>
 #include <QAbstractTextDocumentLayout>
+#include <QTimer>
 
 #include "utils/exceptions.hpp"
 
@@ -44,10 +47,20 @@ TrainingWidget::TrainingWidget(QQuickItem* parent) :
 
 	mCursor = mDoc->getTextCursor();
 
+	mBlinkTimer = new QTimer(this);
+	mBlinkTimer->setInterval(500);
+	// TODO: Make me configurable!
+	mBlinkTimer->setSingleShot(false);
+	mBlinkTimer->start();
+	connect(mBlinkTimer, &QTimer::timeout, [&]
+	{
+		mCursorVisible = !mCursorVisible;
+		updateCursorRect();
+		update();
+	});
+
 	connect(this, &TextView::documentChanged, this, &TrainingWidget::connectToDocument);
 	connect(this, &TextView::documentChanged, this, &TrainingWidget::configureTextFormat);
-
-	/*connect(&mDoc, &QTextDocument::cursorPositionChanged, this, &TrainingWidget::updateCursorRectangle);*/
 }
 
 TrainingWidget::~TrainingWidget()
@@ -61,21 +74,21 @@ TrainingWidget::~TrainingWidget()
  */
 void TrainingWidget::setRecoder(Recorder* recorder)
 {
-	if(nullptr == recorder)
+	if (nullptr == recorder)
 		return;
 
-	if(recorder != mRecorder)
+	if (recorder != mRecorder)
 	{
 		// Take ownership
 		if (nullptr == recorder->parent())
 			recorder->setParent(this);
 
-//		disconnect(mTC, &Document::contentsChanged, this, &TextView::resize);
+		//		disconnect(mTC, &Document::contentsChanged, this, &TextView::resize);
 		if (mRecorder && this == mRecorder->parent())
 			delete mRecorder;
 
 		mRecorder = recorder;
-//		connect(mRecorder, &Recorder::show, this, &TextView::resize);
+		//		connect(mRecorder, &Recorder::show, this, &TextView::resize);
 
 		emit recorderChanged();
 	}
@@ -95,9 +108,8 @@ void TrainingWidget::reset()
 {
 	mDoc->resetText();
 	resetCursor();
-	if(mRecorder)
+	if (mRecorder)
 		mRecorder->reset();
-	mDocDirty = true;
 }
 
 void TrainingWidget::showHint()
@@ -138,6 +150,24 @@ void TrainingWidget::resetCursor()
 	mDoc->clearUndoRedoStacks();
 	emit activeLineNumberChanged();
 	emit cursorPositionChanged();
+}
+
+void TrainingWidget::updateCursorRect()
+{
+	// Get the top left edge of the current text block
+	QPointF blockTopLeft = mDoc->documentLayout()->blockBoundingRect(mCursor->block()).topLeft();
+	// Get the current text line from the text layout of the current block
+	QTextLine textLine = mCursor->block().layout()->lineForTextPosition(mCursor->positionInBlock());
+	// Calculate the unscaled top left position of the cursor
+	QPointF topLeft(blockTopLeft.x() + textLine.cursorToX(mCursor->positionInBlock()), blockTopLeft.y() + textLine.y());
+	// And the bottom right position
+	QPointF bottomRight(topLeft.x() + 1, topLeft.y() + textLine.height());
+
+	// Use the points to span the cursor rectangle
+	mCursorRectangle.setTopLeft(topLeft);
+	mCursorRectangle.setBottomRight(bottomRight);
+
+	emit cursorRectangleChanged();
 }
 
 void TrainingWidget::updateProgress(qreal percent)
@@ -181,9 +211,9 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 			QString ref = mCursor->selectedText();
 			mCursor->clearSelection();
 
-			if(mRecorder)
+			if (mRecorder)
 			{
-				if(deleted == ref)
+				if (deleted == ref)
 					mRecorder->unhit();
 				else
 					mRecorder->unmiss();
@@ -229,7 +259,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 					mCursor->movePosition(QTextCursor::NextBlock);
 					emit activeLineNumberChanged();
 
-					if(mRecorder)
+					if (mRecorder)
 						mRecorder->hit();
 
 					cursorMoved = true;
@@ -237,7 +267,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 				else
 				{
 					qDebug() << "Action needed";
-					if(mRecorder)
+					if (mRecorder)
 						mRecorder->miss();
 				}
 			}
@@ -249,7 +279,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 				if (!cTyped.isPrint()) // Filter unprintable characters
 				{
 					qDebug() << "Unprintable character";
-					if(mRecorder)
+					if (mRecorder)
 						mRecorder->miss();
 				}
 				else if (cTyped == cRef)
@@ -260,7 +290,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 					mCursor->insertText(cRef, mCorrectTextCharFormat);
 
 					cursorMoved = true;
-					if(mRecorder)
+					if (mRecorder)
 						mRecorder->hit();
 				}
 				else
@@ -269,7 +299,7 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 					mCursor->insertText(cTyped, mFailureTextCharFormat);
 
 					cursorMoved = true;
-					if(mRecorder)
+					if (mRecorder)
 						mRecorder->miss();
 				}
 			}
@@ -286,60 +316,18 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 	{
 		emit cursorPositionChanged();
 
+		updateCursorRect();
 		updateProgress((mCursor->position() - mDoc->getTitle().size() - 1) / static_cast<qreal>(mDoc->getText().size()));
-		mDocDirty = true;
-		mCursorDirty = true;
 		update();
 	}
 }
 
-void TrainingWidget::onBeforeSynchronizing()
+void TrainingWidget::paint(QPainter* painter)
 {
-	/* Also need to update on dirty image to correct the position of the cursor after resize. */
-	if (mDocDirty || mCursorDirty)
-	{
-		// Get the top left edge of the current text block
-		QPointF blockTopLeft = mDoc->documentLayout()->blockBoundingRect(mCursor->block()).topLeft();
-		// Get the current text line from the text layout of the current block
-		QTextLine textLine = mCursor->block().layout()->lineForTextPosition(mCursor->positionInBlock());
-		// Calculate the unscaled top left position of the cursor
-		QPointF topLeft(blockTopLeft.x() + textLine.cursorToX(mCursor->positionInBlock()), blockTopLeft.y() + textLine.y());
-		// And the bottom right position
-		QPointF bottomRight(topLeft.x() + 1, topLeft.y() + textLine.height());
+	TextView::paint(painter);
 
-		// Use the points to span the cursor rectangle
-		mCursorRectangle.setTopLeft(topLeft * mDocScale);
-		mCursorRectangle.setBottomRight(bottomRight * mDocScale);
-
-		if (mCursorDirty)
-			emit cursorRectangleChanged();
-
-		mCursorDirty = false;
-	}
-
-	TextView::onBeforeSynchronizing();
-}
-
-QSGNode* TrainingWidget::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*updatePaintNodeData*/)
-{
-	QSGNode* textPageNode = TextView::updatePaintNode(oldNode, nullptr);
-
-	if (textPageNode != nullptr)
-	{
-		QSGSimpleRectNode* cursorNode = static_cast<QSGSimpleRectNode*>(textPageNode->firstChild());
-		if (nullptr == cursorNode)
-		{
-			cursorNode = new QSGSimpleRectNode(mCursorRectangle, mCursor->charFormat().foreground().color());
-			textPageNode->appendChildNode(cursorNode);
-			cursorNode->setFlag(QSGNode::OwnedByParent);
-		}
-		else
-		{
-			cursorNode->setRect(mCursorRectangle);
-			cursorNode->setColor(mCursor->charFormat().foreground().color());
-		}
-	}
-	return textPageNode;
+	if (mCursorVisible)
+		painter->fillRect(mCursorRectangle, mCursor->charFormat().foreground().color());
 }
 
 } /* namespace qtouch */

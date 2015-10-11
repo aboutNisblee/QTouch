@@ -208,6 +208,7 @@ FocusScope {
                         width: txtPreview.width
                         height: txtPreview.height
                         antialiasing: true
+                        color: "transparent"
                         border {
                             width: 1
                             color: "#000"
@@ -216,6 +217,7 @@ FocusScope {
                         TextView {
                             id: txtPreview
                             anchors.centerIn: parent
+                            z: 1
 
                             maxWidth: previewContainer.width
                         } // txtPreview

@@ -24,7 +24,6 @@
  * \author Moritz Nisblé moritz.nisble@gmx.de
  */
 
-#include <gui/trainingwidget.hpp>
 #include <QGuiApplication>
 #include <QQmlEngine>
 #include <QQmlContext>
@@ -42,6 +41,7 @@
 #include "recorder.hpp"
 #include "gui/svgelementprovider.hpp"
 #include "gui/textview.hpp"
+#include "gui/trainingwidget.hpp"
 
 namespace
 {
@@ -51,10 +51,8 @@ bool componentError(QQmlComponent* c)
 	if (c->isError())
 	{
 		QList<QQmlError> errorList = c->errors();
-		for(const QQmlError & error: errorList)
-		{
+		for (const QQmlError& error : errorList)
 			QMessageLogger(qPrintable(error.url().toString()), error.line(), 0).warning() << error;
-		}
 		return true;
 	}
 	return false;
@@ -105,7 +103,7 @@ int main(int argc, char* argv[])
 
 	// Add image provider
 	engine.addImageProvider(QStringLiteral("svgelement"), new qtouch::SvgElementProvider(QQmlImageProviderBase::Image,
-	                           QUrl(QStringLiteral("qrc:///images/"))));
+	                        QUrl(QStringLiteral("qrc:///images/"))));
 
 	qtouch::DataModel dataModel;
 	try

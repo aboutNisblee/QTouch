@@ -27,12 +27,11 @@
 #ifndef TRAININGWIDGET_HPP_
 #define TRAININGWIDGET_HPP_
 
-#include <QTextCursor>
-
 #include "recorder.hpp"
 #include "gui/textview.hpp"
 
 class QTimer;
+class QTextCursor;
 
 namespace qtouch
 {
@@ -80,14 +79,13 @@ signals:
 
 protected:
 	virtual void keyPressEvent(QKeyEvent*) Q_DECL_OVERRIDE;
-
-	virtual void onBeforeSynchronizing() Q_DECL_OVERRIDE;
-	virtual QSGNode* updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* updatePaintNodeData) Q_DECL_OVERRIDE;
+	virtual void paint(QPainter* painter) Q_DECL_OVERRIDE;
 
 private:
 	void connectToDocument();
 	void configureTextFormat();
 	void resetCursor();
+	void updateCursorRect();
 	void updateProgress(qreal percent);
 
 	Recorder* mRecorder;
@@ -98,9 +96,11 @@ private:
 	QTextCharFormat mCorrectTextCharFormat;
 	QTextCharFormat mFailureTextCharFormat;
 
+	bool mCursorVisible = false;
 	QRectF mCursorRectangle;
+	QTimer* mBlinkTimer;
+
 	qreal mProgress = 0;
-	bool mCursorDirty = false;
 };
 
 } /* namespace qtouch */

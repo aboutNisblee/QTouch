@@ -25,24 +25,24 @@
  */
 
 #include <gui/textview.hpp>
-#include <QImage>
+
 #include <QtMath>
-#include <QSGSimpleTextureNode>
-#include <QQuickWindow>
 #include <QPainter>
 
 namespace qtouch
 {
 
 TextView::TextView(QQuickItem* parent):
-	QQuickItem(parent)
+	QQuickPaintedItem(parent)
 {
 	setFlag(ItemHasContents, true);
 
 	mDoc = new Document(this);
 	connect(mDoc, &Document::contentsChanged, this, &TextView::resize);
 
-	connect(this, &QQuickItem::windowChanged, this, &TextView::onWindowChanged);
+	//	connect(this, &QQuickItem::windowChanged, this, &TextView::onWindowChanged);
+
+	//	setRenderTarget(QQuickPaintedItem::FramebufferObject);
 }
 
 TextView::~TextView()
@@ -96,32 +96,19 @@ void TextView::setMinWidth(qreal minWidth)
 	}
 }
 
-void TextView::setDocClipRect(QRectF docClipRect)
-{
-	if (docClipRect.isValid())
-	{
-		mDocClipRect = docClipRect;
-		/*qDebug() << "mDocClipRect" << mDocClipRect;*/
-		mDocDirty = true;
-		update();
-		emit docClipRectChanged();
-	}
-}
-
 void TextView::resize()
 {
 	// IdealWith is defined by the longest line plus margins
 	qreal idealWidth = mDoc->getIdealWidth();
 
 	// Calculate scale
+	qreal scale = 1;
 	if (mMaxWidth > 0 && idealWidth > mMaxWidth) // Scale down
-		mDocScale = mMaxWidth / idealWidth;
+		scale = mMaxWidth / idealWidth;
 	else if (mMinWidth > 0 && idealWidth < mMinWidth) // Scale up
-		mDocScale = mMinWidth / idealWidth;
-	else
-		mDocScale = 1;
+		scale = mMinWidth / idealWidth;
 
-	emit docScaleChanged();
+	setContentsScale(scale);
 
 	// Note: Its crucial to define the TextWidth before accessing the size().height()
 	mDoc->setTextWidth(idealWidth);
@@ -131,88 +118,25 @@ void TextView::resize()
 
 	if (isVisible())
 	{
-		/*qDebug() << "New TextPage size:" <<
-		         "\n\tidealWidth:" << idealWidth << "*" << mDocScale << "=" << (idealWidth * mDocScale) <<
-		         "\n\titemHeight:" << itemHeight << "*" << mDocScale << "=" << (itemHeight * mDocScale);*/
+		setWidth(idealWidth * scale);
+		setHeight(itemHeight * scale);
 
-		setWidth(idealWidth * mDocScale);
-		setHeight(itemHeight * mDocScale);
+		setContentsSize(QSize(idealWidth, itemHeight));
 
-		mDocDirty = true;
 		update();
 	}
 }
 
-void TextView::onWindowChanged(QQuickWindow* window)
+void TextView::paint(QPainter* painter)
 {
-	if (window)
-		connect(window, &QQuickWindow::beforeSynchronizing, this, &TextView::onBeforeSynchronizing, Qt::DirectConnection);
-}
+	//	qDebug() << "PAINTING" << this;
+	//	qDebug() << "width:" << width();
+	//	qDebug() << "height:" << height();
+	//	qDebug() << "contentsSize:" << contentsSize();
+	//	qDebug() << "contentsScale:" << contentsScale();
+	//	qDebug() << "contentsBoundingRect:" << contentsBoundingRect();
 
-/**
- * Direct connected to QQuickWindow::beforeSynchronizing and called before rendering of next frame.
- * Despite this function is called in render thread it is safe to access members, because the GUI thread
- * is already blocked.
- */
-void TextView::onBeforeSynchronizing()
-{
-	if (mDocDirty)
-	{
-		//		qDebug() << this << "Updating image: Visible:" << isVisible();
-
-		mImage.reset(new QImage(width(), height(), QImage::Format_ARGB32_Premultiplied));
-		mImage->fill(Qt::transparent);
-		//	mImage->fill(Qt::white);
-
-		QPainter p(mImage.get());
-		//	p.setRenderHint(QPainter::TextAntialiasing);
-
-		/* FIXME: Text scaling seems to be quite inefficient, at least in Linux. */
-		p.scale(mDocScale, mDocScale);
-
-		if (mDocClipRect.isValid())
-		{
-			/* XXX: Using the visible part of the item to clip the painting.
-			 * But this way we need to repaint on scrolling ... */
-			QRectF clipRec(mDocClipRect.x() / mDocScale, mDocClipRect.y() / mDocScale, mDocClipRect.width() / mDocScale,
-			               mDocClipRect.height() / mDocScale);
-			mDoc->drawContents(&p, clipRec);
-		}
-		else
-		{
-			mDoc->drawContents(&p);
-		}
-
-		mDocDirty = false;
-	}
-}
-
-QSGNode* TextView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* /*updatePaintNodeData*/)
-{
-	QSGSimpleTextureNode* node = static_cast<QSGSimpleTextureNode*>(oldNode);
-	if (nullptr == node)
-	{
-		node = new QSGSimpleTextureNode();
-		node->setFlag(QSGNode::OwnedByParent);
-		node->setFiltering(QSGTexture::Linear);
-	}
-
-	if (mImage)
-	{
-		//		qDebug() << this << "Updating texture: Visible:" << isVisible();
-
-		mTexture.reset(window()->createTextureFromImage(*mImage));
-		if (mTexture)
-		{
-			node->setTexture(mTexture.data());
-			node->setRect(QRectF(0, 0, mImage->width(), mImage->height()));
-		}
-		else
-		{
-			qCritical() << this << "Unable to create texture";
-		}
-	}
-	return node;
+	mDoc->drawContents(painter);
 }
 
 } /* namespace qtouch */

@@ -28,7 +28,7 @@
 #define TEXTVIEW_HPP_
 
 #include <memory>
-#include <QQuickItem>
+#include <QQuickPaintedItem>
 #include <QRectF>
 
 #include "document.hpp"
@@ -38,8 +38,6 @@ class QSGTexture;
 
 namespace qtouch
 {
-
-class TextFormat;
 
 /** Qt Quick item that is able to draw text.
  * This item is mimics the behavior of a TextArea but allows full control
@@ -54,15 +52,13 @@ class TextFormat;
  * The height of the whole document depends on the count of lines and the calculated
  * scale (use a Flickable/ScrollView).
  */
-class TextView: public QQuickItem
+class TextView: public QQuickPaintedItem
 {
 	Q_OBJECT
 
 	Q_PROPERTY(Document* document READ getDocument WRITE setDocument NOTIFY documentChanged)
 	Q_PROPERTY(qreal maxWidth READ getMaxWidth WRITE setMaxWidth NOTIFY maxWidthChanged)
 	Q_PROPERTY(qreal minWidth READ getMinWidth WRITE setMinWidth NOTIFY minWidthChanged)
-	Q_PROPERTY(qreal docScale READ getDocScale NOTIFY docScaleChanged)
-	Q_PROPERTY(QRectF docClipRect READ getDocClipRect WRITE setDocClipRect NOTIFY docClipRectChanged)
 
 public:
 	TextView(QQuickItem* parent = 0);
@@ -77,11 +73,6 @@ public:
 	inline qreal getMinWidth() const { return mMinWidth; }
 	void setMinWidth(qreal minWidth);
 
-	inline qreal getDocScale() const { return mDocScale; }
-
-	inline QRectF getDocClipRect() const { return mDocClipRect; }
-	void setDocClipRect(QRectF docClipRect);
-
 signals:
 	void documentChanged();
 	void maxWidthChanged();
@@ -92,23 +83,12 @@ signals:
 protected:
 	virtual void resize();
 
-	void onWindowChanged(QQuickWindow*);
-	virtual void onBeforeSynchronizing();
-	virtual QSGNode* updatePaintNode(QSGNode*, UpdatePaintNodeData*) Q_DECL_OVERRIDE;
+	virtual void paint(QPainter* painter) Q_DECL_OVERRIDE;
 
 	Document* mDoc;
 
-	bool mDocDirty = false;
-
-	qreal mDocScale = 1;
-	std::unique_ptr<QImage> mImage;
-
 	qreal mMaxWidth = 0;
 	qreal mMinWidth = 0;
-
-	QRectF mDocClipRect;
-
-	QScopedPointer<QSGTexture> mTexture;
 };
 
 } /* namespace qtouch */
