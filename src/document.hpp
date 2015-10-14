@@ -26,7 +26,7 @@ class Document: public QTextDocument
 	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY textChanged)
 
 public:
-	Document(QObject* parent = 0);
+	Document(QObject* parent = nullptr);
 	virtual ~Document();
 
 	inline QString getTitle() const { return mTitle; }

@@ -48,7 +48,7 @@ class MainWindow: public QQuickWindow
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QQmlEngine* engine = 0, QWindow* parent = 0);
+	MainWindow(QQmlEngine* engine = nullptr, QWindow* parent = nullptr);
 	~MainWindow();
 
 	bool init();

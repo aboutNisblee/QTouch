@@ -26,7 +26,7 @@ class Recorder: public QObject
 	Q_PROPERTY(int misses READ getMisses NOTIFY missesChanged)
 
 public:
-	Recorder(QObject* parent = 0);
+	Recorder(QObject* parent = nullptr);
 	virtual ~Recorder();
 
 	QDateTime getStart() const { return mStart; }

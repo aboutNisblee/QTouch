@@ -56,8 +56,8 @@ public:
 		TextRole                    //!< TextRole lText
 	};
 
-	explicit LessonModel(QObject* parent = 0);
-	explicit LessonModel(DataModel* model, QObject* parent = 0);
+	explicit LessonModel(QObject* parent = nullptr);
+	explicit LessonModel(DataModel* model, QObject* parent = nullptr);
 	virtual ~LessonModel();
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -112,8 +112,8 @@ public:
 		BuiltinRole,                //!< BuiltinRole cBuiltin
 	};
 
-	explicit CourseModel(QObject* parent = 0);
-	explicit CourseModel(DataModel* model, QObject* parent = 0);
+	explicit CourseModel(QObject* parent = nullptr);
+	explicit CourseModel(DataModel* model, QObject* parent = nullptr);
 	virtual ~CourseModel();
 
 	// TODO: Add flags to control enabled items! E.g. different language, never used, ...

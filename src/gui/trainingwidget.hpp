@@ -52,7 +52,7 @@ class TrainingWidget: public TextView
 	Q_PROPERTY(int cursorPosition READ getCursorPosition NOTIFY cursorPositionChanged)
 
 public:
-	TrainingWidget(QQuickItem* parent = 0);
+	TrainingWidget(QQuickItem* parent = nullptr);
 	virtual ~TrainingWidget();
 
 	Recorder* getRecoder() const { return mRecorder; }

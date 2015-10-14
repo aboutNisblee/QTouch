@@ -44,7 +44,7 @@ class DataModel: public QObject
 	Q_OBJECT
 
 public:
-	explicit DataModel(QObject* parent = 0);
+	explicit DataModel(QObject* parent = nullptr);
 	virtual ~DataModel();
 
 	void init();

@@ -61,7 +61,7 @@ class TextView: public QQuickPaintedItem
 	Q_PROPERTY(qreal minWidth READ getMinWidth WRITE setMinWidth NOTIFY minWidthChanged)
 
 public:
-	TextView(QQuickItem* parent = 0);
+	TextView(QQuickItem* parent = nullptr);
 	virtual ~TextView();
 
 	inline Document* getDocument() const { return mDoc; }

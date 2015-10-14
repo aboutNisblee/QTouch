@@ -53,8 +53,8 @@ public:
 		SkillRole                  //!< SkillRole pSkill
 	};
 
-	explicit ProfileModel(QObject* parent = 0);
-	explicit ProfileModel(DataModel* model, QObject* parent = 0);
+	explicit ProfileModel(QObject* parent = nullptr);
+	explicit ProfileModel(DataModel* model, QObject* parent = nullptr);
 	virtual ~ProfileModel();
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;

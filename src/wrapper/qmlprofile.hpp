@@ -48,7 +48,7 @@ class QmlStats: public QObject, public Stats
 	Q_PROPERTY(quint32 errors READ getErrorCount WRITE setErrorCount NOTIFY errorCountChanged)
 
 public:
-	QmlStats(QObject* parent = 0);
+	QmlStats(QObject* parent = nullptr);
 	explicit QmlStats(const Stats& rhs);
 	virtual ~QmlStats() {}
 
@@ -95,8 +95,8 @@ public:
 		Beginner = Profile::Beginner, Advanced = Profile::Advanced
 	};
 
-	explicit QmlProfile(QObject* parent = 0);
-	explicit QmlProfile(const Profile& rhs, QObject* parent = 0);
+	explicit QmlProfile(QObject* parent = nullptr);
+	explicit QmlProfile(const Profile& rhs, QObject* parent = nullptr);
 	virtual ~QmlProfile() {}
 
 	void setName(const QString& name);
