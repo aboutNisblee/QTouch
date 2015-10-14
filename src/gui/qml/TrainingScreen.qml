@@ -198,27 +198,25 @@ FocusScope {
 
                             recoder: recorder
 
+                            property int cursorTop: cursorRectangle.y * contentsScale
+                            property int cursorBottom: (cursorRectangle.y
+                                                        + cursorRectangle.height) * contentsScale
+
                             // Note: title and text are set by root item via property alias
                             onEscape: root.quit()
 
+                            // Scroll the flickable to focus current cursor position.
+                            // TODO: Make the position configurable.
                             onCursorRectangleChanged: {
-                                // When cursor is not fully visible, scroll the flickable.
-                                if (cursorRectangle.y < (widgetScroller.flickableItem.contentY
-                                                         - verticalSheetMargin)
-                                        || (cursorRectangle.y + cursorRectangle.height
-                                            > (widgetScroller.flickableItem.contentY
-                                               - verticalSheetMargin
-                                               + widgetScroller.viewport.childrenRect.height))) {
-                                    scrollAnimation.to = cursorRectangle.y
-                                    scrollAnimation.start()
-                                }
-                            }
-
-                            onCursorPositionChanged: {
                                 if (0 == cursorPosition
                                         && 0 == activeLineNumber) {
                                     scrollAnimation.to = 0
-                                    scrollAnimation.start()
+                                    scrollAnimation.restart()
+                                } else if ((cursorTop < (widgetScroller.flickableItem.contentY - verticalSheetMargin + widgetScroller.viewport.childrenRect.height * (1 - 0.3)))
+                                           || (cursorBottom > (widgetScroller.flickableItem.contentY - verticalSheetMargin + widgetScroller.viewport.childrenRect.height * 0.3))) {
+                                    scrollAnimation.to = cursorTop + verticalSheetMargin - 0.3
+                                            * widgetScroller.viewport.childrenRect.height
+                                    scrollAnimation.restart()
                                 }
                             }
                         } // trainingView

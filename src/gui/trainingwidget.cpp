@@ -57,7 +57,6 @@ TrainingWidget::TrainingWidget(QQuickItem* parent) :
 	connect(mBlinkTimer, &QTimer::timeout, [&]
 	{
 		mCursorVisible = !mCursorVisible;
-		updateCursorRect();
 		update();
 	});
 
@@ -109,6 +108,7 @@ int TrainingWidget::getCursorPosition() const
 void TrainingWidget::reset()
 {
 	mDoc->resetText();
+	mDoc->clearUndoRedoStacks();
 	resetCursor();
 	if (mRecorder)
 		mRecorder->reset();
@@ -149,9 +149,9 @@ void TrainingWidget::configureTextFormat()
 void TrainingWidget::resetCursor()
 {
 	mCursor = mDoc->getTextCursor();
-	mDoc->clearUndoRedoStacks();
 	emit activeLineNumberChanged();
 	emit cursorPositionChanged();
+	updateCursorRect();
 }
 
 void TrainingWidget::updateCursorRect()
