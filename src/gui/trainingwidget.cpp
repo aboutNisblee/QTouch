@@ -45,6 +45,8 @@ TrainingWidget::TrainingWidget(QQuickItem* parent) :
 	connectToDocument();
 	configureTextFormat();
 
+	mRecorder = nullptr;
+
 	mCursor = mDoc->getTextCursor();
 
 	mBlinkTimer = new QTimer(this);
