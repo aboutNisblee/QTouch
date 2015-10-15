@@ -34,22 +34,16 @@
 #include <QAbstractTextDocumentLayout>
 #include <QTimer>
 
-#include "utils/exceptions.hpp"
+#include "recorder.hpp"
 
 namespace qtouch
 {
 
 TrainingWidget::TrainingWidget(QQuickItem* parent) :
-	TextView(parent)
+	TextView(parent), mRecorder(nullptr), mBlinkTimer(new QTimer(this))
 {
-	connectToDocument();
-	configureTextFormat();
-
-	mRecorder = nullptr;
-
 	mCursor = mDoc->getTextCursor();
 
-	mBlinkTimer = new QTimer(this);
 	mBlinkTimer->setInterval(500);
 	// TODO: Make me configurable!
 	mBlinkTimer->setSingleShot(false);
@@ -60,8 +54,11 @@ TrainingWidget::TrainingWidget(QQuickItem* parent) :
 		update();
 	});
 
-	connect(this, &TextView::documentChanged, this, &TrainingWidget::connectToDocument);
-	connect(this, &TextView::documentChanged, this, &TrainingWidget::configureTextFormat);
+	configureTextFormat();
+
+	// TODO: React on text format changes in Document
+	connect(mDoc, &Document::titleChanged, this, &TrainingWidget::resetCursor);
+	connect(mDoc, &Document::textChanged, this, &TrainingWidget::resetCursor);
 }
 
 TrainingWidget::~TrainingWidget()
@@ -122,12 +119,6 @@ void TrainingWidget::showHint()
 void TrainingWidget::hideHint()
 {
 	qDebug() << "Hide hint";
-}
-
-void TrainingWidget::connectToDocument()
-{
-	connect(mDoc, &Document::titleChanged, this, &TrainingWidget::resetCursor);
-	connect(mDoc, &Document::textChanged, this, &TrainingWidget::resetCursor);
 }
 
 void TrainingWidget::configureTextFormat()

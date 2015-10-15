@@ -69,7 +69,7 @@ void registerQmlTypes()
 	qmlRegisterType<qtouch::QmlStats>("de.nisble.qtouch", 1, 0, "Stats");
 	qmlRegisterType<qtouch::ProfileModel>();
 
-	qmlRegisterType<qtouch::Document>("de.nisble.qtouch", 1, 0, "Document");
+	qmlRegisterType<qtouch::Document>();
 	qmlRegisterType<qtouch::Recorder>("de.nisble.qtouch", 1, 0, "Recorder");
 
 	qmlRegisterType<qtouch::Border>();

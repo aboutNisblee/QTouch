@@ -59,7 +59,7 @@ Window {
 
             courseModel: $courseModel
             profileModel: $profileModel
-            document: Document {
+            document {
                 title: $courseModel.lessonModel.lesson.title
                 text: $courseModel.lessonModel.lesson.text
                 documentMargin: 30
@@ -80,7 +80,7 @@ Window {
 
             onVisibleChanged: reset()
 
-            document: Document {
+            document {
                 title: $courseModel.lessonModel.lesson.title
                 text: $courseModel.lessonModel.lesson.text
                 documentMargin: 40

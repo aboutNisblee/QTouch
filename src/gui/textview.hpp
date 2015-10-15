@@ -69,7 +69,7 @@ class TextView: public QQuickPaintedItem
 {
 	Q_OBJECT
 
-	Q_PROPERTY(qtouch::Document* document READ getDocument WRITE setDocument NOTIFY documentChanged)
+	Q_PROPERTY(qtouch::Document* document READ getDocument CONSTANT)
 	Q_PROPERTY(qreal maxWidth READ getMaxWidth WRITE setMaxWidth NOTIFY maxWidthChanged)
 	Q_PROPERTY(qreal minWidth READ getMinWidth WRITE setMinWidth NOTIFY minWidthChanged)
 	Q_PROPERTY(qtouch::Border* border READ getBorder CONSTANT)
@@ -79,7 +79,6 @@ public:
 	virtual ~TextView();
 
 	inline Document* getDocument() const { return mDoc; }
-	void setDocument(Document* doc);
 
 	inline qreal getMaxWidth() const { return mMaxWidth; }
 	void setMaxWidth(qreal maxWidth);
@@ -90,11 +89,8 @@ public:
 	inline Border* getBorder() const { return mBorder; }
 
 signals:
-	void documentChanged();
 	void maxWidthChanged();
 	void minWidthChanged();
-	void docScaleChanged();
-	void docClipRectChanged();
 
 protected:
 	virtual void resize();

@@ -27,7 +27,6 @@
 #ifndef TRAININGWIDGET_HPP_
 #define TRAININGWIDGET_HPP_
 
-#include "recorder.hpp"
 #include "gui/textview.hpp"
 
 class QTimer;
@@ -35,6 +34,8 @@ class QTextCursor;
 
 namespace qtouch
 {
+
+class Recorder;
 
 class TrainingWidget: public TextView
 {
@@ -82,7 +83,6 @@ protected:
 	virtual void paint(QPainter* painter) Q_DECL_OVERRIDE;
 
 private:
-	void connectToDocument();
 	void configureTextFormat();
 	void resetCursor();
 	void updateCursorRect();

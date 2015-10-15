@@ -49,33 +49,6 @@ TextView::~TextView()
 {
 }
 
-/**
- * Set a new document.
- * If the passed document has no parent, ownership is taken.
- * @param doc A document.
- */
-void TextView::setDocument(Document* doc)
-{
-	if (nullptr == doc)
-		return;
-
-	if (doc != mDoc)
-	{
-		// Take ownership
-		if (nullptr == doc->parent())
-			doc->setParent(this);
-
-		disconnect(mDoc, &Document::contentsChanged, this, &TextView::resize);
-		if (this == mDoc->parent()) // mDoc cannot be null
-			delete mDoc;
-
-		mDoc = doc;
-		connect(mDoc, &Document::contentsChanged, this, &TextView::resize);
-
-		emit documentChanged();
-	}
-}
-
 void TextView::setMaxWidth(qreal maxWidth)
 {
 	if (maxWidth > 0 && !qFuzzyCompare(maxWidth, mMaxWidth))
