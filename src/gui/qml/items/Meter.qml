@@ -16,6 +16,7 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **/
 import QtQuick 2.0
+import QtGraphicalEffects 1.0
 
 Item {
     id: root
@@ -76,15 +77,24 @@ Item {
         }
     }
 
-    Image {
+    DropShadow {
         id: hand
         anchors.fill: parent
         z: 4
-        sourceSize.width: 1024
-        sourceSize.height: 1024
-        fillMode: Image.PreserveAspectFit
-        source: "image://svgelement/meter.svgz#hand"
-        smooth: false
+
+        source: Image {
+            sourceSize.width: 1024
+            sourceSize.height: 1024
+            fillMode: Image.PreserveAspectFit
+            source: "image://svgelement/meter.svgz#hand"
+            visible: false
+        }
+
+        color: "black"
+        radius: 1.5
+        samples: 4
+        spread: 0
+
         rotation: Math.min(current / (getMax() - getMin()), 1.0) * 90 - 45
         transform: Translate {
             y: ring.height / 5

@@ -16,6 +16,7 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **/
 import QtQuick 2.0
+import QtGraphicalEffects 1.0
 
 Item {
     id: root
@@ -45,15 +46,24 @@ Item {
         source: "image://svgelement/clock.svgz#face"
     }
 
-    Image {
+    DropShadow {
         id: minutehand
         anchors.centerIn: face
-        sourceSize.width: 1024
-        sourceSize.height: 1024
-        height: face.height * 0.85
         width: face.width * 0.85
-        fillMode: Image.PreserveAspectFit
-        source: "image://svgelement/clock.svgz#minute-hand"
+        height: face.height * 0.85
+
+        source: Image {
+            sourceSize.width: 1024
+            sourceSize.height: 1024
+            fillMode: Image.PreserveAspectFit
+            source: "image://svgelement/clock.svgz#minute-hand"
+            visible: false
+        }
+
+        color: "black"
+        radius: 1.5
+        samples: 4
+        spread: 0
 
         property int min: seconds / 60
         onMinChanged: {
@@ -74,15 +84,25 @@ Item {
             minutehand.rotation = seconds / 60 * 6
     }
 
-    Image {
+    DropShadow {
         id: secondhand
         anchors.centerIn: face
-        sourceSize.width: 1024
-        sourceSize.height: 1024
-        height: face.height * 0.85
         width: face.width * 0.85
-        fillMode: Image.PreserveAspectFit
-        source: "image://svgelement/clock.svgz#second-hand"
+        height: face.height * 0.85
+
+        source: Image {
+            sourceSize.width: 1024
+            sourceSize.height: 1024
+            fillMode: Image.PreserveAspectFit
+            source: "image://svgelement/clock.svgz#second-hand"
+            visible: false
+        }
+
+        color: "black"
+        radius: 1.5
+        samples: 4
+        spread: 0
+
         rotation: seconds * 6
 
         Behavior on rotation {

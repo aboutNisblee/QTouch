@@ -68,7 +68,7 @@ FocusScope {
                 left: columnLayout.left
                 right: columnLayout.right
             }
-            height: Math.max(root.height / 10, 100)
+            height: Math.max(root.height * 0.15, 150)
 
             Items.ElapsedTimeWidget {
                 id: elapsedTime
@@ -226,10 +226,10 @@ FocusScope {
                         anchors.centerIn: parent
                         width: widgetBorder.width
                         height: widgetBorder.height
-                        horizontalOffset: 3
+                        horizontalOffset: 2
                         verticalOffset: -3
-                        radius: 1
-                        samples: 2
+                        fast: true
+                        samples: 1
                         color: widgetBorder.border.color
                         source: widgetBorder
                     }
