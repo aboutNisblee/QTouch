@@ -40,7 +40,7 @@ class TrainingWidget: public TextView
 {
 	Q_OBJECT
 
-	Q_PROPERTY(Recorder* recoder READ getRecoder WRITE setRecoder NOTIFY recorderChanged)
+	Q_PROPERTY(qtouch::Recorder* recoder READ getRecoder WRITE setRecoder NOTIFY recorderChanged)
 
 	Q_PROPERTY(Qt::Key escapeKey MEMBER mEscKey NOTIFY escapeKeyChanged)
 	Q_PROPERTY(qreal progress READ getProgress NOTIFY progressChanged)

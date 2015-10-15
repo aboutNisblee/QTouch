@@ -43,7 +43,7 @@ class LessonModel: public QAbstractListModel
 	Q_OBJECT
 
 	Q_PROPERTY(int index READ getIndex WRITE selectLesson NOTIFY indexChanged)
-	Q_PROPERTY(QmlLesson* lesson READ getLesson NOTIFY lessonChanged)
+	Q_PROPERTY(qtouch::QmlLesson* lesson READ getLesson NOTIFY lessonChanged)
 
 public:
 	/** LessonModelRoles */
@@ -92,7 +92,7 @@ class CourseModel: public QAbstractListModel
 	Q_OBJECT
 
 	Q_PROPERTY(int index READ getIndex WRITE selectCourse NOTIFY indexChanged)
-	Q_PROPERTY(QmlCourse* course READ getCourse NOTIFY courseChanged)
+	Q_PROPERTY(qtouch::QmlCourse* course READ getCourse NOTIFY courseChanged)
 
 	/**
 	 * The LessonModel for the lessons of the currently selected course.
@@ -100,7 +100,7 @@ class CourseModel: public QAbstractListModel
 	 * and catch the onChanged signal. Use property aliasing instead of rebinding.
 	 * Binding to this property directly works, because of the explicit emission of selectedLessonModelChanged.
 	 */
-	Q_PROPERTY(LessonModel* lessonModel READ getLessonModel NOTIFY lessonModelChanged)
+	Q_PROPERTY(qtouch::LessonModel* lessonModel READ getLessonModel NOTIFY lessonModelChanged)
 
 public:
 	/** CourseModelRoles */

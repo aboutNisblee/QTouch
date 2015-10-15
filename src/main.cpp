@@ -60,28 +60,16 @@ bool componentError(QQmlComponent* c)
 
 void registerQmlTypes()
 {
-	qRegisterMetaType<qtouch::QmlLesson*>("QmlLesson*");
 	qmlRegisterType<qtouch::QmlLesson>("de.nisble.qtouch", 1, 0, "Lesson");
-	qRegisterMetaType<qtouch::QmlCourse*>("QmlCourse*");
 	qmlRegisterType<qtouch::QmlCourse>("de.nisble.qtouch", 1, 0, "Course");
-
-	qRegisterMetaType<qtouch::CourseModel*>("CourseModel*");
 	qmlRegisterType<qtouch::CourseModel>("de.nisble.qtouch", 1, 0, "CourseModel");
-	qRegisterMetaType<qtouch::LessonModel*>("LessonModel*");
 	qmlRegisterType<qtouch::LessonModel>();
 
-	qRegisterMetaType<qtouch::QmlProfile*>("QmlProfile*");
 	qmlRegisterType<qtouch::QmlProfile>("de.nisble.qtouch", 1, 0, "Profile");
-	qRegisterMetaType<qtouch::QmlStats*>("QmlStats*");
 	qmlRegisterType<qtouch::QmlStats>("de.nisble.qtouch", 1, 0, "Stats");
-
-	qRegisterMetaType<qtouch::ProfileModel*>("ProfileModel*");
 	qmlRegisterType<qtouch::ProfileModel>();
 
-	qRegisterMetaType<qtouch::Document*>("Document*");
 	qmlRegisterType<qtouch::Document>("de.nisble.qtouch", 1, 0, "Document");
-
-	qRegisterMetaType<qtouch::Recorder*>("Recorder*");
 	qmlRegisterType<qtouch::Recorder>("de.nisble.qtouch", 1, 0, "Recorder");
 
 	qmlRegisterType<qtouch::TextView>("de.nisble.qtouch", 1, 0, "TextView");

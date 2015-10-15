@@ -33,16 +33,16 @@ namespace qtouch
 {
 
 TextView::TextView(QQuickItem* parent):
-	QQuickPaintedItem(parent)
+	QQuickPaintedItem(parent), mDoc(new Document(this))
 {
 	setFlag(ItemHasContents, true);
-
-	mDoc = new Document(this);
-	connect(mDoc, &Document::contentsChanged, this, &TextView::resize);
-
 	setRenderTarget(QQuickPaintedItem::FramebufferObject);
 	setPerformanceHint(QQuickPaintedItem::FastFBOResizing);
+	setOpaquePainting(true);
 	setAntialiasing(true);
+	setFillColor(QColor("white"));
+
+	connect(mDoc, &Document::contentsChanged, this, &TextView::resize);
 }
 
 TextView::~TextView()

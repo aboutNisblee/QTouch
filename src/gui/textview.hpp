@@ -29,12 +29,8 @@
 
 #include <memory>
 #include <QQuickPaintedItem>
-#include <QRectF>
 
 #include "document.hpp"
-
-class QImage;
-class QSGTexture;
 
 namespace qtouch
 {
@@ -56,7 +52,7 @@ class TextView: public QQuickPaintedItem
 {
 	Q_OBJECT
 
-	Q_PROPERTY(Document* document READ getDocument WRITE setDocument NOTIFY documentChanged)
+	Q_PROPERTY(qtouch::Document* document READ getDocument WRITE setDocument NOTIFY documentChanged)
 	Q_PROPERTY(qreal maxWidth READ getMaxWidth WRITE setMaxWidth NOTIFY maxWidthChanged)
 	Q_PROPERTY(qreal minWidth READ getMinWidth WRITE setMinWidth NOTIFY minWidthChanged)
 

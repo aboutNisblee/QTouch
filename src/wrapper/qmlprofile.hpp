@@ -78,12 +78,12 @@ class QmlProfile: public QObject, public Profile
 {
 	Q_OBJECT
 
+	Q_ENUMS(qtouch::QmlProfile::SkillLevel)
 	Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
-	Q_PROPERTY(SkillLevel skill READ getSkill WRITE setSkill NOTIFY skillLevelChanged)
+	Q_PROPERTY(qtouch::QmlProfile::SkillLevel skill READ getSkill WRITE setSkill NOTIFY skillLevelChanged)
 	Q_PROPERTY(QQmlListProperty<qtouch::QmlStats> stats READ getStats)
 
 public:
-	Q_ENUMS(SkillLevel)
 	/* FIXME: This enum shadows Profile::SkillLevel!
 	 * Find another solution. Profile should not be derived from QObject,
 	 * but this is a requirement for enums to be accessible from QML.

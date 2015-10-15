@@ -43,7 +43,7 @@ class ProfileModel: public QAbstractListModel
 
 	Q_ENUMS(qtouch::QmlProfile::SkillLevel)
 	Q_PROPERTY(int index READ getIndex WRITE selectProfile NOTIFY profileIndexChanged)
-	Q_PROPERTY(QmlProfile* profile READ getProfile NOTIFY profileChanged)
+	Q_PROPERTY(qtouch::QmlProfile* profile READ getProfile NOTIFY profileChanged)
 
 public:
 	/** ProfileModelRoles */
@@ -72,7 +72,7 @@ public:
 	 * but not to property getter invocations. */
 	QmlProfile* getProfile() const;
 
-	Q_INVOKABLE bool addProfile(const QString& name, qtouch::QmlProfile::SkillLevel skill);
+	Q_INVOKABLE bool addProfile(const QString& name, QmlProfile::SkillLevel skill);
 	Q_INVOKABLE bool addProfile(QmlProfile* profile);
 
 signals:
@@ -89,7 +89,5 @@ private:
 };
 
 } /* namespace qtouch */
-
-Q_DECLARE_METATYPE(qtouch::QmlProfile::SkillLevel)
 
 #endif /* PROFILEMODEL_HPP_ */
