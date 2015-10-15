@@ -142,7 +142,7 @@ FocusScope {
             value: trainingWidget.progress
         }
 
-        Item {
+        Rectangle {
             id: widgetContainer
 
             anchors {
@@ -150,6 +150,7 @@ FocusScope {
                 right: columnLayout.right
             }
             height: root.height - progressIndicator.height - statsContainer.height
+            color: widgetBackground.color
 
             ScrollView {
                 id: widgetScroller
@@ -162,77 +163,66 @@ FocusScope {
                 focus: true
                 clip: true
 
-                flickableItem.boundsBehavior: Flickable.StopAtBounds
-
                 Rectangle {
                     id: widgetBackground
 
                     anchors.centerIn: parent
-                    width: widgetBorder.width + 2 * horizontalSheetMargin
-                    height: widgetBorder.height + 2 * verticalSheetMargin
+                    width: trainingWidget.width + 2 * horizontalSheetMargin
+                    height: trainingWidget.height + 2 * verticalSheetMargin
 
                     color: "lightgray"
 
-                    // Only a border that fits its content and centers in its parent
-                    Rectangle {
-                        id: widgetBorder
+                    TrainingWidget {
+                        id: trainingWidget
 
                         anchors.centerIn: parent
-                        width: trainingWidget.width
-                        height: trainingWidget.height
+                        // A minimum width is needed for the widget to
+                        // be able to scale the font size
+                        minWidth: widgetContainer.width - 2 * horizontalSheetMargin
+                        maxWidth: widgetContainer.width - 2 * horizontalSheetMargin
+
+                        focus: true
 
                         border {
-                            width: 1
-                            color: "black"
+                            color: Qt.darker(fillColor, 2)
+                            width: 5
                         }
 
-                        TrainingWidget {
-                            id: trainingWidget
+                        recoder: recorder
 
-                            focus: true
+                        property int cursorTop: cursorRectangle.y * contentsScale
+                        property int cursorBottom: (cursorRectangle.y
+                                                    + cursorRectangle.height) * contentsScale
 
-                            // A minimum width is needed for the widget to
-                            // be able to scale the font size
-                            minWidth: widgetContainer.width - 2 * horizontalSheetMargin
-                            maxWidth: widgetContainer.width - 2 * horizontalSheetMargin
+                        // Note: title and text are set by root item via property alias
+                        onEscape: root.quit()
 
-                            recoder: recorder
-
-                            property int cursorTop: cursorRectangle.y * contentsScale
-                            property int cursorBottom: (cursorRectangle.y
-                                                        + cursorRectangle.height) * contentsScale
-
-                            // Note: title and text are set by root item via property alias
-                            onEscape: root.quit()
-
-                            // Scroll the flickable to focus current cursor position.
-                            // TODO: Make the position configurable.
-                            onCursorRectangleChanged: {
-                                if (0 == cursorPosition
-                                        && 0 == activeLineNumber) {
-                                    scrollAnimation.to = 0
-                                    scrollAnimation.restart()
-                                } else if ((cursorTop < (widgetScroller.flickableItem.contentY - verticalSheetMargin + widgetScroller.viewport.childrenRect.height * (1 - 0.3)))
-                                           || (cursorBottom > (widgetScroller.flickableItem.contentY - verticalSheetMargin + widgetScroller.viewport.childrenRect.height * 0.3))) {
-                                    scrollAnimation.to = cursorTop + verticalSheetMargin - 0.3
-                                            * widgetScroller.viewport.childrenRect.height
-                                    scrollAnimation.restart()
-                                }
+                        // Scroll the flickable to focus current cursor position.
+                        // TODO: Make the position configurable.
+                        onCursorRectangleChanged: {
+                            if (0 == cursorPosition && 0 == activeLineNumber) {
+                                scrollAnimation.to = 0
+                                scrollAnimation.restart()
+                            } else if ((cursorTop < (widgetScroller.flickableItem.contentY - verticalSheetMargin + widgetScroller.viewport.childrenRect.height * (1 - 0.3)))
+                                       || (cursorBottom > (widgetScroller.flickableItem.contentY - verticalSheetMargin + widgetScroller.viewport.childrenRect.height * 0.3))) {
+                                scrollAnimation.to = cursorTop + verticalSheetMargin - 0.3
+                                        * widgetScroller.viewport.childrenRect.height
+                                scrollAnimation.restart()
                             }
-                        } // trainingView
-                    } // widgetBorder
+                        }
+                    } // trainingWidget
 
-                    DropShadow {
-                        anchors.centerIn: parent
-                        width: widgetBorder.width
-                        height: widgetBorder.height
-                        horizontalOffset: 2
-                        verticalOffset: -3
-                        fast: true
-                        samples: 1
-                        color: widgetBorder.border.color
-                        source: widgetBorder
-                    }
+                    //                    DropShadow {
+                    //                        anchors.centerIn: parent
+                    //                        width: trainingWidget.width
+                    //                        height: trainingWidget.height
+                    //                        horizontalOffset: 2
+                    //                        verticalOffset: -3
+                    //                        fast: true
+                    //                        samples: 1
+                    //                        color: trainingWidget.border.color
+                    //                        source: trainingWidget
+                    //                    }
                 } // widgetBackground
             } // widgetScroller
         } // widgetContainer

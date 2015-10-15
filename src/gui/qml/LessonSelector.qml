@@ -193,35 +193,24 @@ FocusScope {
                     id: previewScroller
 
                     anchors.centerIn: parent
-                    width: Math.min(previewBorder.width, previewContainer.width)
-                    height: Math.min(previewBorder.height,
-                                     previewContainer.height)
+                    width: Math.min(txtPreview.width, previewContainer.width)
+                    height: Math.min(txtPreview.height, previewContainer.height)
 
                     verticalScrollBarPolicy: Qt.ScrollBarAlwaysOff
                     horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
 
-                    Rectangle {
-                        // Only a border that fits its content and centrs in its parent
-                        id: previewBorder
-
+                    TextView {
+                        id: txtPreview
                         anchors.centerIn: parent
-                        width: txtPreview.width
-                        height: txtPreview.height
-                        antialiasing: true
-                        color: "transparent"
+                        z: 1
+
                         border {
-                            width: 1
-                            color: "#000"
+                            color: Qt.darker(fillColor, 2)
+                            width: 3
                         }
 
-                        TextView {
-                            id: txtPreview
-                            anchors.centerIn: parent
-                            z: 1
-
-                            maxWidth: previewContainer.width
-                        } // txtPreview
-                    } // previewBorder
+                        maxWidth: previewContainer.width
+                    } // txtPreview
 
                     // FIXME: Fails when opacity is faded out
                     //                    InnerShadow {

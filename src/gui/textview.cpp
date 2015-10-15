@@ -28,17 +28,17 @@
 
 #include <QtMath>
 #include <QPainter>
+#include <QPen>
 
 namespace qtouch
 {
 
 TextView::TextView(QQuickItem* parent):
-	QQuickPaintedItem(parent), mDoc(new Document(this))
+	QQuickPaintedItem(parent), mDoc(new Document(this)), mBorder(new Border(this))
 {
 	setFlag(ItemHasContents, true);
 	setRenderTarget(QQuickPaintedItem::FramebufferObject);
 	setPerformanceHint(QQuickPaintedItem::FastFBOResizing);
-	setOpaquePainting(true);
 	setAntialiasing(true);
 	setFillColor(QColor("white"));
 
@@ -135,6 +135,18 @@ void TextView::paint(QPainter* painter)
 	//	qDebug() << "contentsSize:" << contentsSize();
 	//	qDebug() << "contentsScale:" << contentsScale();
 	//	qDebug() << "contentsBoundingRect:" << contentsBoundingRect();
+
+	int width = mBorder->property("width").toInt();
+	if (width > 0)
+	{
+		QColor color = qvariant_cast<QColor>(mBorder->property("color"));
+		painter->save();
+		painter->setBackground(QColor("transparent"));
+		painter->setPen(QPen(color, width));
+		painter->scale(1 / contentsScale(), 1 / contentsScale());
+		painter->drawRect(contentsBoundingRect());
+		painter->restore();
+	}
 	mDoc->drawContents(painter);
 }
 

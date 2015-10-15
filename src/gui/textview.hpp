@@ -29,11 +29,28 @@
 
 #include <memory>
 #include <QQuickPaintedItem>
+#include <QColor>
 
 #include "document.hpp"
 
 namespace qtouch
 {
+
+class Border: public QObject
+{
+	Q_OBJECT
+	Q_PROPERTY(QColor color MEMBER mColor NOTIFY colorChanged)
+	Q_PROPERTY(int width MEMBER mWidth NOTIFY widthChanged)
+public:
+	explicit Border(QObject* parent = nullptr) : QObject(parent) {}
+	virtual ~Border() {}
+signals:
+	void colorChanged();
+	void widthChanged();
+private:
+	QColor mColor;
+	int mWidth = 0;
+};
 
 /** Qt Quick item that is able to draw text.
  * This item is mimics the behavior of a TextArea but allows full control
@@ -55,6 +72,7 @@ class TextView: public QQuickPaintedItem
 	Q_PROPERTY(qtouch::Document* document READ getDocument WRITE setDocument NOTIFY documentChanged)
 	Q_PROPERTY(qreal maxWidth READ getMaxWidth WRITE setMaxWidth NOTIFY maxWidthChanged)
 	Q_PROPERTY(qreal minWidth READ getMinWidth WRITE setMinWidth NOTIFY minWidthChanged)
+	Q_PROPERTY(qtouch::Border* border READ getBorder CONSTANT)
 
 public:
 	TextView(QQuickItem* parent = nullptr);
@@ -68,6 +86,8 @@ public:
 
 	inline qreal getMinWidth() const { return mMinWidth; }
 	void setMinWidth(qreal minWidth);
+
+	inline Border* getBorder() const { return mBorder; }
 
 signals:
 	void documentChanged();
@@ -85,6 +105,7 @@ protected:
 
 	qreal mMaxWidth = 0;
 	qreal mMinWidth = 0;
+	Border* mBorder;
 };
 
 } /* namespace qtouch */

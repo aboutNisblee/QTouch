@@ -72,6 +72,7 @@ void registerQmlTypes()
 	qmlRegisterType<qtouch::Document>("de.nisble.qtouch", 1, 0, "Document");
 	qmlRegisterType<qtouch::Recorder>("de.nisble.qtouch", 1, 0, "Recorder");
 
+	qmlRegisterType<qtouch::Border>();
 	qmlRegisterType<qtouch::TextView>("de.nisble.qtouch", 1, 0, "TextView");
 	qmlRegisterType<qtouch::TrainingWidget>("de.nisble.qtouch", 1, 0, "TrainingWidget");
 }

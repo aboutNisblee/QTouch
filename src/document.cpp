@@ -26,7 +26,7 @@ Document::Document(QObject* parent) :
 	// TODO: Let the user choose it via Theme or get it from the system!
 	// See: qthelp://org.qt-project.qtgui.542/qtgui/qtextcharformat.html#setFontStyleHint
 	mTextCharFormat.setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-	mTextCharFormat.setFontPointSize(14);
+	mTextCharFormat.setFontPointSize(20);
 	mTextCharFormat.setForeground(QColor("black"));
 	mTextCharFormat.setBackground(Qt::transparent);
 
