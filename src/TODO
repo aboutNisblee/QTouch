@@ -18,3 +18,5 @@
 	- Never forward declare a class as struct or vice versa since it leads to linkage errors.
 	- Do not use multiline strings inside the QStringLiteral macro.
 		See: https://blog.qt.io/blog/2014/06/13/qt-weekly-13-qstringliteral/
+
+[ ] Add console/shell lessons.
