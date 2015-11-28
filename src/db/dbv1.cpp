@@ -166,18 +166,11 @@ const QString create_tblStats = QStringLiteral("CREATE TABLE IF NOT EXISTS tblSt
                                 "	pkfkLessonListId	INTEGER NOT NULL REFERENCES tblLessonList(pkLessonListId) ON UPDATE CASCADE ON DELETE CASCADE,\n"
                                 "	pkfkProfileName		TEXT NOT NULL REFERENCES tblProfile(pkProfileName) ON UPDATE CASCADE ON DELETE CASCADE,\n"
                                 "	pkStartDateTime		TEXT NOT NULL,\n"
-                                "	cEndDateTime		TEXT NOT NULL,\n"
+                                "	cTime				INTEGER NOT NULL,\n"
                                 "	cCharCount			INTEGER NOT NULL,\n"
                                 "	cErrorCount			INTEGER,\n"
                                 "	PRIMARY KEY(pkfkLessonListId, pkfkProfileName, pkStartDateTime)\n"
                                 ") WITHOUT ROWID;");
-
-const QString create_StatsDateTimeCheck =
-    QStringLiteral("CREATE TRIGGER IF NOT EXISTS StatsDateTimeCheck BEFORE INSERT ON tblStats\n"
-                   "WHEN strftime(\'%s\',NEW.pkStartDateTime) > strftime(\'%s\',NEW.cEndDateTime)\n"
-                   "BEGIN\n"
-                   "	SELECT RAISE(ABORT, \'Datetime constraint failed: Start bigger than end time\');\n"
-                   "END;");
 
 inline QString lastQuery(const QSqlQuery& query)
 {
@@ -293,7 +286,6 @@ void DbV1::createSchema()
 		exec_query_string(q, create_LessonListAfterInsertHead);
 		exec_query_string(q, create_LessonListBeforeChildIdUpdate);
 		exec_query_string(q, create_LessonListBeforeDelete);
-		exec_query_string(q, create_StatsDateTimeCheck);
 
 		setMeta(Db::metaSchemaVersionKey, VERSION);
 
@@ -318,7 +310,6 @@ void DbV1::dropSchema()
 
 	try
 	{
-		exec_query_string(q, "DROP TRIGGER IF EXISTS StatsDateTimeCheck");
 		exec_query_string(q, "DROP TRIGGER IF EXISTS LessonListBeforeDelete");
 		exec_query_string(q, "DROP TRIGGER IF EXISTS LessonListBeforeChildIdUpdate");
 		exec_query_string(q, "DROP TRIGGER IF EXISTS LessonListAfterInsertHead");
@@ -433,7 +424,7 @@ void DbV1::insert(const Stats& stats)
 	q.bindValue(":lesson", stats.getLessonId());
 	q.bindValue(":profile", stats.getProfileName());
 	q.bindValue(":start", stats.getStart());
-	q.bindValue(":end", stats.getEnd());
+	q.bindValue(":end", stats.getTime());
 	q.bindValue(":chars", stats.getCharCount());
 	q.bindValue(":errors", stats.getErrorCount());
 
@@ -585,7 +576,7 @@ QSqlQuery DbV1::selectProfiles()
 
 /**
  * Select the Stats for a given ProfileName
- * Valid columns: pkCourseUuid, pkLessonUuid, pkStartDateTime, cEndDateTime, cCharCount, cErrorCount
+ * Valid columns: pkCourseUuid, pkLessonUuid, pkStartDateTime, cTime, cCharCount, cErrorCount
  * @param profileName A ProfileName
  * @return The query.
  */
@@ -597,7 +588,7 @@ QSqlQuery DbV1::selectStats(const QString& profileName)
 	q.setForwardOnly(true);
 
 	q.prepare(
-	    QStringLiteral("SELECT pkCourseUuid,pkLessonUuid,pkStartDateTime,cEndDateTime,cCharCount,cErrorCount FROM tblStats JOIN vLessons ON pkLessonListId = pkfkLessonListId WHERE pkfkProfileName = :profileName ORDER BY pkStartDateTime"));
+	    QStringLiteral("SELECT pkCourseUuid,pkLessonUuid,pkStartDateTime,cTime,cCharCount,cErrorCount FROM tblStats JOIN vLessons ON pkLessonListId = pkfkLessonListId WHERE pkfkProfileName = :profileName ORDER BY pkStartDateTime"));
 	q.bindValue(":profileName", profileName);
 
 	exec_query(q);

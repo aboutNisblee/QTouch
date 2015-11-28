@@ -41,7 +41,8 @@ class Stats
 public:
 	Stats(const QUuid& courseId, const QUuid& lessonId, const QString& profileName,
 	      const QDateTime& start = QDateTime::currentDateTime()) :
-		mCourseId(courseId), mLessonId(lessonId), mProfileName(profileName), mStart(start), mCharCount(0), mErrorCount(0) {}
+		mCourseId(courseId), mLessonId(lessonId), mProfileName(profileName), mStart(start), mTime(0), mCharCount(0),
+		mErrorCount(0) {}
 	virtual ~Stats() {}
 
 	inline const QUuid& getCourseId() const { return mCourseId; }
@@ -49,8 +50,8 @@ public:
 	inline const QString& getProfileName() const { return mProfileName; }
 	inline const QDateTime& getStart() const {	return mStart; }
 
-	inline const QDateTime& getEnd() const { return mEnd; }
-	virtual void setEnd(const QDateTime& end) { mEnd = end; }
+	inline quint32 getTime() const { return mTime; }
+	virtual void setTime(quint32 time) { mTime = time; }
 
 	inline quint32 getCharCount() const { return mCharCount; }
 	virtual void setCharCount(quint32 charCount) { mCharCount = charCount; }
@@ -64,7 +65,7 @@ protected:
 	QString mProfileName;
 	QDateTime mStart;
 
-	QDateTime mEnd;
+	quint32 mTime;
 	quint32 mCharCount;
 	quint32 mErrorCount;
 };

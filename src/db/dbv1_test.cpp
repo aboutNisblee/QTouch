@@ -398,7 +398,7 @@ void DbV1Test::insertProfileTest()
 void DbV1Test::insertStatsTest()
 {
 	QDateTime start = QDateTime::currentDateTime();
-	QDateTime end = QDateTime::currentDateTime().addSecs(60);
+	quint32 time = 60 * 1000;
 	quint32 chars = 100;
 	quint32 errors = 5;
 
@@ -424,7 +424,7 @@ void DbV1Test::insertStatsTest()
 		/* Take the first lesson and create a stats object
 		with the lessonId from the Db */
 		Stats stats(QUuid(cC.value("pkCourseUuid").toString()), QUuid(cL.value("pkLessonUuid").toString()), cP.value("pkProfileName").toString(), start);
-		stats.setEnd(end);
+		stats.setTime(time);
 		stats.setCharCount(chars);
 		stats.setErrorCount(errors);
 
@@ -439,7 +439,7 @@ void DbV1Test::insertStatsTest()
 		QCOMPARE(QUuid(cS.value("pkCourseUuid").toString()), QUuid(cC.value("pkCourseUuid").toString()));
 		QCOMPARE(QUuid(cS.value("pkLessonUuid").toString()), QUuid(cL.value("pkLessonUuid").toString()));
 		QCOMPARE(cS.value("pkStartDateTime").toDateTime(), start);
-		QCOMPARE(cS.value("cEndDateTime").toDateTime(), end);
+		QCOMPARE(cS.value("cTime").toUInt(), time);
 		QCOMPARE(cS.value("cCharCount").toUInt(), chars);
 		QCOMPARE(cS.value("cErrorCount").toUInt(), errors);
 	}

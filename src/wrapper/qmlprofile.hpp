@@ -43,7 +43,7 @@ class QmlStats: public QObject, public Stats
 	Q_PROPERTY(QUuid lesson READ getLessonId WRITE setLessonId NOTIFY lessonIdChanged)
 	Q_PROPERTY(QString profile READ getProfileName WRITE setProfileName NOTIFY profileNameChanged)
 	Q_PROPERTY(QDateTime start READ getStart WRITE setStart NOTIFY startChanged)
-	Q_PROPERTY(QDateTime end READ getEnd WRITE setEnd NOTIFY endChanged)
+	Q_PROPERTY(quint32 time READ getTime WRITE setTime NOTIFY timeChanged)
 	Q_PROPERTY(quint32 chars READ getCharCount WRITE setCharCount NOTIFY charCountChanged)
 	Q_PROPERTY(quint32 errors READ getErrorCount WRITE setErrorCount NOTIFY errorCountChanged)
 
@@ -59,7 +59,7 @@ public:
 	void setProfileName(const QString& profileName);
 	void setStart(const QDateTime& start);
 
-	void setEnd(const QDateTime& end) Q_DECL_OVERRIDE;
+	void setTime(quint32 time) Q_DECL_OVERRIDE;
 	void setCharCount(quint32 charCount) Q_DECL_OVERRIDE;
 	void setErrorCount(quint32 errorCount) Q_DECL_OVERRIDE;
 
@@ -68,7 +68,7 @@ signals:
 	void lessonIdChanged();
 	void profileNameChanged();
 	void startChanged();
-	void endChanged();
+	void timeChanged();
 	void charCountChanged();
 	void errorCountChanged();
 };

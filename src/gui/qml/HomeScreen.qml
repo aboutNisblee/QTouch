@@ -161,7 +161,7 @@ FocusScope {
             for (var i = 0; i < root.profileModel.profile.stats.length; i++) {
                 var stats = root.profileModel.profile.stats[i]
                 console.log("Status:", i, stats.course, stats.lesson,
-                            stats.profile, stats.start, stats.end, stats.chars,
+                            stats.profile, stats.start, stats.time, stats.chars,
                             stats.errors)
             }
         }

@@ -1,7 +1,6 @@
 PRAGMA user_version = 1;
 PRAGMA foreign_keys = true;
 
-DROP TRIGGER IF EXISTS StatsDateTimeCheck;
 DROP TRIGGER IF EXISTS LessonListBeforeDelete;
 DROP TRIGGER IF EXISTS LessonListBeforeChildIdUpdate;
 DROP TRIGGER IF EXISTS LessonListAfterInsertHead;
@@ -177,18 +176,12 @@ CREATE TABLE IF NOT EXISTS tblStats (
 	pkfkLessonListId	INTEGER NOT NULL REFERENCES tblLessonList(pkLessonListId) ON UPDATE CASCADE ON DELETE CASCADE,
 	pkfkProfileName		TEXT NOT NULL REFERENCES tblProfile(pkProfileName) ON UPDATE CASCADE ON DELETE CASCADE,
 	pkStartDateTime		TEXT NOT NULL,
-	cEndDateTime		TEXT NOT NULL,
+	cTime				INTEGER NOT NULL,
 	cCharCount			INTEGER NOT NULL,
 	cErrorCount			INTEGER,
 	PRIMARY KEY(pkfkLessonListId, pkfkProfileName, pkStartDateTime)
 ) WITHOUT ROWID;
 
--- Check that Stats.end_datetime is bigger that Stats.start_datetime
-CREATE TRIGGER IF NOT EXISTS StatsDateTimeCheck BEFORE INSERT ON tblStats
-WHEN strftime('%s',NEW.pkStartDateTime) > strftime('%s',NEW.cEndDateTime)
-BEGIN
-	SELECT RAISE(ABORT, 'Datetime constraint failed: Start bigger than end time');
-END;
 
 -- *****************************
 -- TESTS
@@ -294,21 +287,21 @@ INSERT INTO tblStats VALUES (
 	(SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L1'),
 	'TestUser1',
 	strftime('%Y-%m-%dT%H:%M:%f','now'),
-	strftime('%Y-%m-%dT%H:%M:%f','now','+1 minutes'),
+	60000,
 	220,
 	10
 ), (
 	(SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C1' AND fkLessonUuid = 'L1'),
 	'TestUser1',
 	strftime('%Y-%m-%dT%H:%M:%f','now','+1 minutes'),
-	strftime('%Y-%m-%dT%H:%M:%f','now','+2 minutes'),
+	60000,
 	240,
 	12
 ), (
 	(SELECT pkLessonListId FROM tblLessonList WHERE fkCourseUuid = 'C2' AND fkLessonUuid = 'L2'),
 	'TestUser1',
 	strftime('%Y-%m-%dT%H:%M:%f','now','+2 minutes'),
-	strftime('%Y-%m-%dT%H:%M:%f','now','+3 minutes'),
+	60000,
 	210,
 	16
 );

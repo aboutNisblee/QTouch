@@ -44,7 +44,7 @@ QmlStats::QmlStats(const Stats& rhs) :
 Stats QmlStats::unwrap()
 {
 	Stats lhs(mCourseId, mLessonId, mProfileName, mStart);
-	lhs.setEnd(mEnd);
+	lhs.setTime(mTime);
 	lhs.setCharCount(mCharCount);
 	lhs.setErrorCount(mErrorCount);
 	return lhs;
@@ -86,13 +86,13 @@ void QmlStats::setStart(const QDateTime& start)
 	emit startChanged();
 }
 
-void QmlStats::setEnd(const QDateTime& end)
+void QmlStats::setTime(quint32 time)
 {
-	if (end == mEnd)
+	if (time == mTime)
 		return;
 
-	mEnd = end;
-	emit endChanged();
+	mTime = time;
+	emit timeChanged();
 }
 
 void QmlStats::setCharCount(quint32 charCount)
