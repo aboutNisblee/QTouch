@@ -20,3 +20,9 @@
 		See: https://blog.qt.io/blog/2014/06/13/qt-weekly-13-qstringliteral/
 
 [ ] Add console/shell lessons.
+
+[ ] Enter/Return can be configured to count as miss.
+
+[ ] Import of ktouchs database.
+
+[ ] Prevent further typing on error (configurable).
