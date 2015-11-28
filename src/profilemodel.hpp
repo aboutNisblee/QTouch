@@ -72,7 +72,7 @@ public:
 	 * but not to property getter invocations. */
 	QmlProfile* getProfile() const;
 
-	Q_INVOKABLE bool addProfile(const QString& name, QmlProfile::SkillLevel skill);
+	Q_INVOKABLE bool addProfile(const QString& name, qtouch::QmlProfile::SkillLevel skill);
 	Q_INVOKABLE bool addProfile(QmlProfile* profile);
 
 signals:

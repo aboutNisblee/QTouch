@@ -78,7 +78,6 @@ class QmlProfile: public QObject, public Profile
 {
 	Q_OBJECT
 
-	Q_ENUMS(qtouch::QmlProfile::SkillLevel)
 	Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
 	Q_PROPERTY(qtouch::QmlProfile::SkillLevel skill READ getSkill WRITE setSkill NOTIFY skillLevelChanged)
 	Q_PROPERTY(QQmlListProperty<qtouch::QmlStats> stats READ getStats)
@@ -94,6 +93,7 @@ public:
 	{
 		Beginner = Profile::Beginner, Advanced = Profile::Advanced
 	};
+	Q_ENUMS(qtouch::QmlProfile::SkillLevel)
 
 	explicit QmlProfile(QObject* parent = nullptr);
 	explicit QmlProfile(const Profile& rhs, QObject* parent = nullptr);
@@ -121,5 +121,7 @@ private:
 };
 
 } /* namespace qtouch */
+
+Q_DECLARE_METATYPE(qtouch::QmlProfile::SkillLevel)
 
 #endif /* QMLPROFILE_HPP_ */
