@@ -90,7 +90,11 @@ FocusScope {
                     }
                 } // delegate
 
-                onCurrentIndexChanged: model.index = currentIndex
+                onCurrentIndexChanged: {
+                    model.index = currentIndex
+                    // Update stats view
+                    statsView.stats = model.profile.stats
+                }
 
                 highlight: Component {
                     Rectangle {
@@ -160,11 +164,9 @@ FocusScope {
                     visible: true
                     enabled: visible
 
-                    TextArea {
-                        id: profileStats
+                    StatsView {
+                        id: statsView
                         anchors.fill: parent
-                        readOnly: true
-                        //                        text: list.model.profile.stats
                     }
                 }
 
@@ -211,10 +213,9 @@ FocusScope {
 
                             ExclusiveGroup {
                                 id: tabPositionGroup
-                                onCurrentChanged: console.log(
-                                                      Profile.Beginner,
-                                                      Profile.Advanced,
-                                                      current.level)
+                                onCurrentChanged: console.log(Profile.Beginner,
+                                                              Profile.Advanced,
+                                                              current.level)
                             }
                             RadioButton {
                                 text: qsTr("Beginner")
