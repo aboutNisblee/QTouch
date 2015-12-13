@@ -134,7 +134,7 @@ void QmlProfile::setName(const QString& name)
 	emit nameChanged();
 }
 
-void QmlProfile::setSkill(SkillLevel skill)
+void QmlProfile::setSkill(QmlSkillLevel::SkillLevel skill)
 {
 	if (static_cast<Profile::SkillLevel>(skill) == mSkillLevel)
 		return;

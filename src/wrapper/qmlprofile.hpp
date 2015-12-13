@@ -73,35 +73,43 @@ signals:
 	void errorCountChanged();
 };
 
-
-class QmlProfile: public QObject, public Profile
+class QmlSkillLevel: public QObject
 {
-	Q_OBJECT
-
-	Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
-	Q_PROPERTY(qtouch::QmlProfile::SkillLevel skill READ getSkill WRITE setSkill NOTIFY skillLevelChanged)
-	Q_PROPERTY(QQmlListProperty<qtouch::QmlStats> stats READ getStats)
-
+	Q_GADGET
+	Q_ENUMS(SkillLevel)
 public:
 	/* FIXME: This enum shadows Profile::SkillLevel!
 	 * Find another solution. Profile should not be derived from QObject,
 	 * but this is a requirement for enums to be accessible from QML.
 	 * See: qthelp://org.qt-project.qtcore.542/qtcore/qobject.html#Q_ENUMS
 	 * BUT: It isn't possible to refer to an enum from QML anyway.
-	 * In QML enums are always of type int. */
+	 * In QML enums are always of type int.
+	 * I don't understand it anymore :)
+	 * This class isn't registered and the values ase accessible from QML
+	 * as e.g. Profile.Beginner! */
 	enum SkillLevel
 	{
 		Beginner = Profile::Beginner, Advanced = Profile::Advanced
 	};
-	Q_ENUMS(qtouch::QmlProfile::SkillLevel)
+};
 
+class QmlProfile: public QObject, public Profile
+{
+	Q_OBJECT
+
+	Q_ENUMS(qtouch::QmlSkillLevel::SkillLevel)
+	Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
+	Q_PROPERTY(qtouch::QmlSkillLevel::SkillLevel skill READ getSkill WRITE setSkill NOTIFY skillLevelChanged)
+	Q_PROPERTY(QQmlListProperty<qtouch::QmlStats> stats READ getStats)
+
+public:
 	explicit QmlProfile(QObject* parent = nullptr);
 	explicit QmlProfile(const Profile& rhs, QObject* parent = nullptr);
 	virtual ~QmlProfile() {}
 
 	void setName(const QString& name);
-	void setSkill(SkillLevel skill);
-	inline SkillLevel getSkill() const { return static_cast<SkillLevel>(mSkillLevel); }
+	void setSkill(QmlSkillLevel::SkillLevel skill);
+	inline QmlSkillLevel::SkillLevel getSkill() const { return static_cast<QmlSkillLevel::SkillLevel>(mSkillLevel); }
 
 	inline QQmlListProperty<QmlStats> getStats()
 	{
@@ -121,7 +129,5 @@ private:
 };
 
 } /* namespace qtouch */
-
-Q_DECLARE_METATYPE(qtouch::QmlProfile::SkillLevel)
 
 #endif /* QMLPROFILE_HPP_ */

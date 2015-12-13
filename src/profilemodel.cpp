@@ -126,7 +126,7 @@ QHash<int, QByteArray> ProfileModel::roleNames() const
 	return roles;
 }
 
-bool ProfileModel::addProfile(const QString& name, qtouch::QmlProfile::SkillLevel skill)
+bool ProfileModel::addProfile(const QString& name, QmlSkillLevel::SkillLevel skill)
 {
 	bool result = false;
 	beginInsertRows(QModelIndex(), mDm->getProfileCount(), mDm->getProfileCount());
