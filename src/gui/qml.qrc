@@ -12,5 +12,6 @@
         <file>qml/items/Meter.qml</file>
         <file>qml/items/RateWidget.qml</file>
         <file>qml/items/ElapsedTimeWidget.qml</file>
+        <file>qml/items/PauseDialog.qml</file>
     </qresource>
 </RCC>

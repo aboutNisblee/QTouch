@@ -77,6 +77,7 @@ signals:
 	void cursorRectangleChanged();
 	void activeLineNumberChanged();
 	void cursorPositionChanged();
+	void finished();
 
 protected:
 	virtual void keyPressEvent(QKeyEvent*) Q_DECL_OVERRIDE;

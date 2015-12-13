@@ -178,6 +178,8 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 	if (keyEvent->modifiers() == Qt::NoModifier && keyEvent->key() == mEscKey)
 	{
 		keyEvent->setAccepted(true);
+		if (mRecorder)
+			mRecorder->pause();
 		emit escape();
 		return;
 	}
@@ -229,6 +231,9 @@ void TrainingWidget::keyPressEvent(QKeyEvent* keyEvent)
 		if (refText.isEmpty())
 		{
 			qDebug() << "Finished!";
+			if (mRecorder)
+				mRecorder->pause();
+			emit finished();
 			return;
 		}
 

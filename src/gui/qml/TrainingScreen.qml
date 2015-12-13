@@ -49,6 +49,13 @@ FocusScope {
         id: recorder
     }
 
+    Items.PauseDialog {
+        id: pauseDialog
+        anchors.fill: parent
+        onQuit: root.quit()
+        onUnpause: hide()
+    }
+
     Column {
         id: columnLayout
 
@@ -195,7 +202,7 @@ FocusScope {
                                                     + cursorRectangle.height) * contentsScale
 
                         // Note: title and text are set by root item via property alias
-                        onEscape: root.quit()
+                        onEscape: pauseDialog.show()
 
                         // Scroll the flickable to focus current cursor position.
                         // TODO: Make the position configurable.
