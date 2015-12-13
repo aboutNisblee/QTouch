@@ -40,11 +40,15 @@ FocusScope {
         when: open
     } // states
 
+    onHeightChanged: {
+        if (state != "OPEN")
+            background.y = -height
+    }
+
     Rectangle {
         id: background
         width: parent.width
         height: parent.height
-        y: -parent.height
 
         Row {
             anchors.fill: parent
