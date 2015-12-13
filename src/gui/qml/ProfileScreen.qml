@@ -18,7 +18,7 @@
 **/
 import QtQuick 2.3
 import QtQuick.Controls 1.3
-
+import de.nisble.qtouch 1.0
 import "items" as Items
 
 FocusScope {
@@ -90,7 +90,11 @@ FocusScope {
                     }
                 } // delegate
 
-                onCurrentIndexChanged: model.index = currentIndex
+                onCurrentIndexChanged: {
+                    model.index = currentIndex
+                    // Update stats view
+                    statsView.stats = model.profile.stats
+                }
 
                 highlight: Component {
                     Rectangle {
@@ -160,11 +164,9 @@ FocusScope {
                     visible: true
                     enabled: visible
 
-                    TextArea {
-                        id: profileStats
+                    StatsView {
+                        id: statsView
                         anchors.fill: parent
-                        readOnly: true
-                        //                        text: list.model.profile.stats
                     }
                 }
 
@@ -190,6 +192,10 @@ FocusScope {
                             left: parent.left
                         }
                         placeholderText: qsTr("Please input profile name")
+
+                        onAccepted: {
+                            createProfile(text, 0)
+                        }
                     }
 
                     GroupBox {
@@ -200,7 +206,29 @@ FocusScope {
                             left: parent.left
                         }
                         height: 200
-                        title: qsTr("TODO: Group Box")
+                        title: qsTr("Skill level")
+
+                        Column {
+                            anchors.fill: parent
+
+                            ExclusiveGroup {
+                                id: tabPositionGroup
+                                onCurrentChanged: console.log(Profile.Beginner,
+                                                              Profile.Advanced,
+                                                              current.level)
+                            }
+                            RadioButton {
+                                text: qsTr("Beginner")
+                                checked: true
+                                exclusiveGroup: tabPositionGroup
+                                property int level: Profile.Beginner
+                            }
+                            RadioButton {
+                                text: qsTr("Advanced")
+                                exclusiveGroup: tabPositionGroup
+                                property int level: Profile.Advanced
+                            }
+                        }
                     }
 
                     Button {

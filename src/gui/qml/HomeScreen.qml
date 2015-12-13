@@ -158,8 +158,10 @@ FocusScope {
     Connections {
         target: root.profileModel
         onProfileChanged: {
-            for (var i = 0; i < root.profileModel.profile.stats.length; i++) {
-                var stats = root.profileModel.profile.stats[i]
+            var profile = root.profileModel.profile
+            console.log("Profile:", profile.name ,profile.skill)
+            for (var i = 0; i < profile.stats.length; i++) {
+                var stats = profile.stats[i]
                 console.log("Status:", i, stats.course, stats.lesson,
                             stats.profile, stats.start, stats.time, stats.chars,
                             stats.errors)

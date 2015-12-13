@@ -13,5 +13,10 @@
         <file>qml/items/RateWidget.qml</file>
         <file>qml/items/ElapsedTimeWidget.qml</file>
         <file>qml/items/PauseDialog.qml</file>
+        <file>qml/items/ToolTip.js</file>
+        <file>qml/items/ToolTip.qml</file>
+        <file>qml/StatsChart.js</file>
+        <file>qml/StatsChart.qml</file>
+        <file>qml/StatsView.qml</file>
     </qresource>
 </RCC>

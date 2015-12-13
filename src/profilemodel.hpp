@@ -41,7 +41,6 @@ class ProfileModel: public QAbstractListModel
 {
 	Q_OBJECT
 
-	Q_ENUMS(qtouch::QmlProfile::SkillLevel)
 	Q_PROPERTY(int index READ getIndex WRITE selectProfile NOTIFY profileIndexChanged)
 	Q_PROPERTY(qtouch::QmlProfile* profile READ getProfile NOTIFY profileChanged)
 
@@ -72,7 +71,7 @@ public:
 	 * but not to property getter invocations. */
 	QmlProfile* getProfile() const;
 
-	Q_INVOKABLE bool addProfile(const QString& name, qtouch::QmlProfile::SkillLevel skill);
+	Q_INVOKABLE bool addProfile(const QString& name, QmlSkillLevel::SkillLevel skill);
 	Q_INVOKABLE bool addProfile(QmlProfile* profile);
 
 signals:

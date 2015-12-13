@@ -66,6 +66,7 @@ void registerQmlTypes()
 	qmlRegisterType<qtouch::LessonModel>();
 
 	qmlRegisterType<qtouch::QmlProfile>("de.nisble.qtouch", 1, 0, "Profile");
+//	qmlRegisterType<qtouch::QmlSkillLevel>("de.nisble.qtouch", 1, 0, "SkillLevel");
 	qmlRegisterType<qtouch::QmlStats>("de.nisble.qtouch", 1, 0, "Stats");
 	qmlRegisterType<qtouch::ProfileModel>();
 
