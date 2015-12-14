@@ -73,6 +73,7 @@ public:
 
 	Q_INVOKABLE bool addProfile(const QString& name, QmlSkillLevel::SkillLevel skill);
 	Q_INVOKABLE bool addProfile(QmlProfile* profile);
+	Q_INVOKABLE bool save(QmlProfile* profile);
 
 signals:
 	void profileIndexChanged();

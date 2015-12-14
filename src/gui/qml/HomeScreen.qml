@@ -159,7 +159,7 @@ FocusScope {
         target: root.profileModel
         onProfileChanged: {
             var profile = root.profileModel.profile
-            console.log("Profile:", profile.name ,profile.skill)
+            console.log("Profile:", profile.name, profile.skill)
             for (var i = 0; i < profile.stats.length; i++) {
                 var stats = profile.stats[i]
                 console.log("Status:", i, stats.course, stats.lesson,

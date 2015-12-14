@@ -39,6 +39,12 @@ namespace qtouch
 struct DbInterface;
 class DbHelper;
 
+/**
+ * This is the "Model" in the MVVM architecture.
+ * There should be only one instance of this class.
+ * Currently it is instantiated in main.cpp and pass
+ * into all view models.
+ */
 class DataModel: public QObject
 {
 	Q_OBJECT
@@ -67,7 +73,9 @@ public:
 	bool isValidProfileIndex(int index) const;
 	bool isValidProfile(const QString& name) const;
 	Profile getProfile(int index, bool selectStats = false);
+	int getProfileIndex(const Profile& profile);
 	bool insertProfile(const Profile& profile);
+	bool updateProfile(const Profile& profile, bool updateStats = true);
 
 private:
 	std::shared_ptr<DbInterface> mDb;

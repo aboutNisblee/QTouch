@@ -32,18 +32,16 @@ FocusScope {
 
     // Input property interface
     property alias document: trainingWidget.document
+    property alias stats: recorder.stats
 
     signal quit
+    signal finished
 
     function reset() {
         trainingWidget.reset()
     }
 
     implicitWidth: statsContainer.implicitWidth
-
-    Stats {
-        id: stats
-    }
 
     Recorder {
         id: recorder
@@ -203,6 +201,8 @@ FocusScope {
 
                         // Note: title and text are set by root item via property alias
                         onEscape: pauseDialog.show()
+
+                        onFinished: root.finished()
 
                         // Scroll the flickable to focus current cursor position.
                         // TODO: Make the position configurable.

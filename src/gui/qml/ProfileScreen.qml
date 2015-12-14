@@ -90,11 +90,7 @@ FocusScope {
                     }
                 } // delegate
 
-                onCurrentIndexChanged: {
-                    model.index = currentIndex
-                    // Update stats view
-                    statsView.stats = model.profile.stats
-                }
+                onCurrentIndexChanged: model.index = currentIndex
 
                 highlight: Component {
                     Rectangle {
@@ -167,6 +163,7 @@ FocusScope {
                     StatsView {
                         id: statsView
                         anchors.fill: parent
+                        stats: profileList.model.profile.stats
                     }
                 }
 

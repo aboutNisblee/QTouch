@@ -100,7 +100,7 @@ class QmlProfile: public QObject, public Profile
 	Q_ENUMS(qtouch::QmlSkillLevel::SkillLevel)
 	Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
 	Q_PROPERTY(qtouch::QmlSkillLevel::SkillLevel skill READ getSkill WRITE setSkill NOTIFY skillLevelChanged)
-	Q_PROPERTY(QQmlListProperty<qtouch::QmlStats> stats READ getStats)
+	Q_PROPERTY(QQmlListProperty<qtouch::QmlStats> stats READ getStats NOTIFY statsChanged)
 
 public:
 	explicit QmlProfile(QObject* parent = nullptr);
@@ -117,9 +117,12 @@ public:
 		                                  &QmlProfile::clearStats);
 	}
 
+	Q_INVOKABLE void pushStats(QmlStats* stats);
+
 signals:
 	void nameChanged();
 	void skillLevelChanged();
+	void statsChanged();
 
 private:
 	static void appendStats(QQmlListProperty<QmlStats>* list, QmlStats* value);

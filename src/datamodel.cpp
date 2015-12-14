@@ -126,6 +126,14 @@ bool DataModel::isValidCourseIndex(int index) const
 	return (index >= 0 && index < static_cast<int>(mCourses.size())) ? true : false;
 }
 
+/**
+ * Get the Course at the given index.
+ * \note Because of the internal representation of Courses and its Lessons
+ * Courses must be held in smart pointers.
+ *
+ * @param index A Course index.
+ * @return A smart pointer to a Course or an empty pointer if the index is invalid.
+ */
 std::shared_ptr<Course> DataModel::getCourse(int index) const
 {
 	return isValidCourseIndex(index) ? mCourses.at(index) : std::shared_ptr<Course>();
@@ -142,6 +150,17 @@ bool DataModel::isValidLessonIndex(int courseIndex, int lessonIndex) const
 	        && lessonIndex < mCourses.at(courseIndex)->size()) ? true : false;
 }
 
+/**
+ * Get the Lesson at the given index.
+ * Lessons cannot exist without Courses, therefore a valid Course index is needed to
+ * specify a valid Lesson.
+ * \note Because of the internal representation of Courses and its Lessons
+ * Courses must be held in smart pointers.
+ *
+ * @param courseIndex A Course index.
+ * @param lessonIndex A Lesson index.
+ * @return A smart pointer to a Lesson or an empty pointer if one of the indices is invalid.
+ */
 std::shared_ptr<const Lesson> DataModel::getLesson(int courseIndex, int lessonIndex) const
 {
 	return isValidLessonIndex(courseIndex,
@@ -158,12 +177,17 @@ bool DataModel::isValidProfile(const QString& name) const
 	if (name.isEmpty())
 		return false;
 
-	return std::count_if(mProfiles.begin(), mProfiles.end(), [&](const Profile & p)
+	return std::count_if(std::begin(mProfiles), std::end(mProfiles), [&](const Profile & p)
 	{
 		return p.getName() == name;
 	});
 }
 
+/**
+ * Insert a new profile.
+ * @param profile The Profile.
+ * @return True on success else false.
+ */
 bool DataModel::insertProfile(const Profile& profile)
 {
 	bool result = false;
@@ -175,6 +199,38 @@ bool DataModel::insertProfile(const Profile& profile)
 	return result;
 }
 
+/**
+ * Update the Profile at the given index.
+ * @param index An index.
+ * @param updateStats If true (default), write Stats to database.
+ * @return True on success, false on error (database error or invalid index).
+ */
+bool DataModel::updateProfile(const Profile& profile, bool updateStats)
+{
+	bool result = false;
+	int index = getProfileIndex(profile);
+	if (index >= 0 && mDbHelper->update(profile))
+	{
+		result = true;
+		if(updateStats && profile.size() > mProfiles.at(index).size())
+		{
+			// FIXME: Due to the mismatch function this cannot work for clearing of stats!
+			auto diff = std::mismatch(std::begin(mProfiles.at(index)), std::end(mProfiles.at(index)), std::begin(profile));
+			if(diff.second != std::end(profile))
+				result = mDbHelper->insert(diff.second, std::end(profile));
+		}
+
+		mProfiles.at(index) = profile;
+	}
+	return result;
+}
+
+/**
+ * Get a copy of the Profile at the given index.
+ * @param index
+ * @param selectStats If true, Stats are loaded from the database and added to the Profile.
+ * @return The requested Profile or an invalid one (empty name) on error.
+ */
 Profile DataModel::getProfile(int index, bool selectStats)
 {
 	if (isValidProfileIndex(index))
@@ -190,6 +246,20 @@ Profile DataModel::getProfile(int index, bool selectStats)
 	}
 	else
 		return Profile(QString());
+}
+
+int DataModel::getProfileIndex(const Profile& profile)
+{
+	int result = -1;
+	for (std::vector<Profile>::size_type i = 0; i < mProfiles.size(); ++i)
+	{
+		if (mProfiles.at(i).getName() == profile.getName())
+		{
+			result = static_cast<int>(i);
+			break;
+		}
+	}
+	return result;
 }
 
 } /* namespace qtouch */

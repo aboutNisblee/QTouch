@@ -59,6 +59,12 @@ public:
 	inline quint32 getErrorCount() const { return mErrorCount;	}
 	virtual void setErrorCount(quint32 errorCount) { mErrorCount = errorCount; }
 
+	inline bool operator==(const Stats& rhs)
+	{
+		return (mCourseId == rhs.getCourseId() && mLessonId == rhs.getLessonId() && mProfileName == rhs.getProfileName()
+		        && mStart == rhs.getStart());
+	}
+
 protected:
 	QUuid mCourseId;
 	QUuid mLessonId;

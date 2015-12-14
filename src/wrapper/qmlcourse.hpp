@@ -35,19 +35,20 @@
 namespace qtouch
 {
 
+/* TODO: Convert to object wrapper to prevent unnecessary copies. */
 class QmlLesson: public QObject, public Lesson
 {
 	Q_OBJECT
 
-	Q_PROPERTY(QUuid id READ getId)
+	Q_PROPERTY(QUuid id READ getId CONSTANT)
 	Q_PROPERTY(QString title READ getTitle WRITE setTitle NOTIFY titleChanged)
 	Q_PROPERTY(QString newChars READ getNewChars WRITE setNewChars NOTIFY newCharsChanged)
 	Q_PROPERTY(QString text READ getText WRITE setText NOTIFY textChanged)
-	Q_PROPERTY(bool builtin READ isBuiltin)
+	Q_PROPERTY(bool builtin READ isBuiltin CONSTANT)
 
 public:
 	QmlLesson(QObject* parent = nullptr);
-	explicit QmlLesson(const Lesson& rhs);
+	explicit QmlLesson(const Lesson& rhs, QObject* parent = nullptr);
 	virtual ~QmlLesson();
 
 	void setTitle(const QString& title) Q_DECL_OVERRIDE;
@@ -64,14 +65,14 @@ class QmlCourse: public QObject
 {
 	Q_OBJECT
 
-	Q_PROPERTY(QUuid id READ getCourseId)
+	Q_PROPERTY(QUuid id READ getCourseId CONSTANT)
 	Q_PROPERTY(QString title READ getTitle WRITE setTitle NOTIFY titleChanged)
 	Q_PROPERTY(QString description READ getDescription WRITE setDescription NOTIFY descriptionChanged)
-	Q_PROPERTY(bool builtin READ isBuiltin)
+	Q_PROPERTY(bool builtin READ isBuiltin CONSTANT)
 
 public:
 	QmlCourse(QObject* parent = nullptr);
-	explicit QmlCourse(std::shared_ptr<Course> rhs);
+	explicit QmlCourse(std::shared_ptr<Course> rhs, QObject* parent = nullptr);
 	virtual ~QmlCourse();
 
 	inline QUuid getCourseId() const { return mCourse->getId(); }

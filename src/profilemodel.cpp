@@ -103,7 +103,7 @@ void ProfileModel::selectProfile(int index)
 		qWarning() << this << "Invalid index:" << index;
 		mSelected = -1;
 	}
-	else /* Do net check for index changes. Simply update and fire! */
+	else /* Do not check for index changes. Simply update and fire! */
 	{
 		mSelected = index;
 		emit profileIndexChanged();
@@ -143,6 +143,18 @@ bool ProfileModel::addProfile(QmlProfile* profile)
 	if (mDm->insertProfile(*static_cast<Profile*>(profile)))
 		result = true;
 	endInsertRows();
+	return result;
+}
+
+/**
+ * Save selected profile to database.
+ * @return True on success, else false.
+ */
+bool ProfileModel::save(QmlProfile* profile)
+{
+	bool result = false;
+	if (mDm->updateProfile(*static_cast<Profile*>(profile)))
+		result = true;
 	return result;
 }
 
