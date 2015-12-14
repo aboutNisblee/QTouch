@@ -86,7 +86,20 @@ Window {
                 documentMargin: 40
             }
 
+            stats {
+                course: $courseModel.course.id
+                lesson: $courseModel.lessonModel.lesson.id
+                profile: $profileModel.profile.name
+                chars: $courseModel.lessonModel.lesson.text.length
+            }
+
             onQuit: flipper.state = ""
+
+            onFinished: {
+                var profile = $profileModel.profile
+                profile.pushStats(stats)
+                $profileModel.save(profile)
+            }
         } // trainingScreen
 
         transform: Rotation {
