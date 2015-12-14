@@ -36,8 +36,8 @@ QmlLesson::QmlLesson(QObject* parent) :
 	setBuiltin(false);
 }
 
-QmlLesson::QmlLesson(const Lesson& rhs) :
-	Lesson(rhs)
+QmlLesson::QmlLesson(const Lesson& rhs, QObject* parent) :
+	QObject(parent), Lesson(rhs)
 {
 }
 
@@ -80,7 +80,8 @@ QmlCourse::QmlCourse(QObject* parent) :
 	mCourse->setBuiltin(false);
 }
 
-QmlCourse::QmlCourse(std::shared_ptr<Course> rhs)
+QmlCourse::QmlCourse(std::shared_ptr<Course> rhs, QObject* parent) :
+	QObject(parent)
 {
 	mCourse = rhs;
 }

@@ -65,14 +65,14 @@ class QmlCourse: public QObject
 {
 	Q_OBJECT
 
-	Q_PROPERTY(QUuid id READ getCourseId)
+	Q_PROPERTY(QUuid id READ getCourseId CONSTANT)
 	Q_PROPERTY(QString title READ getTitle WRITE setTitle NOTIFY titleChanged)
 	Q_PROPERTY(QString description READ getDescription WRITE setDescription NOTIFY descriptionChanged)
-	Q_PROPERTY(bool builtin READ isBuiltin)
+	Q_PROPERTY(bool builtin READ isBuiltin CONSTANT)
 
 public:
 	QmlCourse(QObject* parent = nullptr);
-	explicit QmlCourse(std::shared_ptr<Course> rhs);
+	explicit QmlCourse(std::shared_ptr<Course> rhs, QObject* parent = nullptr);
 	virtual ~QmlCourse();
 
 	inline QUuid getCourseId() const { return mCourse->getId(); }

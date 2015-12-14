@@ -73,7 +73,7 @@ void QmlStats::setProfileName(const QString& profileName)
 	if (profileName == mProfileName)
 		return;
 
-	mLessonId = profileName;
+	mProfileName = profileName;
 	emit profileNameChanged();
 }
 
@@ -143,10 +143,20 @@ void QmlProfile::setSkill(QmlSkillLevel::SkillLevel skill)
 	emit skillLevelChanged();
 }
 
-void qtouch::QmlProfile::appendStats(QQmlListProperty<QmlStats>* /*list*/, QmlStats* /*value*/)
+void QmlProfile::pushStats(QmlStats* stats)
 {
-	// TODO: IMPLEMENT ME!!
-	//	QmlProfile* profile = qobject_cast<QmlProfile*>(list->object);
+	mStats.push_back(stats->unwrap());
+	emit statsChanged();
+}
+
+void QmlProfile::appendStats(QQmlListProperty<QmlStats>* list, QmlStats* value)
+{
+	QmlProfile* profile = qobject_cast<QmlProfile*>(list->object);
+	if (profile)
+	{
+		profile->mStats.push_back(value->unwrap());
+		emit profile->statsChanged();
+	}
 }
 
 int QmlProfile::countStats(QQmlListProperty<QmlStats>* list)
