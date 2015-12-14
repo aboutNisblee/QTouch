@@ -26,3 +26,13 @@
 [ ] Import of ktouchs database.
 
 [ ] Prevent further typing on error (configurable).
+
+[ ] Make model from stats list.
+
+[ ] Add finish view.
+
+[ ] Store misses in Db.
+
+[ ] Add configuration view.
+
+[ ] Define what the character count includes (space, enter, ...)
