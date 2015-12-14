@@ -30,6 +30,8 @@
 #include <QObject>
 #include <QDateTime>
 
+#include "wrapper/qmlprofile.hpp"
+
 class QTimer;
 
 namespace qtouch
@@ -39,6 +41,7 @@ class Recorder: public QObject
 {
 	Q_OBJECT
 
+	Q_PROPERTY(qtouch::QmlStats* stats READ getStats CONSTANT)
 	Q_PROPERTY(QDateTime start READ getStart NOTIFY startChanged)
 	Q_PROPERTY(int elapsed READ getElapsed NOTIFY elapsedChanged)
 	Q_PROPERTY(int hits READ getHits NOTIFY hitsChanged)
@@ -48,10 +51,12 @@ public:
 	Recorder(QObject* parent = nullptr);
 	virtual ~Recorder();
 
-	QDateTime getStart() const { return mStart; }
-	int getElapsed() const { return mElapsed; }
+	inline QmlStats* getStats() const { return mStats; }
+
+	QDateTime getStart() const { return mStats->getStart(); }
+	int getElapsed() const { return mStats->getTime(); }
 	int getHits() const { return mHits; }
-	int getMisses() const { return mMisses; }
+	int getMisses() const { return mStats->getErrorCount(); }
 
 public slots:
 	void reset();
@@ -78,10 +83,8 @@ private:
 	QTimer* mPauseTimer;
 	QTimer* mHintTimer;
 
-	QDateTime mStart;
-	int mElapsed = 0;
+	QmlStats* mStats;
 	int mHits = 0;
-	int mMisses = 0;
 };
 
 } /* namespace qtouch */

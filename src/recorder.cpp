@@ -32,7 +32,7 @@ namespace qtouch
 {
 
 Recorder::Recorder(QObject* parent) :
-	QObject(parent)
+	QObject(parent), mStats(new QmlStats(this))
 {
 	mStatsTimer = new QTimer(this);
 	mPauseTimer = new QTimer(this);
@@ -62,16 +62,16 @@ void Recorder::reset()
 	mStatsTimer->stop();
 	mHintTimer->stop();
 
-	mStart = QDateTime();
+	mStats->setStart(QDateTime());
 	emit startChanged();
 
-	mElapsed = 0;
+	mStats->setTime(0);
 	emit elapsedChanged();
 
 	mHits = 0;
 	emit hitsChanged();
 
-	mMisses = 0;
+	mStats->setErrorCount(0);
 	emit missesChanged();
 }
 
@@ -102,7 +102,7 @@ void Recorder::unhit()
 void Recorder::miss()
 {
 	resume();
-	++mMisses;
+	mStats->setErrorCount(mStats->getErrorCount() + 1);
 	emit missesChanged();
 }
 
@@ -114,7 +114,7 @@ void Recorder::unmiss()
 
 void Recorder::timeout()
 {
-	mElapsed += mStatsTimer->interval();
+	mStats->setTime(mStats->getTime() + mStatsTimer->interval());
 	emit elapsedChanged();
 }
 
@@ -123,10 +123,10 @@ void Recorder::resume()
 	if (!mStatsTimer->isActive())
 		mStatsTimer->start();
 
-	if (!mStart.isValid())
+	if (!mStats->getStart().isValid())
 	{
 		qDebug() << "Start";
-		mStart = QDateTime::currentDateTime();
+		mStats->setStart(QDateTime::currentDateTime());
 		emit startChanged();
 	}
 	else if (!mPauseTimer->isActive())
