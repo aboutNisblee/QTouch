@@ -38,7 +38,8 @@ TextView::TextView(QQuickItem* parent):
 {
 	setFlag(ItemHasContents, true);
 	setRenderTarget(QQuickPaintedItem::FramebufferObject);
-	setPerformanceHint(QQuickPaintedItem::FastFBOResizing);
+	// TODO: Make this configurable. It eats too much graphics memory to be enabled by default.
+	/*setPerformanceHint(QQuickPaintedItem::FastFBOResizing);*/
 	setAntialiasing(true);
 	setFillColor(QColor("white"));
 
