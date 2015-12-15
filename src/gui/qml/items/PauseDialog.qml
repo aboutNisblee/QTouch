@@ -9,11 +9,11 @@ FocusScope {
 
     visible: false
     enabled: visible
-    focus: visible
     z: -9999
 
     function show() {
         background.state = "VISIBLE"
+        btContinue.focus = true
     }
 
     function hide() {
@@ -60,6 +60,11 @@ FocusScope {
                     isDefault: true
                     focus: true
                     onClicked: root.unpause()
+                    Keys.onReturnPressed: root.unpause()
+                    Keys.onEnterPressed: root.unpause()
+
+                    KeyNavigation.down: btCancel
+                    KeyNavigation.tab: btCancel
                 }
 
                 Button {
@@ -67,6 +72,8 @@ FocusScope {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: qsTr("Main menu")
                     onClicked: root.quit()
+                    Keys.onReturnPressed: root.quit()
+                    Keys.onEnterPressed: root.quit()
                 }
             }
         }

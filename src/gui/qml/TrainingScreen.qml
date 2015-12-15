@@ -38,7 +38,22 @@ FocusScope {
     signal finished
 
     function reset() {
+        pauseDialog.hide()
         trainingWidget.reset()
+        widgetScroller.focus = true
+        widgetScroller.enabled = true
+    }
+
+    function pause() {
+        pauseDialog.show()
+        pauseDialog.focus = true
+        widgetScroller.enabled = false
+    }
+
+    function resume() {
+        pauseDialog.hide()
+        widgetScroller.focus = true
+        widgetScroller.enabled = true
     }
 
     implicitWidth: statsContainer.implicitWidth
@@ -51,7 +66,7 @@ FocusScope {
         id: pauseDialog
         anchors.fill: parent
         onQuit: root.quit()
-        onUnpause: hide()
+        onUnpause: resume()
     }
 
     Column {
@@ -200,7 +215,7 @@ FocusScope {
                                                     + cursorRectangle.height) * contentsScale
 
                         // Note: title and text are set by root item via property alias
-                        onEscape: pauseDialog.show()
+                        onEscape: root.pause()
 
                         onFinished: root.finished()
 
