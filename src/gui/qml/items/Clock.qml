@@ -15,7 +15,7 @@
 ** You should have received a copy of the GNU Lesser General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **/
-import QtQuick 2.0
+import QtQuick 2.5
 import QtGraphicalEffects 1.0
 
 Item {
@@ -46,19 +46,23 @@ Item {
         source: "image://svgelement/clock.svgz#face"
     }
 
-    DropShadow {
-        id: minutehand
+    Image {
+        id: minutehand_image
         anchors.centerIn: face
         width: face.width * 0.85
         height: face.height * 0.85
+        sourceSize.width: 1024
+        sourceSize.height: 1024
+        fillMode: Image.PreserveAspectFit
+        source: "image://svgelement/clock.svgz#minute-hand"
+        visible: false
+    }
 
-        source: Image {
-            sourceSize.width: 1024
-            sourceSize.height: 1024
-            fillMode: Image.PreserveAspectFit
-            source: "image://svgelement/clock.svgz#minute-hand"
-            visible: false
-        }
+    DropShadow {
+        id: minutehand
+        anchors.fill: minutehand_image
+
+        source: minutehand_image
 
         color: "black"
         radius: 1.5
@@ -84,19 +88,23 @@ Item {
             minutehand.rotation = seconds / 60 * 6
     }
 
-    DropShadow {
-        id: secondhand
+    Image {
+        id: secondhand_image
         anchors.centerIn: face
         width: face.width * 0.85
         height: face.height * 0.85
+        sourceSize.width: 1024
+        sourceSize.height: 1024
+        fillMode: Image.PreserveAspectFit
+        source: "image://svgelement/clock.svgz#second-hand"
+        visible: false
+    }
 
-        source: Image {
-            sourceSize.width: 1024
-            sourceSize.height: 1024
-            fillMode: Image.PreserveAspectFit
-            source: "image://svgelement/clock.svgz#second-hand"
-            visible: false
-        }
+    DropShadow {
+        id: secondhand
+        anchors.fill: secondhand_image
+
+        source: secondhand_image
 
         color: "black"
         radius: 1.5

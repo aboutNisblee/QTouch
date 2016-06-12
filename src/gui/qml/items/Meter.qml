@@ -15,7 +15,7 @@
 ** You should have received a copy of the GNU Lesser General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **/
-import QtQuick 2.0
+import QtQuick 2.5
 import QtGraphicalEffects 1.0
 
 Item {
@@ -77,18 +77,23 @@ Item {
         }
     }
 
+    Image {
+        id: hand_image
+        anchors.fill: parent
+        sourceSize.width: 1024
+        sourceSize.height: 1024
+        fillMode: Image.PreserveAspectFit
+        source: "image://svgelement/meter.svgz#hand"
+        visible: false
+    }
+
     DropShadow {
         id: hand
-        anchors.fill: parent
+        anchors.fill: hand_image
+
         z: 4
 
-        source: Image {
-            sourceSize.width: 1024
-            sourceSize.height: 1024
-            fillMode: Image.PreserveAspectFit
-            source: "image://svgelement/meter.svgz#hand"
-            visible: false
-        }
+        source: hand_image
 
         color: "black"
         radius: 1.5
