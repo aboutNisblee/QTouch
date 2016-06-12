@@ -210,9 +210,7 @@ FocusScope {
 
                             ExclusiveGroup {
                                 id: tabPositionGroup
-                                onCurrentChanged: console.log(Profile.Beginner,
-                                                              Profile.Advanced,
-                                                              current.level)
+                                onCurrentChanged: console.debug("Skilllevel changed to: ", current.level)
                             }
                             RadioButton {
                                 text: qsTr("Beginner")
@@ -236,7 +234,7 @@ FocusScope {
                         }
                         text: qsTr("Create Profile")
                         onClicked: {
-                            createProfile(txtProfileName.text, 0)
+                            createProfile(txtProfileName.text, tabPositionGroup.current.level)
                         }
                     }
                 }

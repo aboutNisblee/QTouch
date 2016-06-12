@@ -76,7 +76,7 @@ signals:
 class QmlSkillLevel: public QObject
 {
 	Q_GADGET
-	Q_ENUMS(SkillLevel)
+
 public:
 	/* FIXME: This enum shadows Profile::SkillLevel!
 	 * Find another solution. Profile should not be derived from QObject,
@@ -91,13 +91,13 @@ public:
 	{
 		Beginner = Profile::Beginner, Advanced = Profile::Advanced
 	};
+	Q_ENUM(SkillLevel)
 };
 
 class QmlProfile: public QObject, public Profile
 {
 	Q_OBJECT
 
-	Q_ENUMS(qtouch::QmlSkillLevel::SkillLevel)
 	Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
 	Q_PROPERTY(qtouch::QmlSkillLevel::SkillLevel skill READ getSkill WRITE setSkill NOTIFY skillLevelChanged)
 	Q_PROPERTY(QQmlListProperty<qtouch::QmlStats> stats READ getStats NOTIFY statsChanged)
@@ -108,8 +108,8 @@ public:
 	virtual ~QmlProfile() {}
 
 	void setName(const QString& name);
-	void setSkill(QmlSkillLevel::SkillLevel skill);
-	inline QmlSkillLevel::SkillLevel getSkill() const { return static_cast<QmlSkillLevel::SkillLevel>(mSkillLevel); }
+	void setSkill(qtouch::QmlSkillLevel::SkillLevel skill);
+	inline qtouch::QmlSkillLevel::SkillLevel getSkill() const { return static_cast<qtouch::QmlSkillLevel::SkillLevel>(mSkillLevel); }
 
 	inline QQmlListProperty<QmlStats> getStats()
 	{
@@ -132,5 +132,7 @@ private:
 };
 
 } /* namespace qtouch */
+
+Q_DECLARE_METATYPE(qtouch::QmlSkillLevel::SkillLevel)
 
 #endif /* QMLPROFILE_HPP_ */
